@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+/* Palette inspirée du dossier exemple (tons profonds, contrastes forts) */
+:root {
+  --font-size: 16px;
+  --background: #040711;
+  --foreground: #e8ebf5;
+  --card: #0b0f1d;
+  --card-foreground: #f7f8fb;
+  --primary: #f5f7ff;
+  --primary-foreground: #0b0f1d;
+  --secondary: #0f172a;
+  --secondary-foreground: #e8ebf5;
+  --muted: #11182b;
+  --muted-foreground: #9aa3b5;
+  --accent: #111827;
+  --accent-foreground: #f8fafc;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: #0d1222;
+  --ring: #7c8cff;
+  --radius: 14px;
+}
+
+/* Les variables sont déjà définies sur :root ci-dessus ; on évite @theme
+   (non reconnu par certains validateurs) pour prévenir l’avertissement. */
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --background: #f9fbff;
+    --foreground: #0b0f1d;
+    --card: #ffffff;
+    --card-foreground: #0b0f1d;
+    --primary: #030213;
+    --primary-foreground: #f8f9ff;
+    --secondary: #f1f5f9;
+    --secondary-foreground: #0b0f1d;
+    --muted: #eef2f7;
+    --muted-foreground: #5b6477;
+    --accent: #e7ecf5;
+    --accent-foreground: #0b0f1d;
+    --border: rgba(0, 0, 0, 0.08);
+    --input: #eef2f7;
+    --ring: #3b82f6;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans, "Inter", system-ui, -apple-system, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
