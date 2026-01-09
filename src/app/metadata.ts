@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lueurstudio.fr";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lueurstudio";
 
 export const defaultMetadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -72,6 +72,11 @@ export const defaultMetadata: Metadata = {
       "max-image-preview": "large",
       "max-snippet": -1,
     },
+  },
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
   },
 };
 

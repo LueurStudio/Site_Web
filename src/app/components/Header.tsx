@@ -81,9 +81,9 @@ export default function Header() {
                         : 'px-6 py-4'
                     }`}
             >
-                <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 flex-1">
                     <div
-                        className={`relative flex items-center justify-center transition-all duration-300 ${isScrolled ? 'h-8 w-8' : 'h-10 w-10'
+                        className={`relative flex items-center justify-center transition-all duration-300 ${isScrolled ? 'h-8 w-8' : 'h-10 w-10 sm:h-12 sm:w-12'
                             } flex-shrink-0`}
                     >
                         <Image
@@ -94,16 +94,20 @@ export default function Header() {
                             priority
                         />
                     </div>
-                    <div className={`${isScrolled ? 'hidden md:block' : 'hidden sm:block'}`}>
+                    <div className="flex-1 min-w-0">
                         <p
-                            className={`uppercase tracking-[0.25em] text-indigo-200 transition-all duration-300 ${isScrolled ? 'text-xs' : 'text-sm'
-                                }`}
+                            className={`uppercase tracking-[0.25em] text-indigo-200 transition-all duration-300 ${isScrolled 
+                                ? 'text-xs md:text-sm' 
+                                : 'text-sm sm:text-base md:text-lg font-semibold'
+                            }`}
                         >
-                            LueurStudio
+                            LUEURSTUDIO
                         </p>
                         <p
-                            className={`text-slate-200 transition-all duration-300 ${isScrolled ? 'text-xs' : 'text-sm'
-                                } hidden lg:block`}
+                            className={`text-slate-200 transition-all duration-300 ${isScrolled 
+                                ? 'text-xs hidden sm:block' 
+                                : 'text-xs sm:text-sm mt-0.5 sm:mt-1'
+                            }`}
                         >
                             Photographie & retouche haut de gamme
                         </p>

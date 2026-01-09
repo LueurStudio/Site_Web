@@ -17,23 +17,21 @@ export const projects: Project[] = [
     title: "Portraits signature",
     subtitle: "Direction artistique & retouche éditoriale",
     image:
-      "/images/IMG_0679.jpg",
+      "/images/IMG_0602-1.jpg",
     description:
       "Séries intimistes pensées pour les artistes, dirigeants et talents publics. Travail précis de la lumière, retouche naturelle, coaching pose sur place.",
     details: [
       "Moodboard et palettes couleurs partagés avant le shooting",
-      "Sélection express sous 24h, retouche finale sous 72h",
+      "Sélection express, retouche finale",
       "Exports calibrés pour presse, réseaux et impression fine art",
     ],
-    photos: [
+    photos: ["/images/IMG_0602-1.jpg",
       "/images/IMG_0679.jpg",
       "/images/IMG_0581-2.jpg",
       "/images/IMG_0667.jpg",
       "/images/IMG_0700.jpg",
       "/images/IMG_0701.jpg",
-      "/images/IMG_0631.jpg",
-      "/images/IMG_0602-1.jpg",
-    ],
+      "/images/IMG_0631.jpg"],
     category: "Portrait",
   },
   {
@@ -41,7 +39,7 @@ export const projects: Project[] = [
     title: "Instagram / Réseaux",
     subtitle: "Contenus photo pour réseaux sociaux",
     image:
-      "/images/IMG_0602-2.JPG",
+      "/images/1767862414889_610664735_2010876266428687_2112201346365934774_n.jpg",
     description:
       "Création de contenus photo pour Instagram, créateurs et marques. Images modernes, impactantes et optimisées pour le feed et les stories.",
     details: [
@@ -49,13 +47,13 @@ export const projects: Project[] = [
       "Optimisation pour chaque plateforme (Instagram, TikTok, etc.)",
       "Livraison rapide avec exports multiples formats",
     ],
-    photos: [
-      "/images/IMG_0602-2.JPG",
-      "/images/IMG_0741[2].jpg",
-      "/images/IMG_0724-2.jpg",
-      "/images/IMG_0660.jpg",
+    photos: ["/images/1767862414889_610664735_2010876266428687_2112201346365934774_n.jpg",
+      "/images/IMG_0602-2.jpg",
+      "/images/1767862414622_608392925_1859442517998094_7759141472045630244_n.jpg",
       "/images/IMG_0704.jpg",
-    ],
+      "/images/IMG_07412.jpg",
+      "/images/IMG_0724-2.jpg",
+      "/images/IMG_0660.jpg"],
     category: "Instagram / Réseaux",
   },
   {
@@ -117,10 +115,8 @@ export const projects: Project[] = [
       "Posture et regard capturés avec sensibilité",
       "Retouche naturelle préservant l'authenticité",
     ],
-    photos: [
-      "/images/IMG_0621.jpg",
-      "/images/IMG_0620.jpg",
-    ],
+    photos: ["/images/IMG_0621.jpg",
+      "/images/IMG_0620.jpg"],
     category: "Animal",
   },
 ];

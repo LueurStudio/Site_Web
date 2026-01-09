@@ -3,7 +3,7 @@
  * Modifiez ces valeurs pour mettre à jour l'email sur toutes les pages
  */
 
-export const CONTACT_EMAIL = "contact@lueurstudio.fr";
+export const CONTACT_EMAIL = "lueurstudio.contact@gmail.com";
 
 /**
  * Configuration des réseaux sociaux

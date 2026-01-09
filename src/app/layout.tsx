@@ -36,9 +36,9 @@ export default function RootLayout({
               name: "LueurStudio",
               description:
                 "Photographe professionnel à Paris spécialisé en portraits, événements, photos d'animaux et contenus Instagram. Services de retouche photo haut de gamme.",
-              url: "https://lueurstudio.fr",
-              logo: "https://lueurstudio.fr/images/logo.svg",
-              image: "https://lueurstudio.fr/images/logo.svg",
+              url: "https://lueurstudio",
+              logo: "https://lueurstudio/images/logo.svg",
+              image: "https://lueurstudio/images/logo.svg",
               address: {
                 "@type": "PostalAddress",
                 addressLocality: "Paris",

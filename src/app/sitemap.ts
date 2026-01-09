@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 import { projects } from "./portfolio/projects-data";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lueurstudio.fr";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lueurstudio";
 
   const routes = [
     {
