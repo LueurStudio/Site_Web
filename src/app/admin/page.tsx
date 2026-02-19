@@ -45,7 +45,7 @@ export default function AdminPage() {
   });
 
   // Mode édition
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [editingProject, setEditingProject] = useState<ProjectWithHidden | null>(null);
   const [editedPhotos, setEditedPhotos] = useState<string[]>([]);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
