@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CONTACT_EMAIL } from '@/config/contact';
-import { writeFile, mkdir, readFile } from 'fs/promises';
 import { join } from 'path';
 import { sendEmail } from '@/lib/email';
-import type { Reservation } from '@/app/reservations/reservations-data';
 import { isDateAvailable } from '@/app/availability/availability-data';
+import { supabaseServer } from "@/lib/supabaseServer";
+import { writeFile, mkdir } from 'fs/promises';
 
-    // Sauvegarder aussi la réservation dans le système de gestion
+// Sauvegarder aussi la réservation dans le système de gestion
 async function saveReservation(
   lastName: string,
   firstName: string,
@@ -14,63 +14,39 @@ async function saveReservation(
   prestationType: string,
   date: string,
   location: string,
+  eventType: string | undefined,
+  eventDetails: string | undefined,
+  contactPreference: string | undefined,
   specialRetouches: string | undefined,
   savedPhotos: string[],
   startTime?: string,
   duration?: number
 ) {
   try {
-    const newReservation: Reservation = {
-      lastName,
-      firstName,
+    const reservationRow = {
+      last_name: lastName,
+      first_name: firstName,
       email,
-      prestationType,
+      prestation_type: prestationType,
       date,
-      location,
-      specialRetouches,
-      inspirationPhotos: savedPhotos.length > 0 ? savedPhotos : undefined,
-      startTime: startTime || undefined,
-      duration: duration || 3,
-      id: `reservation-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      createdAt: new Date().toISOString(),
-      status: 'pending',
+      start_time: startTime || null,
+      duration: duration ?? null,
+      location: location || null,
+      event_type: eventType || null,
+      event_details: eventDetails || null,
+      contact_preference: contactPreference || null,
+      special_retouches: specialRetouches || null,
+      inspiration_photos: savedPhotos.length ? savedPhotos : null,
+      status: "pending",
     };
 
-    const dataFile = join(process.cwd(), 'src', 'app', 'reservations', 'reservations-data.ts');
-    let content = await readFile(dataFile, 'utf-8');
+    const { error } = await supabaseServer
+      .from("reservations")
+      .insert(reservationRow);
 
-    const reservationsMatch = content.match(/export const reservations: Reservation\[\] = \[([\s\S]*?)\];/);
-    if (!reservationsMatch) {
-      throw new Error('Impossible de trouver le tableau reservations');
-    }
-
-    const newReservationStr = `  {
-    id: ${JSON.stringify(newReservation.id)},
-    lastName: ${JSON.stringify(newReservation.lastName)},
-    firstName: ${JSON.stringify(newReservation.firstName)},
-    email: ${JSON.stringify(newReservation.email)},
-    prestationType: ${JSON.stringify(newReservation.prestationType)},
-    date: ${JSON.stringify(newReservation.date)},
-    ${newReservation.startTime ? `startTime: ${JSON.stringify(newReservation.startTime)},` : ''}
-    ${newReservation.duration ? `duration: ${newReservation.duration},` : ''}
-    location: ${JSON.stringify(newReservation.location)},
-    ${newReservation.specialRetouches ? `specialRetouches: ${JSON.stringify(newReservation.specialRetouches)},` : ''}
-    ${newReservation.inspirationPhotos ? `inspirationPhotos: ${JSON.stringify(newReservation.inspirationPhotos)},` : ''}
-    createdAt: ${JSON.stringify(newReservation.createdAt)},
-    status: ${JSON.stringify(newReservation.status)},
-  },`;
-
-    const insertPosition = content.lastIndexOf('];');
-    const reservationsStr = reservationsMatch[1].trim();
-    const newContent = 
-      content.slice(0, insertPosition) + 
-      (reservationsStr && !reservationsStr.endsWith(',') ? (reservationsStr ? ',' : '') + '\n' : '') + newReservationStr + '\n' + 
-      content.slice(insertPosition);
-
-    await writeFile(dataFile, newContent, 'utf-8');
+    if (error) throw error;
   } catch (error) {
-    console.error('Erreur lors de la sauvegarde de la réservation:', error);
-    // Ne pas faire échouer la requête principale si ça échoue
+    console.error("Erreur lors de la sauvegarde de la réservation:", error);
   }
 }
 
@@ -84,17 +60,31 @@ export async function POST(request: NextRequest) {
     const prestationType = formData.get('prestationType') as string;
     const date = formData.get('date') as string;
     const startTime = formData.get('startTime') as string;
-    const duration = parseInt(formData.get('duration') as string || '3');
+    const durationValue = formData.get('duration') as string | null;
+    const parsedDuration = durationValue ? parseFloat(durationValue) : NaN;
+    const duration = durationValue && Number.isFinite(parsedDuration) ? parsedDuration : undefined;
     const location = formData.get('location') as string;
     const specialRetouches = formData.get('specialRetouches') as string;
+    const eventType = formData.get('eventType') as string;
+    const eventDetails = formData.get('eventDetails') as string;
+    const contactPreference = formData.get('contactPreference') as string;
     const inspirationPhotos = formData.getAll('inspirationPhotos') as File[];
 
     // Validation des champs obligatoires
-    if (!lastName || !firstName || !email || !prestationType || !location) {
+    if (!lastName || !firstName || !email || !prestationType || (prestationType !== 'Événement' && !location)) {
       return NextResponse.json(
         { error: 'Tous les champs obligatoires doivent être remplis' },
         { status: 400 }
       );
+    }
+
+    if (prestationType === 'Événement') {
+      if (!eventType || !eventDetails || !contactPreference) {
+        return NextResponse.json(
+          { error: 'Veuillez compléter les informations de l’événement' },
+          { status: 400 }
+        );
+      }
     }
 
     // La date peut être soit une date valide, soit "À définir sur RDV"
@@ -133,7 +123,7 @@ export async function POST(request: NextRequest) {
           const timestamp = Date.now();
           const filename = `${timestamp}-${photo.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
           const filepath = join(uploadDir, filename);
-          
+
           await writeFile(filepath, buffer);
           savedPhotos.push(`/uploads/inspirations/${filename}`);
         }
@@ -181,6 +171,21 @@ export async function POST(request: NextRequest) {
               <div class="label">Type de prestation :</div>
               <div class="value">${prestationType}</div>
             </div>
+
+            ${prestationType === 'Événement' ? `
+            <div class="field">
+              <div class="label">Type d’événement :</div>
+              <div class="value">${eventType}</div>
+            </div>
+            <div class="field">
+              <div class="label">Description de l’événement :</div>
+              <div class="value">${eventDetails}</div>
+            </div>
+            <div class="field">
+              <div class="label">Mode de contact préféré :</div>
+              <div class="value">${contactPreference}</div>
+            </div>
+            ` : ''}
             
             <div class="field">
               <div class="label">Date :</div>
@@ -190,14 +195,16 @@ export async function POST(request: NextRequest) {
             ${startTime ? `
             <div class="field">
               <div class="label">Heure de début :</div>
-              <div class="value">${startTime} (durée: ${duration}h)</div>
+              <div class="value">${startTime} (durée demandée: ${duration}h)</div>
             </div>
             ` : ''}
             
+            ${prestationType !== 'Événement' ? `
             <div class="field">
               <div class="label">Lieu :</div>
               <div class="value">${location}</div>
             </div>
+            ` : ''}
             
             ${specialRetouches ? `
             <div class="field">
@@ -211,14 +218,14 @@ export async function POST(request: NextRequest) {
               <div class="label">Photos d'inspiration (${savedPhotos.length}) :</div>
               <div class="photos">
                 ${savedPhotos.map((photo, index) => {
-                  const photoUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://lueurstudio'}${photo}`;
-                  return `
+      const photoUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://lueurstudio'}${photo}`;
+      return `
                     <div class="photo">
                       <p>Photo ${index + 1}:</p>
                       <a href="${photoUrl}" target="_blank">${photoUrl}</a>
                     </div>
                   `;
-                }).join('')}
+    }).join('')}
               </div>
             </div>
             ` : ''}
@@ -234,7 +241,14 @@ export async function POST(request: NextRequest) {
     console.log(`Email: ${email}`);
     console.log(`Type: ${prestationType}`);
     console.log(`Date: ${date}`);
-    console.log(`Lieu: ${location}`);
+    if (prestationType !== 'Événement') {
+      console.log(`Lieu: ${location}`);
+    }
+    if (prestationType === 'Événement') {
+      console.log(`Type d'événement: ${eventType}`);
+      console.log(`Description: ${eventDetails}`);
+      console.log(`Contact préféré: ${contactPreference}`);
+    }
     if (specialRetouches) console.log(`Retouches: ${specialRetouches}`);
     if (savedPhotos.length > 0) console.log(`Photos: ${savedPhotos.join(', ')}`);
     console.log('===========================');
@@ -272,10 +286,13 @@ export async function POST(request: NextRequest) {
       prestationType,
       date,
       location,
+      eventType || undefined,
+      eventDetails || undefined,
+      contactPreference || undefined,
       specialRetouches || undefined,
       savedPhotos,
       startTime || undefined,
-      duration || 3
+      duration
     );
 
     // Créer le contenu de l'email de confirmation pour le client
@@ -298,7 +315,7 @@ export async function POST(request: NextRequest) {
           <div class="container">
             <h1>Confirmation de votre réservation</h1>
             <p>Bonjour ${firstName},</p>
-            <p>Nous avons bien reçu votre demande de réservation pour un shooting photo. Merci pour votre confiance !</p>
+            <p>Nous avons bien reçu votre demande ${prestationType === 'Événement' ? 'de devis événementiel' : 'de réservation'} pour un shooting photo. Merci pour votre confiance !</p>
             
             <div class="message">
               <p><strong>Récapitulatif de votre réservation :</strong></p>
@@ -309,11 +326,24 @@ export async function POST(request: NextRequest) {
                 <span class="label">Type de prestation :</span> ${prestationType}
               </div>
               <div class="detail-row">
-                <span class="label">Date :</span> ${date}${startTime ? ` à ${startTime} (durée: ${duration}h)` : ''}
+                <span class="label">Date :</span> ${date}${startTime && prestationType !== 'Événement' ? ` à ${startTime} (durée: ${duration}h)` : ''}
               </div>
+              ${prestationType === 'Événement' ? `
+              <div class="detail-row">
+                <span class="label">Type d’événement :</span> ${eventType}
+              </div>
+              <div class="detail-row">
+                <span class="label">Description :</span> ${eventDetails}
+              </div>
+              <div class="detail-row">
+                <span class="label">Contact préféré :</span> ${contactPreference}
+              </div>
+              ` : ''}
+              ${prestationType !== 'Événement' ? `
               <div class="detail-row">
                 <span class="label">Lieu :</span> ${location}
               </div>
+              ` : ''}
               ${specialRetouches ? `
               <div class="detail-row">
                 <span class="label">Retouches spéciales :</span> ${specialRetouches}
@@ -371,7 +401,7 @@ export async function POST(request: NextRequest) {
     } catch (emailError: any) {
       console.error('❌ Erreur lors de l\'envoi des emails:', emailError);
       console.error('Détails:', JSON.stringify(emailError, null, 2));
-      
+
       // Retourner une réponse avec un avertissement
       return NextResponse.json({
         success: true,

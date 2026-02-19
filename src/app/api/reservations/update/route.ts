@@ -1,85 +1,76 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/auth';
-import { sendEmail } from '@/lib/email';
-import { writeFile, readFile } from 'fs/promises';
-import { join } from 'path';
-import type { Reservation } from '@/app/reservations/reservations-data';
+import { NextRequest, NextResponse } from "next/server";
+import { checkAuth } from "@/lib/auth";
+import { sendEmail } from "@/lib/email";
+import { supabaseServer } from "@/lib/supabaseServer";
 
 export async function POST(request: NextRequest) {
   try {
     if (!(await checkAuth(request))) {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const { id, updates }: { id: string; updates: Partial<Reservation> } = await request.json();
+    const { id, updates } = await request.json();
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'ID de réservation requis' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "ID de réservation requis" }, { status: 400 });
     }
 
-    const dataFile = join(process.cwd(), 'src', 'app', 'reservations', 'reservations-data.ts');
-    let content = await readFile(dataFile, 'utf-8');
+    // Récupérer la réservation avant update
+    const { data: existing, error: readError } = await supabaseServer
+      .from("reservations")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-    // Parser les réservations existantes
-    const reservationsMatch = content.match(/export const reservations: Reservation\[\] = (\[[\s\S]*?\]);/);
-    if (!reservationsMatch) {
-      throw new Error('Impossible de trouver le tableau reservations');
+    if (readError || !existing) {
+      return NextResponse.json({ error: "Réservation non trouvée" }, { status: 404 });
     }
 
-    let reservations: Reservation[] = eval(reservationsMatch[1]);
+    const wasConfirmed = existing.status === "confirmed";
+    const isNowConfirmed = updates?.status === "confirmed";
 
-    // Trouver et mettre à jour la réservation
-    const index = reservations.findIndex(r => r.id === id);
-    if (index === -1) {
-      return NextResponse.json(
-        { error: 'Réservation non trouvée' },
-        { status: 404 }
-      );
+    // Update
+    const { data: updatedReservation, error: updateError } = await supabaseServer
+      .from("reservations")
+      .update(updates)
+      .eq("id", id)
+      .select("*")
+      .single();
+
+    if (updateError || !updatedReservation) {
+      return NextResponse.json({ error: "Erreur lors de la mise à jour" }, { status: 500 });
     }
 
-    const oldReservation = reservations[index];
-    const wasConfirmed = oldReservation.status === 'confirmed';
-    const isNowConfirmed = updates.status === 'confirmed';
-
-    reservations[index] = { ...reservations[index], ...updates };
-    const updatedReservation = reservations[index];
-
-    // Envoyer un email de confirmation si le statut passe à "confirmed"
+    // Email de confirmation si passage à "confirmed"
     if (!wasConfirmed && isNowConfirmed && updatedReservation.email) {
       try {
-        // Formater la date
         let dateDisplay = updatedReservation.date;
-        if (dateDisplay && dateDisplay !== 'À définir sur RDV') {
+        if (dateDisplay && dateDisplay !== "À définir sur RDV") {
           try {
-            const dateObj = new Date(dateDisplay + 'T00:00:00');
-            dateDisplay = dateObj.toLocaleDateString('fr-FR', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric'
+            const dateObj = new Date(dateDisplay + "T00:00:00");
+            dateDisplay = dateObj.toLocaleDateString("fr-FR", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
             });
-          } catch (e) {
-            // Garder la date telle quelle si erreur de parsing
-          }
+          } catch {}
         }
 
-        // Formater l'heure
-        let timeDisplay = '';
-        if (updatedReservation.startTime) {
-          const [hours, minutes] = updatedReservation.startTime.split(':');
+        let timeDisplay = "";
+        if (updatedReservation.start_time) {
+          const [hours, minutes] = updatedReservation.start_time.split(":");
           const startHour = parseInt(hours);
-          const duration = updatedReservation.duration || 3;
-          const endHour = startHour + duration;
-          timeDisplay = `${updatedReservation.startTime} - ${endHour.toString().padStart(2, '0')}:00 (${duration}h)`;
+          const startMinutes = startHour * 60 + parseInt(minutes || "0");
+          const duration = updatedReservation.duration || 0;
+          const endMinutes = startMinutes + Math.round(duration * 60);
+          const endHour = Math.floor(endMinutes / 60);
+          const endMin = endMinutes % 60;
+          timeDisplay = `${updatedReservation.start_time} - ${endHour.toString().padStart(2, "0")}:${endMin
+            .toString()
+            .padStart(2, "0")} (${duration}h)`;
         }
 
-        // Créer le contenu de l'email de confirmation
         const emailContent = `
           <!DOCTYPE html>
           <html>
@@ -98,32 +89,31 @@ export async function POST(request: NextRequest) {
             <body>
               <div class="container">
                 <h1>✅ Votre réservation est confirmée !</h1>
-                <p>Bonjour ${updatedReservation.firstName},</p>
+                <p>Bonjour ${updatedReservation.first_name},</p>
                 <p>Nous avons le plaisir de vous confirmer votre réservation de shooting photo.</p>
-                
+
                 <div class="confirmation-box">
                   <h2 style="margin-top: 0; color: #6366f1;">Détails de votre réservation</h2>
-                  
+
                   <div class="detail-row">
                     <span class="detail-label">📅 Date :</span>
-                    <span class="detail-value">${dateDisplay || 'À définir sur RDV'}</span>
+                    <span class="detail-value">${dateDisplay || "À définir sur RDV"}</span>
                   </div>
-                  
+
                   ${timeDisplay ? `
                   <div class="detail-row">
                     <span class="detail-label">🕐 Heure :</span>
                     <span class="detail-value">${timeDisplay}</span>
-                  </div>
-                  ` : ''}
-                  
+                  </div>` : ""}
+
                   <div class="detail-row">
                     <span class="detail-label">📍 Lieu :</span>
-                    <span class="detail-value">${updatedReservation.location || 'Non spécifié'}</span>
+                    <span class="detail-value">${updatedReservation.location || "Non spécifié"}</span>
                   </div>
-                  
+
                   <div class="detail-row">
                     <span class="detail-label">📸 Type de prestation :</span>
-                    <span class="detail-value">${updatedReservation.prestationType || 'Non spécifié'}</span>
+                    <span class="detail-value">${updatedReservation.prestation_type || "Non spécifié"}</span>
                   </div>
                 </div>
 
@@ -141,40 +131,20 @@ export async function POST(request: NextRequest) {
           </html>
         `;
 
-        const emailResult = await sendEmail({
-          to: updatedReservation.email.trim(),
-          subject: `Confirmation de votre réservation - LueurStudio`,
+        await sendEmail({
+          to: updatedReservation.email,
+          subject: "✅ Confirmation de votre réservation - LueurStudio",
           html: emailContent,
-          from: { name: 'LueurStudio', email: 'lueurstudio.contact@gmail.com' },
+          from: { name: "LueurStudio", email: process.env.CONTACT_EMAIL || "" },
         });
-
-        if (emailResult.success) {
-          console.log(`✅ Email de confirmation envoyé à ${updatedReservation.email}`);
-        } else {
-          console.error(`❌ Erreur lors de l'envoi de l'email de confirmation: ${emailResult.error}`);
-        }
-      } catch (emailError: any) {
-        console.error('❌ Erreur lors de l\'envoi de l\'email de confirmation:', emailError);
-        // On continue quand même la mise à jour même si l'email échoue
+      } catch (err) {
+        console.error("Erreur lors de l'envoi de l'email:", err);
       }
     }
 
-    // Reconstruire le contenu du fichier
-    const newReservationsContent = `export const reservations: Reservation[] = ${JSON.stringify(reservations, null, 2)};`;
-    const newContent = content.replace(/export const reservations: Reservation\[\] = (\[[\s\S]*?\]);/, newReservationsContent);
-
-    await writeFile(dataFile, newContent, 'utf-8');
-
-    return NextResponse.json({ 
-      success: true, 
-      reservation: reservations[index]
-    });
+    return NextResponse.json({ success: true, reservation: updatedReservation });
   } catch (error) {
-    console.error('Erreur lors de la mise à jour de la réservation:', error);
-    return NextResponse.json(
-      { error: 'Erreur lors de la mise à jour de la réservation' },
-      { status: 500 }
-    );
+    console.error("Erreur lors de la mise à jour:", error);
+    return NextResponse.json({ error: "Erreur lors de la mise à jour de la réservation" }, { status: 500 });
   }
 }
-

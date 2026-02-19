@@ -4,7 +4,6 @@ import { supabaseServer } from '@/lib/supabaseServer';
 
 export async function POST(request: NextRequest) {
   try {
-    // Vérifier l'authentification
     if (!(await checkAuth(request))) {
       return NextResponse.json(
         { error: 'Non autorisé' },
@@ -12,41 +11,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { slug, photos }: { slug: string; photos: string[] } = await request.json();
+    const { slug, hidden }: { slug: string; hidden: boolean } = await request.json();
 
-    if (!slug || !photos || !Array.isArray(photos)) {
+    if (!slug || typeof hidden !== 'boolean') {
       return NextResponse.json(
-        { error: 'Slug et photos requises' },
+        { error: 'Slug et hidden requis' },
         { status: 400 }
       );
     }
 
-    const cleanedPhotos = photos.filter((photo) => photo && photo.trim() !== '');
-
     const { error } = await supabaseServer
       .from('projects')
-      .update({ photos: cleanedPhotos })
+      .update({ hidden })
       .eq('slug', slug);
 
     if (error) {
       return NextResponse.json(
-        { error: 'Erreur lors de la mise à jour du projet' },
+        { error: 'Erreur lors de la mise à jour' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      photos: cleanedPhotos,
-    });
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Erreur lors de la mise à jour du projet:', error);
+    console.error('Erreur lors de la mise à jour de visibilité:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la mise à jour du projet' },
+      { error: 'Erreur lors de la mise à jour' },
       { status: 500 }
     );
   }
 }
-
-
-

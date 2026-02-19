@@ -1,25 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { testimonials } from '@/app/testimonials/testimonials-data';
 import { checkAuth } from '@/lib/auth';
+import { supabaseServer } from '@/lib/supabaseServer';
+
+const mapTestimonial = (t: any) => ({
+  id: t.id,
+  name: t.name,
+  role: t.role,
+  quote: t.quote,
+  project: t.project,
+  rating: t.rating,
+  date: t.date,
+  image: t.image,
+  email: t.email,
+  approved: t.approved ?? false,
+  createdAt: t.created_at,
+});
 
 export async function GET(request: NextRequest) {
   try {
-    // Si c'est un admin, retourner tous les avis, sinon uniquement les approuvés
     const isAdmin = await checkAuth(request);
-    
-    // Filtrer les valeurs null/undefined et s'assurer que tous ont les propriétés requises
-    const validTestimonials = testimonials.filter(t => t !== null && t !== undefined).map(t => ({
-      ...t,
-      approved: t.approved !== undefined ? t.approved : false,
-    }));
-    
-    if (isAdmin) {
-      return NextResponse.json({ success: true, testimonials: validTestimonials });
-    } else {
-      // Pour le public, ne retourner que les avis approuvés
-      const approvedTestimonials = validTestimonials.filter(t => t.approved === true);
-      return NextResponse.json({ success: true, testimonials: approvedTestimonials });
+
+    let query = supabaseServer
+      .from('testimonials')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!isAdmin) {
+      query = query.eq('approved', true);
     }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    return NextResponse.json({
+      success: true,
+      testimonials: (data || []).map(mapTestimonial),
+    });
   } catch (error) {
     console.error('Erreur lors de la récupération des avis:', error);
     return NextResponse.json({ success: true, testimonials: [] });

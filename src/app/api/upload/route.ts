@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
 import { checkAuth } from '@/lib/auth';
+import { supabaseServer } from '@/lib/supabaseServer';
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,29 +43,32 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Générer un nom de fichier unique
     const timestamp = Date.now();
     const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const filename = `${timestamp}_${sanitizedName}`;
+    const filePath = `uploads/${timestamp}_${sanitizedName}`;
 
-    // Chemin vers le dossier public/images
-    const publicDir = join(process.cwd(), 'public', 'images');
-    
-    // Créer le dossier s'il n'existe pas
-    if (!existsSync(publicDir)) {
-      await mkdir(publicDir, { recursive: true });
+    const { error: uploadError } = await supabaseServer.storage
+      .from('projects')
+      .upload(filePath, buffer, {
+        contentType: file.type,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      return NextResponse.json(
+        { error: 'Erreur lors de l\'upload du fichier' },
+        { status: 500 }
+      );
     }
 
-    const filepath = join(publicDir, filename);
-    await writeFile(filepath, buffer);
+    const { data: publicData } = supabaseServer.storage
+      .from('projects')
+      .getPublicUrl(filePath);
 
-    // Retourner l'URL relative du fichier
-    const fileUrl = `/images/${filename}`;
-
-    return NextResponse.json({ 
-      success: true, 
-      url: fileUrl,
-      filename: filename 
+    return NextResponse.json({
+      success: true,
+      url: publicData.publicUrl,
+      filename: filePath,
     });
   } catch (error) {
     console.error('Erreur lors de l\'upload:', error);
@@ -77,4 +78,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+
 

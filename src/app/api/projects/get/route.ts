@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkAuth } from '@/lib/auth';
-import { projects } from '@/app/portfolio/projects-data';
+import { supabaseServer } from '@/lib/supabaseServer';
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,14 +21,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const project = projects.find(p => p.slug === slug);
+    const { data, error } = await supabaseServer
+      .from('projects')
+      .select('*')
+      .eq('slug', slug)
+      .single();
 
-    if (!project) {
+    if (error || !data) {
       return NextResponse.json(
         { error: 'Projet non trouvé' },
         { status: 404 }
       );
     }
+
+    const isAdmin = await checkAuth(request);
+    if (data.hidden && !isAdmin) {
+      return NextResponse.json(
+        { error: 'Projet non trouvé' },
+        { status: 404 }
+      );
+    }
+
+    const project = {
+      ...data,
+      details: data.details ?? [],
+      photos: data.photos ?? [],
+    };
 
     return NextResponse.json({ project });
   } catch (error) {
@@ -39,4 +57,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+
 

@@ -1,32 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/auth';
-import { reservations } from '@/app/reservations/reservations-data';
+import { NextResponse } from "next/server";
+import { supabaseServer } from "@/lib/supabaseServer";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    if (!(await checkAuth(request))) {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      );
-    }
+    const { data, error } = await supabaseServer
+      .from("reservations")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-    // Filtrer les valeurs null/undefined et trier par date de création (plus récentes en premier)
-    const validReservations = reservations.filter(r => r !== null && r !== undefined && r.id);
-    const sortedReservations = [...validReservations].sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    if (error) throw error;
 
-    return NextResponse.json({ 
-      success: true, 
-      reservations: sortedReservations 
-    });
+    return NextResponse.json({ success: true, reservations: data });
   } catch (error) {
-    console.error('Erreur lors de la récupération des réservations:', error);
-    return NextResponse.json(
-      { error: 'Erreur lors de la récupération des réservations' },
-      { status: 500 }
-    );
+    console.error("Erreur:", error);
+    return NextResponse.json({ success: false, reservations: [] });
   }
 }
-

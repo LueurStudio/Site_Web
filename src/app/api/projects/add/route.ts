@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, readFile } from 'fs/promises';
-import { join } from 'path';
 import { checkAuth } from '@/lib/auth';
+import { supabaseServer } from '@/lib/supabaseServer';
 import type { Project } from '@/app/portfolio/projects-data';
 
 export async function POST(request: NextRequest) {
@@ -16,6 +15,13 @@ export async function POST(request: NextRequest) {
 
     const project: Omit<Project, 'slug'> & { slug?: string } = await request.json();
 
+    if (!project.title || !project.image || !project.description || !project.category) {
+      return NextResponse.json(
+        { error: 'Champs obligatoires manquants' },
+        { status: 400 }
+      );
+    }
+
     // Générer un slug à partir du titre si non fourni
     if (!project.slug) {
       project.slug = project.title
@@ -26,47 +32,35 @@ export async function POST(request: NextRequest) {
         .replace(/^-+|-+$/g, '');
     }
 
-    // Chemin vers le fichier projects-data.ts
-    const dataFile = join(process.cwd(), 'src', 'app', 'portfolio', 'projects-data.ts');
-    
-    // Lire le fichier actuel
-    let content = await readFile(dataFile, 'utf-8');
-    
-    // Extraire le tableau projects
-    const projectsMatch = content.match(/export const projects: Project\[\] = \[([\s\S]*?)\];/);
-    if (!projectsMatch) {
-      throw new Error('Impossible de trouver le tableau projects');
+    const details = (project.details || []).filter((detail) => detail && detail.trim() !== '');
+    const photos = (project.photos || []).filter((photo) => photo && photo.trim() !== '');
+
+    const { data, error } = await supabaseServer
+      .from('projects')
+      .insert({
+        slug: project.slug,
+        title: project.title,
+        subtitle: project.subtitle || '',
+        image: project.image,
+        description: project.description,
+        details,
+        photos,
+        category: project.category,
+        hidden: false,
+      })
+      .select('*')
+      .single();
+
+    if (error) {
+      return NextResponse.json(
+        { error: 'Erreur lors de l\'ajout du projet' },
+        { status: 500 }
+      );
     }
 
-    // Parser le contenu JSON (en remplaçant les simples quotes par des doubles quotes pour le parsing)
-    const projectsStr = projectsMatch[1];
-    
-    // Ajouter le nouveau projet au format TypeScript
-    const newProjectStr = `  {
-    slug: "${project.slug}",
-    title: ${JSON.stringify(project.title)},
-    subtitle: ${JSON.stringify(project.subtitle)},
-    image: ${JSON.stringify(project.image)},
-    description: ${JSON.stringify(project.description)},
-    details: [${project.details.map(d => JSON.stringify(d)).join(',\n      ')}],
-    photos: [${project.photos.map(p => JSON.stringify(p)).join(',\n      ')}],
-    category: ${JSON.stringify(project.category)},
-  },`;
-
-    // Insérer le nouveau projet avant la fermeture du tableau
-    const insertPosition = content.lastIndexOf('];');
-    const projectsStrTrimmed = projectsStr.trim();
-    const newContent = 
-      content.slice(0, insertPosition) + 
-      (projectsStrTrimmed ? (projectsStrTrimmed.endsWith(',') ? '' : ',') + '\n' : '') + newProjectStr + '\n' + 
-      content.slice(insertPosition);
-
-    // Écrire le nouveau contenu
-    await writeFile(dataFile, newContent, 'utf-8');
-
-    return NextResponse.json({ 
-      success: true, 
-      project: { ...project, slug: project.slug } as Project
+    return NextResponse.json({
+      success: true,
+      project: data,
     });
   } catch (error) {
     console.error('Erreur lors de l\'ajout du projet:', error);

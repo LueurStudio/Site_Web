@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, readFile } from 'fs/promises';
-import { join } from 'path';
 import { checkAuth } from '@/lib/auth';
+import { supabaseServer } from '@/lib/supabaseServer';
 
 export async function GET(request: NextRequest) {
   try {
-    // Vérifier l'authentification
     if (!(await checkAuth(request))) {
       return NextResponse.json(
         { error: 'Non autorisé' },
@@ -13,9 +11,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Import dynamique pour recharger les codes à jour
-    const { verificationCodes } = await import('@/app/testimonials/testimonials-data');
-    return NextResponse.json({ success: true, codes: verificationCodes });
+    const { data, error } = await supabaseServer
+      .from('testimonial_codes')
+      .select('email, code');
+
+    if (error) throw error;
+
+    const codes = (data || []).reduce<Record<string, string>>((acc, row) => {
+      acc[String(row.email).toLowerCase()] = String(row.code).toUpperCase();
+      return acc;
+    }, {});
+
+    return NextResponse.json({ success: true, codes });
   } catch (error) {
     console.error('Erreur lors de la récupération des codes:', error);
     return NextResponse.json({ success: true, codes: {} });
@@ -24,7 +31,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Vérifier l'authentification
     if (!(await checkAuth(request))) {
       return NextResponse.json(
         { error: 'Non autorisé' },
@@ -41,45 +47,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Chemin vers le fichier testimonials-data.ts
-    const dataFile = join(process.cwd(), 'src', 'app', 'testimonials', 'testimonials-data.ts');
-    
-    // Lire le fichier actuel
-    let content = await readFile(dataFile, 'utf-8');
-    
-    // Trouver la section verificationCodes
-    const codesMatch = content.match(/export const verificationCodes: Record<string, string> = \{([\s\S]*?)\};/);
-    
-    if (!codesMatch) {
-      throw new Error('Impossible de trouver la section verificationCodes');
-    }
+    const normalizedEmail = String(email).toLowerCase().trim();
 
-    // Import dynamique pour obtenir les codes actuels
-    const { verificationCodes: currentCodesObj } = await import('@/app/testimonials/testimonials-data');
-    const currentCodes = { ...currentCodesObj };
-    
-    if (action === 'add' && code) {
-      currentCodes[email.toLowerCase()] = code.toUpperCase();
+    if (action === 'add') {
+      if (!code) {
+        return NextResponse.json(
+          { error: 'Code requis' },
+          { status: 400 }
+        );
+      }
+
+      const normalizedCode = String(code).toUpperCase().trim();
+
+      const { error } = await supabaseServer
+        .from('testimonial_codes')
+        .upsert({ email: normalizedEmail, code: normalizedCode }, { onConflict: 'email' });
+
+      if (error) throw error;
     } else if (action === 'remove') {
-      delete currentCodes[email.toLowerCase()];
+      const { error } = await supabaseServer
+        .from('testimonial_codes')
+        .delete()
+        .eq('email', normalizedEmail);
+
+      if (error) throw error;
     }
 
-    // Générer le nouveau contenu des codes
-    const codesStr = Object.entries(currentCodes)
-      .map(([email, code]) => `  ${JSON.stringify(email)}: ${JSON.stringify(code)},`)
-      .join('\n');
-
-    // Remplacer la section verificationCodes
-    const newContent = content.replace(
-      /export const verificationCodes: Record<string, string> = \{[\s\S]*?\};/,
-      `export const verificationCodes: Record<string, string> = {\n${codesStr}\n};`
-    );
-
-    await writeFile(dataFile, newContent, 'utf-8');
-
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      message: action === 'add' ? 'Code ajouté avec succès' : 'Code supprimé avec succès'
+      message: action === 'add' ? 'Code ajouté avec succès' : 'Code supprimé avec succès',
     });
   } catch (error) {
     console.error('Erreur lors de la modification des codes:', error);
@@ -89,4 +85,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

@@ -1,79 +1,36 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { readFile } from 'fs/promises';
-import { join } from 'path';
-import type { Reservation } from '@/app/reservations/reservations-data';
+import { NextRequest, NextResponse } from "next/server";
+import { supabaseServer } from "@/lib/supabaseServer";
+
+const planningBufferHours = 0.5;
 
 export async function GET(request: NextRequest) {
-  try {
-    const searchParams = request.nextUrl.searchParams;
-    const date = searchParams.get('date');
+  const date = request.nextUrl.searchParams.get("date");
+  if (!date) return NextResponse.json({ error: "Date requise" }, { status: 400 });
 
-    if (!date) {
-      return NextResponse.json(
-        { error: 'Date requise' },
-        { status: 400 }
-      );
-    }
+  const { data, error } = await supabaseServer
+    .from("reservations")
+    .select("start_time, duration, status")
+    .eq("date", date)
+    .in("status", ["pending", "confirmed"]);
 
-    // Charger les réservations existantes
-    const dataFile = join(process.cwd(), 'src', 'app', 'reservations', 'reservations-data.ts');
-    let content = await readFile(dataFile, 'utf-8');
-    const reservationsMatch = content.match(/export const reservations: Reservation\[\] = (\[[\s\S]*?\]);/);
-    
-    if (!reservationsMatch) {
-      return NextResponse.json({
-        success: true,
-        bookedTimes: [],
-      });
-    }
+  if (error) return NextResponse.json({ success: false, bookedTimes: [] });
 
-    let reservations: Reservation[] = [];
-    try {
-      reservations = JSON.parse(reservationsMatch[1]);
-    } catch {
-      reservations = eval(reservationsMatch[1]);
-    }
-
-    // Filtrer les réservations pour cette date avec un créneau horaire actif
-    // On exclut 'completed' car une fois le shooting terminé, le créneau peut être réutilisé
-    const reservationsForDate = reservations.filter((r: any) => 
-      r !== null && 
-      r !== undefined && 
-      r.date === date && 
-      r.startTime && 
-      (r.status === 'pending' || r.status === 'confirmed') // Seulement les réservations actives
-    );
-
-    // Extraire les heures réservées avec leur durée
-    const bookedSlots: Array<{ startTime: string; endTime: string; duration: number }> = [];
-    
-    for (const reservation of reservationsForDate) {
-      if (!reservation.startTime) continue;
-      
-      const startHour = parseInt(reservation.startTime.split(':')[0]);
-      const startMinutes = startHour * 60 + parseInt(reservation.startTime.split(':')[1] || '0');
-      const duration = reservation.duration || 3;
-      const endMinutes = startMinutes + (duration * 60);
+  const bookedSlots = (data || [])
+    .filter(r => r.start_time)
+    .map(r => {
+      const [h, m] = r.start_time.split(":");
+      const startMinutes = parseInt(h) * 60 + parseInt(m || "0");
+      const duration = Number(r.duration || 0);
+      const endMinutes = startMinutes + Math.round((duration + planningBufferHours) * 60);
       const endHour = Math.floor(endMinutes / 60);
       const endMin = endMinutes % 60;
-      
-      bookedSlots.push({
-        startTime: reservation.startTime,
-        endTime: `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`,
-        duration,
-      });
-    }
 
-    return NextResponse.json({
-      success: true,
-      bookedTimes: bookedSlots,
+      return {
+        startTime: r.start_time,
+        endTime: `${endHour.toString().padStart(2, "0")}:${endMin.toString().padStart(2, "0")}`,
+        duration: r.duration || null,
+      };
     });
-  } catch (error) {
-    console.error('Erreur lors de la récupération des heures réservées:', error);
-    return NextResponse.json(
-      { error: 'Erreur lors de la récupération des heures réservées' },
-      { status: 500 }
-    );
-  }
-}
 
+  return NextResponse.json({ success: true, bookedTimes: bookedSlots });
+}
