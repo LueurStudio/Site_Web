@@ -30,3 +30,5 @@ Si ce fichier n'existe pas, le mot de passe par défaut sera `admin123` (non rec
 - Les projets sont automatiquement ajoutés au fichier `projects-data.ts`
 - Le slug est généré automatiquement à partir du titre
 
+
+
