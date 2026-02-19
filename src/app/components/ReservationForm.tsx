@@ -11,7 +11,11 @@ interface ReservationFormData {
   date: string;
   isDateToDefine: boolean;
   startTime: string; // Heure de début (format HH:MM)
+  duration: number; // Durée demandée en heures
   location: string;
+  eventType: string;
+  eventDetails: string;
+  contactPreference: string;
   inspirationPhotos?: FileList;
   specialRetouches?: string;
 }
@@ -25,7 +29,11 @@ export default function ReservationForm() {
     date: '',
     isDateToDefine: false,
     startTime: '10:00',
+    duration: 1.5,
     location: '',
+    eventType: '',
+    eventDetails: '',
+    contactPreference: '',
     specialRetouches: '',
   });
   const [timeError, setTimeError] = useState<string>('');
@@ -57,6 +65,34 @@ export default function ReservationForm() {
     }
   }, [formData.date, formData.isDateToDefine]);
 
+  useEffect(() => {
+    const checkSlotAvailability = async () => {
+      if (!formData.isDateToDefine && formData.date && formData.startTime) {
+        try {
+          const res = await fetch('/api/reservations/check-time', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              date: formData.date,
+              startTime: formData.startTime,
+              duration: formData.duration,
+            }),
+          });
+          const data = await res.json();
+          if (!data.available) {
+            setTimeError(data.reason || 'Ce créneau n\'est pas disponible');
+          } else {
+            setTimeError('');
+          }
+        } catch (err) {
+          console.error('Erreur lors de la vérification du créneau:', err);
+        }
+      }
+    };
+
+    checkSlotAvailability();
+  }, [formData.date, formData.startTime, formData.duration, formData.isDateToDefine]);
+
   const loadAvailability = async () => {
     try {
       const res = await fetch('/api/availability/public');
@@ -76,6 +112,47 @@ export default function ReservationForm() {
   const [unlockedDates, setUnlockedDates] = useState<string[]>([]);
   const [showCalendar, setShowCalendar] = useState(false);
   const [bookedTimes, setBookedTimes] = useState<Array<{ startTime: string; endTime: string; duration: number }>>([]);
+  const planningBufferHours = 0.5;
+  const prestationDurations: Record<string, number> = {
+    'Séance Express': 0.5,
+    Signature: 1.5,
+    Portrait: 1,
+    'Branding / Produit': 2,
+    'Retouche seule': 0.5,
+    Autre: 1,
+  };
+
+  const formatDuration = (hours: number) => {
+    const wholeHours = Math.floor(hours);
+    const minutes = Math.round((hours - wholeHours) * 60);
+    if (minutes === 0) return `${wholeHours}h`;
+    if (wholeHours === 0) return `${minutes}min`;
+    return `${wholeHours}h${minutes.toString().padStart(2, '0')}`;
+  };
+
+  const isEventPrestation = formData.prestationType === 'Événement';
+
+  useEffect(() => {
+    const durationForType = prestationDurations[formData.prestationType];
+    if (durationForType && durationForType !== formData.duration) {
+      setFormData((prev) => ({
+        ...prev,
+        duration: durationForType,
+      }));
+    }
+    if (formData.prestationType === 'Événement' && formData.startTime) {
+      setFormData((prev) => ({
+        ...prev,
+        startTime: '',
+      }));
+    }
+    if (formData.prestationType === 'Événement' && formData.location) {
+      setFormData((prev) => ({
+        ...prev,
+        location: '',
+      }));
+    }
+  }, [formData.prestationType, formData.duration]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -84,14 +161,27 @@ export default function ReservationForm() {
 
     try {
       // Validation côté client
-      if (!formData.lastName || !formData.firstName || !formData.email || !formData.prestationType || !formData.location) {
+      if (!formData.lastName || !formData.firstName || !formData.email || !formData.prestationType || (!isEventPrestation && !formData.location)) {
         setMessage({ type: 'error', text: 'Veuillez remplir tous les champs obligatoires.' });
         setLoading(false);
         return;
       }
 
+      if (isEventPrestation) {
+        if (!formData.eventType || !formData.eventDetails || !formData.contactPreference) {
+          setMessage({ type: 'error', text: 'Veuillez compléter les informations de l’événement.' });
+          setLoading(false);
+          return;
+        }
+      }
+
       if (!formData.isDateToDefine && !formData.date) {
-        setMessage({ type: 'error', text: 'Veuillez sélectionner une date ou cliquer sur "À définir sur RDV".' });
+        setMessage({
+          type: 'error',
+          text: isEventPrestation
+            ? 'Veuillez sélectionner une date pour l’événement.'
+            : 'Veuillez sélectionner une date ou cliquer sur "À définir sur RDV".',
+        });
         setLoading(false);
         return;
       }
@@ -120,7 +210,7 @@ export default function ReservationForm() {
             body: JSON.stringify({
               date: formData.date,
               startTime: formData.startTime,
-              duration: 3, // Durée par défaut d'un shooting
+              duration: formData.duration,
             }),
           });
           const data = await res.json();
@@ -140,9 +230,14 @@ export default function ReservationForm() {
       formDataToSend.append('email', formData.email);
       formDataToSend.append('prestationType', formData.prestationType);
       formDataToSend.append('date', formData.isDateToDefine ? 'À définir sur RDV' : formData.date);
-      formDataToSend.append('startTime', formData.isDateToDefine ? '' : (formData.startTime || ''));
-      formDataToSend.append('duration', '3'); // Durée par défaut
-      formDataToSend.append('location', formData.location);
+      formDataToSend.append('startTime', formData.isDateToDefine || isEventPrestation ? '' : (formData.startTime || ''));
+      if (!isEventPrestation) {
+        formDataToSend.append('duration', formData.duration.toString());
+      }
+      formDataToSend.append('location', isEventPrestation ? '' : formData.location);
+      formDataToSend.append('eventType', formData.eventType);
+      formDataToSend.append('eventDetails', formData.eventDetails);
+      formDataToSend.append('contactPreference', formData.contactPreference);
       formDataToSend.append('specialRetouches', formData.specialRetouches || '');
 
       if (inspirationPhotos && inspirationPhotos.length > 0) {
@@ -169,7 +264,11 @@ export default function ReservationForm() {
           date: '',
           isDateToDefine: false,
           startTime: '10:00',
+          duration: 1.5,
           location: '',
+          eventType: '',
+          eventDetails: '',
+          contactPreference: '',
           specialRetouches: '',
         });
         setTimeError('');
@@ -234,16 +333,38 @@ export default function ReservationForm() {
         <select
           className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
           value={formData.prestationType}
-          onChange={(e) => setFormData({ ...formData, prestationType: e.target.value })}
+          onChange={(e) => {
+            const newType = e.target.value;
+            const durationForType = prestationDurations[newType];
+            if (newType === 'Événement') {
+              setTimeError('');
+            }
+            setFormData({
+              ...formData,
+              prestationType: newType,
+              duration: durationForType || formData.duration,
+              isDateToDefine: newType === 'Événement' ? false : formData.isDateToDefine,
+              eventType: newType === 'Événement' ? formData.eventType : '',
+              eventDetails: newType === 'Événement' ? formData.eventDetails : '',
+              contactPreference: newType === 'Événement' ? formData.contactPreference : '',
+            });
+          }}
           required
         >
           <option value="" className="bg-slate-900 text-white">Sélectionner une prestation</option>
-          <option value="Portrait" className="bg-slate-900 text-white">Portrait</option>
+          <option value="Séance Express" className="bg-slate-900 text-white">Séance Express (30 min)</option>
+          <option value="Signature" className="bg-slate-900 text-white">Signature (1h30)</option>
           <option value="Événement" className="bg-slate-900 text-white">Événement</option>
+          <option value="Portrait" className="bg-slate-900 text-white">Portrait</option>
           <option value="Branding / Produit" className="bg-slate-900 text-white">Branding / Produit</option>
           <option value="Retouche seule" className="bg-slate-900 text-white">Retouche seule</option>
           <option value="Autre" className="bg-slate-900 text-white">Autre</option>
         </select>
+        {!!formData.prestationType && !isEventPrestation && (
+          <p className="text-xs text-slate-400">
+            Durée de la prestation: {formatDuration(formData.duration)}
+          </p>
+        )}
       </label>
 
       {/* Date avec option "À définir sur RDV" */}
@@ -272,18 +393,20 @@ export default function ReservationForm() {
                 >
                   📅 Changer la date
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFormData({ ...formData, isDateToDefine: !formData.isDateToDefine, date: '' });
-                    setShowCalendar(false);
-                  }}
-                  className="rounded-xl border px-4 py-3 text-base font-semibold transition whitespace-nowrap border-white/20 text-white hover:border-white/40 hover:bg-white/10"
-                >
-                  À définir sur RDV
-                </button>
+                {!isEventPrestation && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData({ ...formData, isDateToDefine: !formData.isDateToDefine, date: '' });
+                      setShowCalendar(false);
+                    }}
+                    className="rounded-xl border px-4 py-3 text-base font-semibold transition whitespace-nowrap border-white/20 text-white hover:border-white/40 hover:bg-white/10"
+                  >
+                    À définir sur RDV
+                  </button>
+                )}
               </div>
-            ) : formData.isDateToDefine ? (
+            ) : formData.isDateToDefine && !isEventPrestation ? (
               <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex-1 min-w-[200px] rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-base text-white font-semibold">
                   À définir sur RDV
@@ -373,8 +496,58 @@ export default function ReservationForm() {
         </label>
       </div>
 
+      {/* Informations événement */}
+      {isEventPrestation && (
+        <div className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+          <label className="space-y-2 text-base text-slate-100">
+            Type d’événement <span className="text-red-400">*</span>
+            <select
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+              value={formData.eventType}
+              onChange={(e) => setFormData({ ...formData, eventType: e.target.value })}
+              required
+            >
+              <option value="" className="bg-slate-900 text-white">Sélectionner un type</option>
+              <option value="Mariage" className="bg-slate-900 text-white">Mariage</option>
+              <option value="Anniversaire" className="bg-slate-900 text-white">Anniversaire</option>
+              <option value="Événement professionnel" className="bg-slate-900 text-white">Événement professionnel</option>
+              <option value="Soirée privée" className="bg-slate-900 text-white">Soirée privée</option>
+              <option value="Autre" className="bg-slate-900 text-white">Autre</option>
+            </select>
+          </label>
+
+          <label className="space-y-2 text-base text-slate-100">
+            Description de l’événement <span className="text-red-400">*</span>
+            <textarea
+              value={formData.eventDetails}
+              onChange={(e) => setFormData({ ...formData, eventDetails: e.target.value })}
+              rows={4}
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+              placeholder="Décrivez votre événement et vos besoins (lieu, horaires, nombre d’invités, style, etc.)"
+              required
+            />
+          </label>
+
+          <label className="space-y-2 text-base text-slate-100">
+            Mode de contact préféré <span className="text-red-400">*</span>
+            <select
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+              value={formData.contactPreference}
+              onChange={(e) => setFormData({ ...formData, contactPreference: e.target.value })}
+              required
+            >
+              <option value="" className="bg-slate-900 text-white">Sélectionner un mode</option>
+              <option value="Téléphone" className="bg-slate-900 text-white">Téléphone</option>
+              <option value="Rendez-vous en face à face" className="bg-slate-900 text-white">Rendez-vous en face à face</option>
+              <option value="Visio" className="bg-slate-900 text-white">Visio</option>
+              <option value="Email" className="bg-slate-900 text-white">Email</option>
+            </select>
+          </label>
+        </div>
+      )}
+
       {/* Heure de début */}
-      {!formData.isDateToDefine && formData.date && (
+      {!formData.isDateToDefine && formData.date && !isEventPrestation && (
         <label className="space-y-2 text-base text-slate-100">
           Heure de début <span className="text-red-400">*</span>
           <select
@@ -393,7 +566,7 @@ export default function ReservationForm() {
                     body: JSON.stringify({
                       date: formData.date,
                       startTime: selectedTime,
-                      duration: 3,
+                    duration: formData.duration,
                     }),
                   });
                   const data = await res.json();
@@ -410,9 +583,14 @@ export default function ReservationForm() {
           >
             {(() => {
               const hours = [];
-              for (let h = 10; h <= 17; h++) {
+              const lastStartHour = Math.floor(20 - (formData.duration + planningBufferHours));
+              for (let h = 10; h <= lastStartHour; h++) {
                 const timeStr = `${h.toString().padStart(2, '0')}:00`;
-                const endTime = h + 3 <= 20 ? `${(h + 3).toString().padStart(2, '0')}:00` : '20:00';
+                const slotStartMinutes = h * 60;
+                const slotEndMinutes = slotStartMinutes + Math.round(formData.duration * 60);
+                const endHour = Math.floor(slotEndMinutes / 60);
+                const endMin = slotEndMinutes % 60;
+                const endTime = `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`;
                 
                 // Vérifier si cette heure est réservée
                 const isBooked = bookedTimes.some(booking => {
@@ -425,9 +603,6 @@ export default function ReservationForm() {
                   const bookingStartMinutes = bookingStartHour * 60 + bookingStartMin;
                   const bookingEndMinutes = bookingEndHour * 60 + bookingEndMin;
                   
-                  const slotStartMinutes = h * 60;
-                  const slotEndMinutes = (h + 3) * 60;
-                  
                   // Chevauchement si : (slotStart < bookingEnd) && (slotEnd > bookingStart)
                   return slotStartMinutes < bookingEndMinutes && slotEndMinutes > bookingStartMinutes;
                 });
@@ -439,7 +614,10 @@ export default function ReservationForm() {
                     className={isBooked ? "bg-slate-700 text-slate-400" : "bg-slate-900 text-white"}
                     disabled={isBooked}
                   >
-                    {isBooked ? `❌ ${timeStr} - ${endTime} (3h) - Indisponible` : `${timeStr} - ${endTime} (3h)`}
+                    {isBooked
+                      ? `❌ ${timeStr} - ${endTime} (${formatDuration(formData.duration)}) - Indisponible`
+                      : `${timeStr} - ${endTime} (${formatDuration(formData.duration)})`
+                    }
                   </option>
                 );
               }
@@ -461,21 +639,24 @@ export default function ReservationForm() {
       )}
 
       {/* Lieu */}
-      <label className="space-y-2 text-base text-slate-100">
-        Lieu <span className="text-red-400">*</span>
-        <select
-          className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
-          value={formData.location}
-          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-          required
-        >
-          <option value="" className="bg-slate-900 text-white">Sélectionner un lieu</option>
-          <option value="Studio" className="bg-slate-900 text-white">Studio</option>
-          <option value="Domicile" className="bg-slate-900 text-white">Domicile *plus cher</option>
-          <option value="Extérieur" className="bg-slate-900 text-white">Extérieur</option>
-          <option value="Autre" className="bg-slate-900 text-white">Autre</option>
-        </select>
-      </label>
+      {!isEventPrestation && (
+        <label className="space-y-2 text-base text-slate-100">
+          Lieu <span className="text-red-400">*</span>
+          <select
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+            value={formData.location}
+            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+            required
+          >
+            <option value="" className="bg-slate-900 text-white">Sélectionner un lieu</option>
+            <option value="Studio" className="bg-slate-900 text-white">Studio</option>
+            <option value="Domicile" className="bg-slate-900 text-white">Domicile *plus cher</option>
+            <option value="Extérieur" className="bg-slate-900 text-white">Extérieur</option>
+            <option value="Autre" className="bg-slate-900 text-white">Autre</option>
+          </select>
+        </label>
+      )}
+
 
       {/* Inspirations (optionnel) - avec upload de photos */}
       <label className="space-y-2 text-base text-slate-100">

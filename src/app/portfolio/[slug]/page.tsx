@@ -1,22 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { projects } from "../projects-data";
 import PhotoGallery from "./PhotoGallery";
+import { supabaseServer } from "@/lib/supabaseServer";
+
+export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
 export async function generateStaticParams() {
-  return projects.map((project) => ({
+  const { data } = await supabaseServer.from("projects").select("slug");
+  return (data || []).map((project) => ({
     slug: project.slug,
   }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const project = projects.find((p) => p.slug === slug);
+  const { data: project } = await supabaseServer
+    .from("projects")
+    .select("*")
+    .eq("slug", slug)
+    .single();
 
   if (!project) {
     return {
@@ -24,29 +31,35 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
+  const normalizedProject = {
+    ...project,
+    details: project.details ?? [],
+    photos: project.photos ?? [],
+  };
+
   const keywords = [
-    `photographe ${project.category.toLowerCase()}`,
-    `shooting ${project.category.toLowerCase()}`,
+    `photographe ${normalizedProject.category.toLowerCase()}`,
+    `shooting ${normalizedProject.category.toLowerCase()}`,
     "photographe professionnel Paris",
     "retouche photo professionnelle",
-    ...(project.category === "Portrait" ? ["photographe portrait", "portrait professionnel"] : []),
-    ...(project.category === "Événement" ? ["photographe événement", "reportage photo"] : []),
-    ...(project.category === "Animal" ? ["photographe animal", "photo animalière"] : []),
-    ...(project.category === "Instagram / Réseaux" ? ["photographe Instagram", "contenu photo réseaux sociaux"] : []),
+    ...(normalizedProject.category === "Portrait" ? ["photographe portrait", "portrait professionnel"] : []),
+    ...(normalizedProject.category === "Événement" ? ["photographe événement", "reportage photo"] : []),
+    ...(normalizedProject.category === "Animal" ? ["photographe animal", "photo animalière"] : []),
+    ...(normalizedProject.category === "Instagram / Réseaux" ? ["photographe Instagram", "contenu photo réseaux sociaux"] : []),
   ];
 
   return {
-    title: project.title,
-    description: `${project.description} | ${project.category} par LueurStudio, photographe professionnel à Paris. Découvrez nos services de shooting photo et retouche haut de gamme.`,
+    title: normalizedProject.title,
+    description: `${normalizedProject.description} | ${normalizedProject.category} par LueurStudio, photographe professionnel à Paris. Découvrez nos services de shooting photo et retouche haut de gamme.`,
     keywords,
     openGraph: {
-      title: `${project.title} | LueurStudio`,
-      description: project.description,
+      title: `${normalizedProject.title} | LueurStudio`,
+      description: normalizedProject.description,
       url: `https://lueurstudio/portfolio/${slug}`,
       images: [
         {
-          url: project.image.startsWith("http") ? project.image : `https://lueurstudio${project.image}`,
-          alt: `${project.title} - ${project.category}`,
+          url: normalizedProject.image.startsWith("http") ? normalizedProject.image : `https://lueurstudio${normalizedProject.image}`,
+          alt: `${normalizedProject.title} - ${normalizedProject.category}`,
         },
       ],
     },
@@ -58,11 +71,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProjectPage({ params }: Props) {
   const { slug } = await params;
-  const project = projects.find((p) => p.slug === slug);
+  const { data: project } = await supabaseServer
+    .from("projects")
+    .select("*")
+    .eq("slug", slug)
+    .single();
 
   if (!project) {
     notFound();
   }
+
+  const normalizedProject = {
+    ...project,
+    details: project.details ?? [],
+    photos: project.photos ?? [],
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
@@ -72,10 +95,10 @@ export default async function ProjectPage({ params }: Props) {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "CreativeWork",
-            "@id": `https://lueurstudio/portfolio/${project.slug}`,
-            name: project.title,
-            description: project.description,
-            image: project.photos.map((photo) =>
+            "@id": `https://lueurstudio/portfolio/${normalizedProject.slug}`,
+            name: normalizedProject.title,
+            description: normalizedProject.description,
+            image: normalizedProject.photos.map((photo: string) =>
               photo.startsWith("http") ? photo : `https://lueurstudio${photo}`
             ),
             creator: {
@@ -85,9 +108,9 @@ export default async function ProjectPage({ params }: Props) {
             },
             about: {
               "@type": "Thing",
-              name: project.category,
+              name: normalizedProject.category,
             },
-            keywords: project.category,
+            keywords: normalizedProject.category,
             inLanguage: "fr-FR",
           }),
         }}
@@ -137,14 +160,14 @@ export default async function ProjectPage({ params }: Props) {
         </div>
         <div className="space-y-3 sm:space-y-4 rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 sm:p-8 md:p-10 shadow-2xl shadow-indigo-950/30">
           <p className="text-sm uppercase tracking-[0.4em] sm:tracking-[0.6em] text-indigo-100">
-            {project.subtitle}
+            {normalizedProject.subtitle}
           </p>
           <h1 className="text-4xl sm:text-4xl md:text-5xl font-semibold leading-tight">
-            {project.title}
+            {normalizedProject.title}
           </h1>
-          <p className="text-lg sm:text-lg text-slate-200">{project.description}</p>
+          <p className="text-lg sm:text-lg text-slate-200">{normalizedProject.description}</p>
           <ul className="flex flex-wrap gap-2 pt-2">
-            {project.details.map((detail) => (
+            {normalizedProject.details.map((detail: string) => (
               <li
                 key={detail}
                 className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-indigo-50 ring-1 ring-white/15"
@@ -157,7 +180,7 @@ export default async function ProjectPage({ params }: Props) {
       </header>
 
       <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 md:px-10 lg:px-14 pb-16 sm:pb-20 md:pb-24">
-        <PhotoGallery photos={project.photos} projectTitle={project.title} />
+        <PhotoGallery photos={normalizedProject.photos} projectTitle={normalizedProject.title} />
 
         <section className="mt-8 sm:mt-12 rounded-3xl border border-white/10 bg-slate-900/70 p-6 sm:p-8 text-center shadow-xl shadow-black/40">
           <p className="text-sm uppercase tracking-[0.4em] text-indigo-100">

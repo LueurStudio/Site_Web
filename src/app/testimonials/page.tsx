@@ -11,6 +11,7 @@ export default function TestimonialsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [verified, setVerified] = useState(false);
+  const [verifiedEmail, setVerifiedEmail] = useState('');
   
   const [formData, setFormData] = useState({
     name: '',
@@ -40,6 +41,7 @@ export default function TestimonialsPage() {
 
       if (data.success) {
         setVerified(true);
+        setVerifiedEmail(email.trim().toLowerCase());
         setStep('form');
         setError('');
       } else {
@@ -58,6 +60,10 @@ export default function TestimonialsPage() {
       setError('Le nom et le témoignage sont requis');
       return;
     }
+    if (!verifiedEmail) {
+      setError('Email de vérification manquant. Merci de recommencer.');
+      return;
+    }
 
     setLoading(true);
     setError('');
@@ -69,7 +75,7 @@ export default function TestimonialsPage() {
         body: JSON.stringify({
           testimonial: {
             ...formData,
-            email: email.trim().toLowerCase(),
+            email: verifiedEmail,
             date: formData.date || new Date().toISOString().split('T')[0],
           },
           verificationCode: code.trim().toUpperCase(),

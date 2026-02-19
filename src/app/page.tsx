@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { projects } from "./portfolio/projects-data";
-import { testimonials } from "./testimonials/testimonials-data";
+import { supabaseServer } from "@/lib/supabaseServer";
+import { pricingOffers } from "./pricing/pricing-data";
 import { CONTACT_EMAIL, SOCIAL_LINKS } from "@/config/contact";
 import type { Metadata } from "next";
 import ReservationForm from "./components/ReservationForm";
@@ -8,7 +8,7 @@ import ReservationForm from "./components/ReservationForm";
 export const metadata: Metadata = {
   title: "Accueil",
   description:
-    "Photographe professionnel à Paris. Services de shooting photo et retouche haut de gamme pour portraits, événements, animaux et contenus Instagram. Livraison rapide, qualité professionnelle.",
+    "Photographe professionnel à Paris. Services de shooting photo et retouche pour portraits, événements, animaux et contenus Instagram. Livraison rapide, qualité professionnelle.",
   keywords: [
     "photographe professionnel Paris",
     "shooting photo Paris",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "LueurStudio — Photographe Professionnel & Retouche Photo | Paris",
     description:
-      "Photographe professionnel à Paris. Services de shooting photo et retouche haut de gamme pour portraits, événements, animaux et contenus Instagram.",
+      "Photographe professionnel à Paris. Services de shooting photo et retouche pour portraits, événements, animaux et contenus Instagram.",
     url: "https://lueurstudio",
   },
   alternates: {
@@ -32,7 +32,37 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Home() {
+export default async function Home() {
+  const { data: projectsData } = await supabaseServer
+    .from("projects")
+    .select("*");
+
+  const projects = (projectsData || [])
+    .filter((project: any) => project.hidden !== true)
+    .map((project: any) => ({
+      ...project,
+      details: project.details ?? [],
+      photos: project.photos ?? [],
+    }));
+
+  const { data: testimonialsData } = await supabaseServer
+    .from("testimonials")
+    .select("*")
+    .eq("approved", true)
+    .order("created_at", { ascending: false });
+
+  const testimonials = (testimonialsData || []).map((t: any) => ({
+    id: t.id,
+    name: t.name,
+    role: t.role,
+    quote: t.quote,
+    project: t.project,
+    rating: t.rating,
+    date: t.date,
+    image: t.image,
+    approved: t.approved ?? false,
+    createdAt: t.created_at,
+  }));
   // Afficher un projet de chaque catégorie sur la page d'accueil
   const featuredProjects = [
     projects.find((p) => p.category === "Portrait"),
@@ -94,10 +124,10 @@ export default function Home() {
               <span className="sm:hidden">Portrait . Événement . Animal</span>
             </div>
             <h1 className="text-4xl font-semibold leading-tight sm:text-4xl md:text-5xl lg:text-6xl">
-            Capture l'instant, révèle ta personnalité, crée l'émotion.
+              Photographie et retouche au service de ton image.
             </h1>
             <p className="max-w-xl text-lg sm:text-lg text-slate-200">
-              Photographe près de Paris, je crée des images sur mesure qui révèlent ta personnalité. Shooting personnalisé, retouche haut de gamme et livraison rapide. Prêt à donner vie à ton projet ?
+              Photographe près de Paris, je crée des images sur mesure qui révèlent ta personnalité. Shooting personnalisé, retouche et livraison rapide.
             </p>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <a
@@ -364,25 +394,9 @@ export default function Home() {
               </span>
             </div>
             <div className="space-y-4">
-              {[
-                {
-                  name: "Séance Express",
-                  price: "150€",
-                  desc: "45 min, 10 photos retouchées",
-                },
-                {
-                  name: "Signature",
-                  price: "280€",
-                  desc: "1h30, 25 photos retouchées, moodboard dédié",
-                },
-                {
-                  name: "Événement",
-                  price: "Sur devis",
-                  desc: "Couverture complète, galerie privée, export social & print",
-                },
-              ].map((offer) => (
+              {pricingOffers.map((offer) => (
                 <div
-                  key={offer.name}
+                  key={offer.id}
                   className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 rounded-xl bg-white/10 px-3 py-2 sm:px-4 sm:py-3 ring-1 ring-white/10"
                 >
                   <div>

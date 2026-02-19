@@ -3,14 +3,32 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
-import { projects, categories, type Project } from "./projects-data";
 import { CONTACT_EMAIL } from "@/config/contact";
+
+type Project = {
+  slug: string;
+  title: string;
+  subtitle: string;
+  image: string;
+  description: string;
+  details: string[];
+  photos: string[];
+  category: "Portrait" | "Événement" | "Animal" | "Instagram / Réseaux";
+};
+
+const categories: Project["category"][] = [
+  "Portrait",
+  "Événement",
+  "Animal",
+  "Instagram / Réseaux",
+];
 
 export default function PortfolioClient() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam);
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
     if (categoryParam) {
@@ -18,10 +36,26 @@ export default function PortfolioClient() {
     }
   }, [categoryParam]);
 
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const res = await fetch('/api/projects/list');
+        const data = await res.json();
+        if (data.projects) {
+          setProjects(data.projects);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des projets:', error);
+      }
+    };
+
+    loadProjects();
+  }, []);
+
   const filteredProjects = useMemo(() => {
     if (!selectedCategory) return projects;
     return projects.filter((project) => project.category === selectedCategory);
-  }, [selectedCategory]);
+  }, [selectedCategory, projects]);
 
   const activeProject = useMemo(() => {
     if (!activeSlug) return null;

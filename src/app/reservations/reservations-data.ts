@@ -8,6 +8,9 @@ export type Reservation = {
   startTime?: string; // Heure de début (format HH:MM) - optionnel
   duration?: number; // Durée en heures (défaut: 3h)
   location: string;
+  eventType?: string; // Type d'événement (mariage, anniversaire, etc.)
+  eventDetails?: string; // Détails et besoins pour devis
+  contactPreference?: string; // Mode de contact préféré
   specialRetouches?: string;
   inspirationPhotos?: string[]; // URLs des photos uploadées
   galleryPhotos?: string[]; // URLs des photos finales pour la galerie client
@@ -70,6 +73,29 @@ export const reservations: Reservation[] = [
     "location": "Studio",
     "createdAt": "2026-01-09T10:09:39.535Z",
     "status": "confirmed"
+  },
+  {
+    "id": "reservation-1769504744213-i7fpevd",
+    "lastName": "test",
+    "firstName": "mathéo",
+    "email": "matheo24042006@gmail.com",
+    "prestationType": "Signature",
+    "date": "2026-01-31",
+    "startTime": "12:00",
+    "duration": 1.5,
+    "location": "Studio",
+    "createdAt": "2026-01-27T09:05:44.213Z",
+    "status": "completed",
+    "galleryPhotos": [
+      "/images/1769504825733_IMG_0575.JPG",
+      "/images/1769504825905_IMG_0576.JPG",
+      "/images/1769504826057_IMG_0577.JPG",
+      "/images/1769504826202_IMG_0578.JPG"
+    ],
+    "galleryCode": "VMWRM4G9",
+    "galleryCreated": true,
+    "galleryExpiresAt": "2026-03-27T09:07:40.176Z",
+    "emailSent": true
   }
 ];
 
