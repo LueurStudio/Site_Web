@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Project } from '@/app/portfolio/projects-data';
+import type { PricingOffer } from '@/app/pricing/pricing-data';
 import { categories } from '@/app/portfolio/projects-data';
 
 export default function AdminPage() {
@@ -11,7 +12,8 @@ export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+  const [email, setEmail] = useState('');
+
   // Formulaire de nouveau projet
   const [projectForm, setProjectForm] = useState<Omit<Project, 'slug'>>({
     title: '',
@@ -25,14 +27,15 @@ export default function AdminPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
-  const [activeMode, setActiveMode] = useState<'rapide' | 'complet' | 'edit' | 'testimonials' | 'reservations' | 'availability'>('rapide');
-  
+  const [activeMode, setActiveMode] = useState<'rapide' | 'complet' | 'edit' | 'testimonials' | 'reservations' | 'availability' | 'pricing'>('rapide');
+
   // Gestion des avis
   const [testimonials, setTestimonials] = useState<any[]>([]);
   const [verificationCodes, setVerificationCodes] = useState<Record<string, string>>({});
   const [newCodeForm, setNewCodeForm] = useState({ email: '', code: '' });
   const [testimonialForm, setTestimonialForm] = useState({
     name: '',
+    email: '',
     role: '',
     quote: '',
     project: '',
@@ -40,13 +43,13 @@ export default function AdminPage() {
     date: '',
     image: '',
   });
-  
+
   // Mode édition
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [editedPhotos, setEditedPhotos] = useState<string[]>([]);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  
+
   // Mode rapide - par catégorie
   const [quickUploads, setQuickUploads] = useState<Record<string, {
     photos: string[];
@@ -62,8 +65,9 @@ export default function AdminPage() {
     'Instagram / Réseaux': { photos: [], title: '', subtitle: '', description: '', uploading: false, selectedProject: null },
   });
 
-  const [existingProjects, setExistingProjects] = useState<Project[]>([]);
-  
+  type ProjectWithHidden = Project & { hidden?: boolean };
+  const [existingProjects, setExistingProjects] = useState<ProjectWithHidden[]>([]);
+
   // Gestion des réservations
   const [reservations, setReservations] = useState<any[]>([]);
   const [selectedReservation, setSelectedReservation] = useState<any | null>(null);
@@ -77,6 +81,11 @@ export default function AdminPage() {
   const [selectedDate, setSelectedDate] = useState('');
   const [loadingAvailability, setLoadingAvailability] = useState(false);
 
+  // Gestion des tarifs
+  const [pricingOffers, setPricingOffers] = useState<PricingOffer[]>([]);
+  const [loadingPricing, setLoadingPricing] = useState(false);
+  const [pricingError, setPricingError] = useState('');
+
   // Fonction pour calculer les jours restants avant expiration de la galerie
   const getDaysRemaining = (expiresAt?: string) => {
     if (!expiresAt) return null;
@@ -87,15 +96,23 @@ export default function AdminPage() {
     return diffDays;
   };
 
+  const formatDuration = (hours?: number) => {
+    if (!hours) return '3h';
+    const wholeHours = Math.floor(hours);
+    const minutes = Math.round((hours - wholeHours) * 60);
+    if (minutes === 0) return `${wholeHours}h`;
+    if (wholeHours === 0) return `${minutes}min`;
+    return `${wholeHours}h${minutes.toString().padStart(2, '0')}`;
+  };
+
   useEffect(() => {
     checkAuth();
     loadProjects();
     loadTestimonials();
-    loadCodes();
   }, []);
-  
+
   useEffect(() => {
-    if (activeMode === 'testimonials') {
+    if (activeMode === 'testimonials' && authenticated) {
       loadCodes();
     }
     if (activeMode === 'reservations') {
@@ -103,6 +120,9 @@ export default function AdminPage() {
     }
     if (activeMode === 'availability') {
       loadAvailability();
+    }
+    if (activeMode === 'pricing') {
+      loadPricing();
     }
   }, [activeMode]);
 
@@ -119,37 +139,135 @@ export default function AdminPage() {
     }
   };
 
+  const loadPricing = async () => {
+    try {
+      const res = await fetch('/api/pricing/list');
+      const data = await res.json();
+      if (data.offers) {
+        setPricingOffers(data.offers);
+      }
+    } catch (err) {
+      console.error('Erreur lors du chargement des tarifs:', err);
+    }
+  };
+
+  const addPricingOffer = () => {
+    const newOffer: PricingOffer = {
+      id: `offer-${Date.now()}`,
+      name: '',
+      price: '',
+      desc: '',
+    };
+    setPricingOffers((prev) => [...prev, newOffer]);
+  };
+
+  const updatePricingOffer = (id: string, field: keyof Omit<PricingOffer, 'id'>, value: string) => {
+    setPricingOffers((prev) =>
+      prev.map((offer) => (offer.id === id ? { ...offer, [field]: value } : offer))
+    );
+  };
+
+  const removePricingOffer = (id: string) => {
+    setPricingOffers((prev) => prev.filter((offer) => offer.id !== id));
+  };
+
+  const savePricing = async () => {
+    setLoadingPricing(true);
+    setPricingError('');
+
+    try {
+      const res = await fetch('/api/pricing/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ offers: pricingOffers }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setPricingOffers(data.offers || []);
+        alert('Tarifs mis à jour avec succès');
+      } else {
+        setPricingError(data.error || 'Erreur lors de la mise à jour');
+      }
+    } catch (err) {
+      console.error('Erreur lors de la mise à jour des tarifs:', err);
+      setPricingError('Erreur lors de la mise à jour');
+    } finally {
+      setLoadingPricing(false);
+    }
+  };
+
   const loadReservations = async () => {
     try {
       const res = await fetch('/api/reservations/list');
       const data = await res.json();
       if (data.success && data.reservations) {
         // Filtrer les valeurs null/undefined et s'assurer que tous ont les propriétés requises
-        setReservations(data.reservations.filter((r: any) => r !== null && r !== undefined && r.id));
+        const mapped = data.reservations
+          .filter((r: any) => r && r.id)
+          .map((r: any) => ({
+            id: r.id,
+            lastName: r.last_name,
+            firstName: r.first_name,
+            email: r.email,
+            prestationType: r.prestation_type,
+            date: r.date,
+            startTime: r.start_time,
+            duration: r.duration,
+            location: r.location,
+            eventType: r.event_type,
+            eventDetails: r.event_details,
+            contactPreference: r.contact_preference,
+            specialRetouches: r.special_retouches,
+            inspirationPhotos: r.inspiration_photos,
+            status: r.status,
+            createdAt: r.created_at,
+            galleryCode: r.gallery_code,
+            galleryCreated: r.gallery_created,
+            galleryExpiresAt: r.gallery_expires_at,
+            emailSent: r.email_sent,
+            galleryPhotos: r.gallery_photos,
+          }));
+
+        setReservations(mapped);
       }
     } catch (err) {
       console.error('Erreur lors du chargement des réservations:', err);
     }
   };
-  
+
   const loadTestimonials = async () => {
     try {
       const res = await fetch('/api/testimonials/list');
       const data = await res.json();
       if (data.testimonials) {
-        // Filtrer les valeurs null/undefined et s'assurer que tous ont les propriétés requises
-        setTestimonials(data.testimonials.filter((t: any) => t !== null && t !== undefined).map((t: any) => ({
-          ...t,
-          approved: t.approved !== undefined ? t.approved : false,
-        })));
+        const mapped = data.testimonials
+          .filter((t: any) => t !== null && t !== undefined)
+          .map((t: any) => ({
+            id: t.id,
+            name: t.name,
+            role: t.role,
+            quote: t.quote,
+            project: t.project,
+            rating: t.rating,
+            date: t.date,
+            image: t.image,
+            email: t.email,
+            approved: t.approved !== undefined ? t.approved : false,
+            createdAt: t.created_at ?? t.createdAt,
+          }));
+
+        setTestimonials(mapped);
       }
     } catch (err) {
       console.error('Erreur lors du chargement des avis:', err);
     }
   };
-  
+
   const loadCodes = async () => {
     try {
+      if (!authenticated) {
+        return;
+      }
       const res = await fetch('/api/testimonials/codes');
       const data = await res.json();
       if (data.codes) {
@@ -162,7 +280,7 @@ export default function AdminPage() {
 
   const loadProjects = async () => {
     try {
-      const res = await fetch('/api/projects/list');
+      const res = await fetch('/api/projects/list?includeHidden=1');
       const data = await res.json();
       if (data.projects) {
         setExistingProjects(data.projects);
@@ -286,7 +404,7 @@ export default function AdminPage() {
           if (!projectForm.image) {
             setProjectForm({ ...projectForm, image: uploadedUrls[0] });
           }
-          
+
           const existingPhotos = projectForm.photos.filter(p => p && p.trim() !== '');
           setProjectForm({
             ...projectForm,
@@ -316,7 +434,7 @@ export default function AdminPage() {
 
   const handleQuickSubmit = async (category: string) => {
     const quickData = quickUploads[category];
-    
+
     if (quickData.photos.length === 0) {
       setError('Veuillez uploader au moins une photo');
       return;
@@ -515,11 +633,10 @@ export default function AdminPage() {
               setActiveMode('rapide');
               setEditingProject(null);
             }}
-            className={`px-6 py-3 rounded-full font-semibold transition ${
-              activeMode === 'rapide'
+            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'rapide'
                 ? 'bg-white text-slate-900'
                 : 'border border-white/20 text-white hover:border-white/40 hover:bg-white/10'
-            }`}
+              }`}
           >
             Upload rapide par catégorie
           </button>
@@ -528,11 +645,10 @@ export default function AdminPage() {
               setActiveMode('complet');
               setEditingProject(null);
             }}
-            className={`px-6 py-3 rounded-full font-semibold transition ${
-              activeMode === 'complet'
+            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'complet'
                 ? 'bg-white text-slate-900'
                 : 'border border-white/20 text-white hover:border-white/40 hover:bg-white/10'
-            }`}
+              }`}
           >
             Formulaire complet
           </button>
@@ -541,11 +657,10 @@ export default function AdminPage() {
               setActiveMode('edit');
               loadProjects();
             }}
-            className={`px-6 py-3 rounded-full font-semibold transition ${
-              activeMode === 'edit'
+            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'edit'
                 ? 'bg-white text-slate-900'
                 : 'border border-white/20 text-white hover:border-white/40 hover:bg-white/10'
-            }`}
+              }`}
           >
             Gérer les projets existants
           </button>
@@ -555,11 +670,10 @@ export default function AdminPage() {
               loadTestimonials();
               loadCodes();
             }}
-            className={`px-6 py-3 rounded-full font-semibold transition ${
-              activeMode === 'testimonials'
+            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'testimonials'
                 ? 'bg-white text-slate-900'
                 : 'border border-white/20 text-white hover:border-white/40 hover:bg-white/10'
-            }`}
+              }`}
           >
             Gérer les avis
           </button>
@@ -568,26 +682,68 @@ export default function AdminPage() {
               setActiveMode('reservations');
               loadReservations();
             }}
-            className={`px-6 py-3 rounded-full font-semibold transition ${
-              activeMode === 'reservations'
+            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'reservations'
                 ? 'bg-white text-slate-900'
                 : 'border border-white/20 text-white hover:border-white/40 hover:bg-white/10'
-            }`}
+              }`}
           >
             Réservations
+          </button>
+          <button
+            onClick={() => {
+              setActiveMode('pricing');
+              loadPricing();
+            }}
+            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'pricing'
+                ? 'bg-white text-slate-900'
+                : 'border border-white/20 text-white hover:border-white/40 hover:bg-white/10'
+              }`}
+          >
+            Tarifs
           </button>
           <button
             onClick={() => {
               setActiveMode('availability');
               loadAvailability();
             }}
-            className={`px-6 py-3 rounded-full font-semibold transition ${
-              activeMode === 'availability'
+            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'availability'
                 ? 'bg-white text-slate-900'
                 : 'border border-white/20 text-white hover:border-white/40 hover:bg-white/10'
-            }`}
+              }`}
           >
             Disponibilités
+          </button>
+        </div>
+
+        <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200 flex flex-wrap items-center gap-3">
+          <span>Migration des projets existants (une seule fois).</span>
+          <button
+            onClick={async () => {
+              if (!confirm('Migrer les projets actuels vers Supabase ?')) {
+                return;
+              }
+
+              setLoading(true);
+              setError('');
+              try {
+                const res = await fetch('/api/projects/migrate', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                  await loadProjects();
+                  alert(`Migration terminée (${data.count} projet(s)).`);
+                } else {
+                  setError(data.error || 'Erreur lors de la migration');
+                }
+              } catch (err) {
+                setError('Erreur lors de la migration');
+              } finally {
+                setLoading(false);
+              }
+            }}
+            disabled={loading}
+            className="rounded-full border border-white/20 px-4 py-2 text-xs font-semibold text-white transition hover:border-white/40 hover:bg-white/10 disabled:opacity-50"
+          >
+            {loading ? 'Migration...' : 'Migrer les projets'}
           </button>
         </div>
 
@@ -602,7 +758,7 @@ export default function AdminPage() {
                   className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 shadow-2xl"
                 >
                   <h3 className="text-xl font-semibold mb-4">{category}</h3>
-                  
+
                   {/* Zone d'upload */}
                   <div className="mb-4">
                     <label className="block text-sm mb-2">
@@ -743,9 +899,9 @@ export default function AdminPage() {
                         disabled={loading || categoryData.photos.length === 0 || (!categoryData.selectedProject && !categoryData.title.trim())}
                         className="w-full rounded-full bg-white px-4 py-2 font-semibold text-slate-900 transition hover:shadow-lg disabled:opacity-50"
                       >
-                        {loading 
-                          ? 'En cours...' 
-                          : categoryData.selectedProject 
+                        {loading
+                          ? 'En cours...'
+                          : categoryData.selectedProject
                             ? `Ajouter les photos au projet`
                             : `Créer le projet ${category}`
                         }
@@ -809,167 +965,167 @@ export default function AdminPage() {
                 )}
               </div>
 
-            {/* Titre */}
-            <div>
-              <label className="block text-sm mb-2">Titre *</label>
-              <input
-                type="text"
-                value={projectForm.title}
-                onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
-                placeholder="Ex: Portraits signature"
-                required
-              />
-            </div>
-
-            {/* Sous-titre */}
-            <div>
-              <label className="block text-sm mb-2">Sous-titre</label>
-              <input
-                type="text"
-                value={projectForm.subtitle}
-                onChange={(e) => setProjectForm({ ...projectForm, subtitle: e.target.value })}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
-                placeholder="Ex: Direction artistique & retouche éditoriale"
-              />
-            </div>
-
-            {/* Image principale */}
-            <div>
-              <label className="block text-sm mb-2">Image principale (URL) *</label>
-              <input
-                type="text"
-                value={projectForm.image}
-                onChange={(e) => setProjectForm({ ...projectForm, image: e.target.value })}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
-                placeholder="/images/IMG_XXXX.jpg"
-                required
-              />
-              {projectForm.image && (
-                <img
-                  src={projectForm.image}
-                  alt="Preview"
-                  className="mt-2 max-w-xs rounded-xl border border-white/10"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              )}
-            </div>
-
-            {/* Catégorie */}
-            <div>
-              <label className="block text-sm mb-2">Catégorie *</label>
-              <select
-                value={projectForm.category}
-                onChange={(e) => setProjectForm({ ...projectForm, category: e.target.value as Project['category'] })}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
-                required
-              >
-                {categories.map((cat) => (
-                  <option key={cat} value={cat} className="bg-slate-900">
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-sm mb-2">Description *</label>
-              <textarea
-                value={projectForm.description}
-                onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
-                rows={4}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
-                placeholder="Description du projet..."
-                required
-              />
-            </div>
-
-            {/* Détails */}
-            <div>
-              <label className="block text-sm mb-2">Détails (un par ligne)</label>
-              {projectForm.details.map((detail, index) => (
+              {/* Titre */}
+              <div>
+                <label className="block text-sm mb-2">Titre *</label>
                 <input
-                  key={index}
                   type="text"
-                  value={detail}
-                  onChange={(e) => {
-                    const newDetails = [...projectForm.details];
-                    newDetails[index] = e.target.value;
-                    setProjectForm({ ...projectForm, details: newDetails });
-                  }}
-                  className="w-full mb-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
-                  placeholder={`Détail ${index + 1}`}
+                  value={projectForm.title}
+                  onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                  placeholder="Ex: Portraits signature"
+                  required
                 />
-              ))}
-              <button
-                type="button"
-                onClick={() => setProjectForm({ ...projectForm, details: [...projectForm.details, ''] })}
-                className="mt-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10"
-              >
-                + Ajouter un détail
-              </button>
-            </div>
+              </div>
 
-            {/* Photos */}
-            <div>
-              <label className="block text-sm mb-2">Photos du projet (URLs, une par ligne)</label>
-              {projectForm.photos.map((photo, index) => (
-                <div key={index} className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={photo}
-                    onChange={(e) => {
-                      const newPhotos = [...projectForm.photos];
-                      newPhotos[index] = e.target.value;
-                      setProjectForm({ ...projectForm, photos: newPhotos });
+              {/* Sous-titre */}
+              <div>
+                <label className="block text-sm mb-2">Sous-titre</label>
+                <input
+                  type="text"
+                  value={projectForm.subtitle}
+                  onChange={(e) => setProjectForm({ ...projectForm, subtitle: e.target.value })}
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                  placeholder="Ex: Direction artistique & retouche éditoriale"
+                />
+              </div>
+
+              {/* Image principale */}
+              <div>
+                <label className="block text-sm mb-2">Image principale (URL) *</label>
+                <input
+                  type="text"
+                  value={projectForm.image}
+                  onChange={(e) => setProjectForm({ ...projectForm, image: e.target.value })}
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                  placeholder="/images/IMG_XXXX.jpg"
+                  required
+                />
+                {projectForm.image && (
+                  <img
+                    src={projectForm.image}
+                    alt="Preview"
+                    className="mt-2 max-w-xs rounded-xl border border-white/10"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
                     }}
-                    className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
-                    placeholder={`/images/IMG_XXXX.jpg`}
                   />
-                  {photo && (
-                    <img
-                      src={photo}
-                      alt={`Preview ${index + 1}`}
-                      className="w-20 h-20 object-cover rounded-xl border border-white/10"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newPhotos = projectForm.photos.filter((_, i) => i !== index);
-                      setProjectForm({ ...projectForm, photos: newPhotos.length ? newPhotos : [''] });
+                )}
+              </div>
+
+              {/* Catégorie */}
+              <div>
+                <label className="block text-sm mb-2">Catégorie *</label>
+                <select
+                  value={projectForm.category}
+                  onChange={(e) => setProjectForm({ ...projectForm, category: e.target.value as Project['category'] })}
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                  required
+                >
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat} className="bg-slate-900">
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm mb-2">Description *</label>
+                <textarea
+                  value={projectForm.description}
+                  onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
+                  rows={4}
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                  placeholder="Description du projet..."
+                  required
+                />
+              </div>
+
+              {/* Détails */}
+              <div>
+                <label className="block text-sm mb-2">Détails (un par ligne)</label>
+                {projectForm.details.map((detail, index) => (
+                  <input
+                    key={index}
+                    type="text"
+                    value={detail}
+                    onChange={(e) => {
+                      const newDetails = [...projectForm.details];
+                      newDetails[index] = e.target.value;
+                      setProjectForm({ ...projectForm, details: newDetails });
                     }}
-                    className="px-3 py-2 rounded-xl border border-red-500/50 text-red-400 hover:bg-red-500/10"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+                    className="w-full mb-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                    placeholder={`Détail ${index + 1}`}
+                  />
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setProjectForm({ ...projectForm, details: [...projectForm.details, ''] })}
+                  className="mt-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10"
+                >
+                  + Ajouter un détail
+                </button>
+              </div>
+
+              {/* Photos */}
+              <div>
+                <label className="block text-sm mb-2">Photos du projet (URLs, une par ligne)</label>
+                {projectForm.photos.map((photo, index) => (
+                  <div key={index} className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={photo}
+                      onChange={(e) => {
+                        const newPhotos = [...projectForm.photos];
+                        newPhotos[index] = e.target.value;
+                        setProjectForm({ ...projectForm, photos: newPhotos });
+                      }}
+                      className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                      placeholder={`/images/IMG_XXXX.jpg`}
+                    />
+                    {photo && (
+                      <img
+                        src={photo}
+                        alt={`Preview ${index + 1}`}
+                        className="w-20 h-20 object-cover rounded-xl border border-white/10"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newPhotos = projectForm.photos.filter((_, i) => i !== index);
+                        setProjectForm({ ...projectForm, photos: newPhotos.length ? newPhotos : [''] });
+                      }}
+                      className="px-3 py-2 rounded-xl border border-red-500/50 text-red-400 hover:bg-red-500/10"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setProjectForm({ ...projectForm, photos: [...projectForm.photos, ''] })}
+                  className="mt-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10"
+                >
+                  + Ajouter une photo
+                </button>
+              </div>
+
+              {error && <p className="text-red-400 text-sm">{error}</p>}
+
               <button
-                type="button"
-                onClick={() => setProjectForm({ ...projectForm, photos: [...projectForm.photos, ''] })}
-                className="mt-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10"
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-full bg-white px-4 py-3 font-semibold text-slate-900 transition hover:shadow-lg disabled:opacity-50"
               >
-                + Ajouter une photo
+                {loading ? 'Ajout en cours...' : 'Ajouter le projet au portfolio'}
               </button>
-            </div>
-
-            {error && <p className="text-red-400 text-sm">{error}</p>}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-full bg-white px-4 py-3 font-semibold text-slate-900 transition hover:shadow-lg disabled:opacity-50"
-            >
-              {loading ? 'Ajout en cours...' : 'Ajouter le projet au portfolio'}
-            </button>
-          </form>
+            </form>
 
             <div className="mt-8 pt-8 border-t border-white/10">
               <p className="text-sm text-slate-400">
@@ -988,31 +1144,34 @@ export default function AdminPage() {
           <div className="space-y-6">
             <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 md:p-8 shadow-2xl">
               <h2 className="text-2xl font-semibold mb-6">Ajouter un nouvel avis</h2>
-              
+
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
-                  if (!testimonialForm.name || !testimonialForm.quote) {
-                    setError('Le nom et le témoignage sont requis');
+                  if (!testimonialForm.name || !testimonialForm.email || !testimonialForm.quote) {
+                    setError('Nom, email et témoignage requis');
                     return;
                   }
-                  
+
                   setLoading(true);
                   setError('');
-                  
+
                   try {
                     const res = await fetch('/api/testimonials/add', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(testimonialForm),
+                      body: JSON.stringify({
+                        testimonial: testimonialForm,
+                      }),
                     });
-                    
+
                     const data = await res.json();
-                    
+
                     if (data.success) {
                       await loadTestimonials();
                       setTestimonialForm({
                         name: '',
+                        email: '',
                         role: '',
                         quote: '',
                         project: '',
@@ -1043,7 +1202,19 @@ export default function AdminPage() {
                     required
                   />
                 </div>
-                
+
+                <div>
+                  <label className="block text-sm mb-2">Email du client *</label>
+                  <input
+                    type="email"
+                    value={testimonialForm.email}
+                    onChange={(e) => setTestimonialForm({ ...testimonialForm, email: e.target.value })}
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                    placeholder="client@email.com"
+                    required
+                  />
+                </div>
+
                 <div>
                   <label className="block text-sm mb-2">Rôle / Fonction (optionnel)</label>
                   <input
@@ -1054,7 +1225,7 @@ export default function AdminPage() {
                     placeholder="Ex. Directrice marketing"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm mb-2">Témoignage *</label>
                   <textarea
@@ -1066,7 +1237,7 @@ export default function AdminPage() {
                     required
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm mb-2">Note (1-5)</label>
@@ -1079,7 +1250,7 @@ export default function AdminPage() {
                       className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm mb-2">Date (optionnel)</label>
                     <input
@@ -1090,7 +1261,7 @@ export default function AdminPage() {
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm mb-2">Projet lié (optionnel)</label>
                   <input
@@ -1101,7 +1272,7 @@ export default function AdminPage() {
                     placeholder="Ex. Portrait signature"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm mb-2">URL de la photo (optionnel)</label>
                   <input
@@ -1112,9 +1283,9 @@ export default function AdminPage() {
                     placeholder="/images/client.jpg"
                   />
                 </div>
-                
+
                 {error && <p className="text-red-400 text-sm">{error}</p>}
-                
+
                 <button
                   type="submit"
                   disabled={loading}
@@ -1124,11 +1295,11 @@ export default function AdminPage() {
                 </button>
               </form>
             </div>
-            
+
             {/* Liste des avis existants */}
             <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 md:p-8 shadow-2xl">
               <h2 className="text-2xl font-semibold mb-6">Avis en attente de modération</h2>
-              
+
               {testimonials.filter(t => t && (!t.approved || t.approved === false)).length === 0 ? (
                 <p className="text-slate-400 text-center py-8">Aucun avis en attente</p>
               ) : (
@@ -1174,16 +1345,16 @@ export default function AdminPage() {
                             onClick={async () => {
                               setLoading(true);
                               setError('');
-                              
+
                               try {
                                 const res = await fetch('/api/testimonials/approve', {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ id: testimonial.id, approved: true }),
                                 });
-                                
+
                                 const data = await res.json();
-                                
+
                                 if (data.success) {
                                   await loadTestimonials();
                                   alert('Avis approuvé et publié !');
@@ -1206,19 +1377,19 @@ export default function AdminPage() {
                               if (!confirm(`Supprimer l'avis de ${testimonial.name} ?`)) {
                                 return;
                               }
-                              
+
                               setLoading(true);
                               setError('');
-                              
+
                               try {
                                 const res = await fetch('/api/testimonials/delete', {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ id: testimonial.id }),
                                 });
-                                
+
                                 const data = await res.json();
-                                
+
                                 if (data.success) {
                                   await loadTestimonials();
                                   alert('Avis supprimé avec succès !');
@@ -1242,9 +1413,9 @@ export default function AdminPage() {
                   ))}
                 </div>
               )}
-              
+
               <h2 className="text-2xl font-semibold mb-6 mt-8">Avis approuvés</h2>
-              
+
               {testimonials.filter(t => t && t.approved === true).length === 0 ? (
                 <p className="text-slate-400 text-center py-8">Aucun avis approuvé pour le moment</p>
               ) : (
@@ -1287,16 +1458,16 @@ export default function AdminPage() {
                             onClick={async () => {
                               setLoading(true);
                               setError('');
-                              
+
                               try {
                                 const res = await fetch('/api/testimonials/approve', {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ id: testimonial.id, approved: false }),
                                 });
-                                
+
                                 const data = await res.json();
-                                
+
                                 if (data.success) {
                                   await loadTestimonials();
                                   alert('Avis désapprouvé !');
@@ -1319,19 +1490,19 @@ export default function AdminPage() {
                               if (!confirm(`Supprimer l'avis de ${testimonial.name} ?`)) {
                                 return;
                               }
-                              
+
                               setLoading(true);
                               setError('');
-                              
+
                               try {
                                 const res = await fetch('/api/testimonials/delete', {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ id: testimonial.id }),
                                 });
-                                
+
                                 const data = await res.json();
-                                
+
                                 if (data.success) {
                                   await loadTestimonials();
                                   alert('Avis supprimé avec succès !');
@@ -1356,11 +1527,11 @@ export default function AdminPage() {
                 </div>
               )}
             </div>
-            
+
             {/* Gestion des codes de vérification */}
             <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 md:p-8 shadow-2xl">
               <h2 className="text-2xl font-semibold mb-6">Gérer les codes de vérification</h2>
-              
+
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
@@ -1368,10 +1539,10 @@ export default function AdminPage() {
                     setError('Email et code requis');
                     return;
                   }
-                  
+
                   setLoading(true);
                   setError('');
-                  
+
                   try {
                     const res = await fetch('/api/testimonials/codes', {
                       method: 'POST',
@@ -1382,9 +1553,9 @@ export default function AdminPage() {
                         action: 'add',
                       }),
                     });
-                    
+
                     const data = await res.json();
-                    
+
                     if (data.success) {
                       await loadCodes();
                       setNewCodeForm({ email: '', code: '' });
@@ -1432,7 +1603,7 @@ export default function AdminPage() {
                   {loading ? 'Ajout...' : 'Ajouter le code'}
                 </button>
               </form>
-              
+
               <div>
                 <h3 className="text-lg font-semibold mb-4">Codes existants</h3>
                 {Object.keys(verificationCodes).length === 0 ? (
@@ -1453,10 +1624,10 @@ export default function AdminPage() {
                             if (!confirm(`Supprimer le code pour ${email} ?`)) {
                               return;
                             }
-                            
+
                             setLoading(true);
                             setError('');
-                            
+
                             try {
                               const res = await fetch('/api/testimonials/codes', {
                                 method: 'POST',
@@ -1466,9 +1637,9 @@ export default function AdminPage() {
                                   action: 'remove',
                                 }),
                               });
-                              
+
                               const data = await res.json();
-                              
+
                               if (data.success) {
                                 await loadCodes();
                                 alert('Code supprimé avec succès !');
@@ -1498,7 +1669,7 @@ export default function AdminPage() {
           <div className="space-y-6">
             <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 md:p-8 shadow-2xl">
               <h2 className="text-2xl font-semibold mb-6">Gestion des réservations</h2>
-              
+
               {!selectedReservation ? (
                 /* Liste des réservations */
                 <div className="space-y-4">
@@ -1518,16 +1689,15 @@ export default function AdminPage() {
                                 <h3 className="text-lg font-semibold text-white">
                                   {reservation.firstName} {reservation.lastName}
                                 </h3>
-                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                  reservation.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                                  reservation.status === 'confirmed' ? 'bg-blue-500/20 text-blue-400' :
-                                  reservation.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                                  'bg-red-500/20 text-red-400'
-                                }`}>
+                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${reservation.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                                    reservation.status === 'confirmed' ? 'bg-blue-500/20 text-blue-400' :
+                                      reservation.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                                        'bg-red-500/20 text-red-400'
+                                  }`}>
                                   {reservation.status === 'pending' ? 'En attente' :
-                                   reservation.status === 'confirmed' ? 'Confirmée' :
-                                   reservation.status === 'completed' ? 'Terminée' :
-                                   'Annulée'}
+                                    reservation.status === 'confirmed' ? 'Confirmée' :
+                                      reservation.status === 'completed' ? 'Terminée' :
+                                        'Annulée'}
                                 </span>
                                 {reservation.emailSent && (
                                   <span className="px-2 py-1 rounded-full bg-green-500/20 text-green-400 text-xs">
@@ -1541,29 +1711,28 @@ export default function AdminPage() {
                                 )}
                               </div>
                               <p className="text-sm text-slate-300">{reservation.email}</p>
-                                    <div className="flex flex-wrap gap-4 mt-2 text-sm text-slate-400">
-                                      <span>📅 {reservation.date}{reservation.startTime ? ` à ${reservation.startTime}` : ''}</span>
-                                      <span>🎯 {reservation.prestationType}</span>
-                                      <span>📍 {reservation.location}</span>
-                                    </div>
-                                    {reservation.galleryExpiresAt && (() => {
-                                      const daysRemaining = getDaysRemaining(reservation.galleryExpiresAt);
-                                      return daysRemaining !== null && (
-                                        <div className={`mt-2 text-xs px-2 py-1 rounded-full inline-block ${
-                                          daysRemaining <= 0 
-                                            ? 'bg-red-500/20 text-red-400'
-                                            : daysRemaining <= 7
-                                            ? 'bg-yellow-500/20 text-yellow-400'
-                                            : 'bg-blue-500/20 text-blue-400'
-                                        }`}>
-                                          {daysRemaining > 0 ? (
-                                            `⏰ ${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} restant${daysRemaining > 1 ? 's' : ''}`
-                                          ) : (
-                                            '⏰ Galerie expirée'
-                                          )}
-                                        </div>
-                                      );
-                                    })()}
+                              <div className="flex flex-wrap gap-4 mt-2 text-sm text-slate-400">
+                                <span>📅 {reservation.date}{reservation.startTime ? ` à ${reservation.startTime}` : ''}</span>
+                                <span>🎯 {reservation.prestationType}</span>
+                                <span>📍 {reservation.location}</span>
+                              </div>
+                              {reservation.galleryExpiresAt && (() => {
+                                const daysRemaining = getDaysRemaining(reservation.galleryExpiresAt);
+                                return daysRemaining !== null && (
+                                  <div className={`mt-2 text-xs px-2 py-1 rounded-full inline-block ${daysRemaining <= 0
+                                      ? 'bg-red-500/20 text-red-400'
+                                      : daysRemaining <= 7
+                                        ? 'bg-yellow-500/20 text-yellow-400'
+                                        : 'bg-blue-500/20 text-blue-400'
+                                    }`}>
+                                    {daysRemaining > 0 ? (
+                                      `⏰ ${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} restant${daysRemaining > 1 ? 's' : ''}`
+                                    ) : (
+                                      '⏰ Galerie expirée'
+                                    )}
+                                  </div>
+                                );
+                              })()}
                               <p className="text-xs text-slate-500 mt-2">
                                 Créée le {new Date(reservation.createdAt).toLocaleDateString('fr-FR')}
                               </p>
@@ -1600,7 +1769,7 @@ export default function AdminPage() {
                     <h3 className="text-2xl font-semibold mb-4">
                       {selectedReservation.firstName} {selectedReservation.lastName}
                     </h3>
-                    
+
                     <div className="grid gap-4 sm:grid-cols-2 mb-6">
                       <div>
                         <p className="text-sm text-slate-400">Email</p>
@@ -1611,7 +1780,9 @@ export default function AdminPage() {
                         <p className="text-white">
                           {selectedReservation.date}
                           {selectedReservation.startTime && (
-                            <span className="text-indigo-300"> à {selectedReservation.startTime} ({selectedReservation.duration || 3}h)</span>
+                            <span className="text-indigo-300">
+                              {' '}à {selectedReservation.startTime} (durée demandée: {formatDuration(selectedReservation.duration)} + 30min planning)
+                            </span>
                           )}
                         </p>
                       </div>
@@ -1619,9 +1790,23 @@ export default function AdminPage() {
                         <p className="text-sm text-slate-400">Type de prestation</p>
                         <p className="text-white">{selectedReservation.prestationType}</p>
                       </div>
+                      {selectedReservation.prestationType === 'Événement' && (
+                        <>
+                          <div>
+                            <p className="text-sm text-slate-400">Type d’événement</p>
+                            <p className="text-white">{selectedReservation.eventType || 'Non renseigné'}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-slate-400">Contact préféré</p>
+                            <p className="text-white">{selectedReservation.contactPreference || 'Non renseigné'}</p>
+                          </div>
+                        </>
+                      )}
                       <div>
                         <p className="text-sm text-slate-400">Lieu</p>
-                        <p className="text-white">{selectedReservation.location}</p>
+                        <p className="text-white">
+                          {selectedReservation.location || 'Non renseigné'}
+                        </p>
                       </div>
                       {selectedReservation.galleryCode && selectedReservation.galleryCreated && (
                         <div>
@@ -1635,13 +1820,12 @@ export default function AdminPage() {
                         return (
                           <div>
                             <p className="text-sm text-slate-400">Expiration de la galerie</p>
-                            <p className={`text-white ${
-                              daysRemaining !== null && daysRemaining <= 0
+                            <p className={`text-white ${daysRemaining !== null && daysRemaining <= 0
                                 ? 'text-red-400'
                                 : daysRemaining !== null && daysRemaining <= 7
-                                ? 'text-yellow-400'
-                                : 'text-green-400'
-                            }`}>
+                                  ? 'text-yellow-400'
+                                  : 'text-green-400'
+                              }`}>
                               {daysRemaining !== null && daysRemaining > 0 ? (
                                 <>
                                   <strong>{daysRemaining} jour{daysRemaining > 1 ? 's' : ''} restant{daysRemaining > 1 ? 's' : ''}</strong>
@@ -1672,6 +1856,13 @@ export default function AdminPage() {
                       </div>
                     )}
 
+                    {selectedReservation.prestationType === 'Événement' && selectedReservation.eventDetails && (
+                      <div className="mb-6">
+                        <p className="text-sm text-slate-400 mb-2">Description de l’événement</p>
+                        <p className="text-white whitespace-pre-line">{selectedReservation.eventDetails}</p>
+                      </div>
+                    )}
+
                     {selectedReservation.inspirationPhotos && selectedReservation.inspirationPhotos.length > 0 && (
                       <div className="mb-6">
                         <p className="text-sm text-slate-400 mb-2">Photos d'inspiration</p>
@@ -1689,7 +1880,7 @@ export default function AdminPage() {
                       <p className="text-sm text-slate-300 mb-4">
                         Ajoutez les photos finales qui seront visibles dans la galerie personnelle du client.
                       </p>
-                      
+
                       <div className="space-y-4">
                         {/* Upload de photos */}
                         <label className="block">
@@ -1705,16 +1896,16 @@ export default function AdminPage() {
                               setUploadingGalleryPhotos(true);
                               try {
                                 const uploadedUrls: string[] = [];
-                                
+
                                 for (const file of Array.from(files)) {
                                   const formData = new FormData();
                                   formData.append('file', file);
-                                  
+
                                   const res = await fetch('/api/upload', {
                                     method: 'POST',
                                     body: formData,
                                   });
-                                  
+
                                   if (res.ok) {
                                     const data = await res.json();
                                     if (data.url) {
@@ -1726,7 +1917,7 @@ export default function AdminPage() {
                                 if (uploadedUrls.length > 0) {
                                   const currentPhotos = selectedReservation.galleryPhotos || [];
                                   const newPhotos = [...currentPhotos, ...uploadedUrls];
-                                  
+
                                   // Mettre à jour la réservation
                                   const updateRes = await fetch('/api/reservations/update', {
                                     method: 'POST',
@@ -1771,9 +1962,9 @@ export default function AdminPage() {
                             <div className="grid grid-cols-4 gap-2">
                               {selectedReservation.galleryPhotos.map((photo: string, index: number) => (
                                 <div key={index} className="relative group">
-                                  <img 
-                                    src={photo} 
-                                    alt={`Galerie ${index + 1}`} 
+                                  <img
+                                    src={photo}
+                                    alt={`Galerie ${index + 1}`}
                                     className="rounded-lg w-full aspect-square object-cover"
                                   />
                                   <button
@@ -1781,10 +1972,10 @@ export default function AdminPage() {
                                       if (!confirm('Êtes-vous sûr de vouloir supprimer cette photo de la galerie ?')) {
                                         return;
                                       }
-                                      
+
                                       try {
                                         const newPhotos = selectedReservation.galleryPhotos.filter((_: string, i: number) => i !== index);
-                                        
+
                                         const updateRes = await fetch('/api/reservations/update', {
                                           method: 'POST',
                                           headers: { 'Content-Type': 'application/json' },
@@ -1925,7 +2116,7 @@ export default function AdminPage() {
                                   if (data.success && data.reservation) {
                                     setSelectedReservation(data.reservation);
                                     await loadReservations();
-                                    
+
                                     // Afficher un message si la réservation vient d'être confirmée
                                     if (!wasConfirmed && willBeConfirmed) {
                                       alert(`✅ Réservation confirmée !\n\nUn email de confirmation a été envoyé à ${selectedReservation.email} avec les détails de la réservation (date, heure, lieu).`);
@@ -1937,16 +2128,15 @@ export default function AdminPage() {
                                 alert('❌ Erreur lors de la mise à jour de la réservation');
                               }
                             }}
-                            className={`px-4 py-2 rounded-full text-xs font-semibold transition ${
-                              selectedReservation.status === status
+                            className={`px-4 py-2 rounded-full text-xs font-semibold transition ${selectedReservation.status === status
                                 ? 'bg-white text-slate-900'
                                 : 'bg-white/10 text-white hover:bg-white/20'
-                            }`}
+                              }`}
                           >
                             {status === 'pending' ? 'En attente' :
-                             status === 'confirmed' ? 'Confirmée' :
-                             status === 'completed' ? 'Terminée' :
-                             'Annulée'}
+                              status === 'confirmed' ? 'Confirmée' :
+                                status === 'completed' ? 'Terminée' :
+                                  'Annulée'}
                           </button>
                         ))}
                       </div>
@@ -1956,12 +2146,97 @@ export default function AdminPage() {
               )}
             </div>
           </div>
+        ) : activeMode === 'pricing' ? (
+          /* Mode tarifs */
+          <div className="space-y-6">
+            <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 md:p-8 shadow-2xl">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                  <h2 className="text-2xl font-semibold">Gestion des tarifs</h2>
+                  <p className="text-sm text-slate-300 mt-1">
+                    Modifiez les offres affichées sur la page d'accueil.
+                  </p>
+                </div>
+                <button
+                  onClick={addPricingOffer}
+                  className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:shadow-lg"
+                >
+                  + Ajouter une offre
+                </button>
+              </div>
+
+              {pricingOffers.length === 0 ? (
+                <p className="text-slate-400 text-center py-8">Aucune offre configurée.</p>
+              ) : (
+                <div className="space-y-4">
+                  {pricingOffers.map((offer) => (
+                    <div
+                      key={offer.id}
+                      className="rounded-2xl border border-white/10 bg-slate-900/60 p-5"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <p className="text-sm text-slate-300">Offre</p>
+                        <button
+                          onClick={() => removePricingOffer(offer.id)}
+                          className="text-red-400 hover:text-red-300 text-sm"
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <label className="block text-sm text-slate-300 mb-2">Nom</label>
+                          <input
+                            type="text"
+                            value={offer.name}
+                            onChange={(e) => updatePricingOffer(offer.id, 'name', e.target.value)}
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-indigo-400/60"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm text-slate-300 mb-2">Prix</label>
+                          <input
+                            type="text"
+                            value={offer.price}
+                            onChange={(e) => updatePricingOffer(offer.id, 'price', e.target.value)}
+                            placeholder="Ex: 150€ ou Sur devis"
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-indigo-400/60"
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-4">
+                        <label className="block text-sm text-slate-300 mb-2">Description</label>
+                        <textarea
+                          value={offer.desc}
+                          onChange={(e) => updatePricingOffer(offer.id, 'desc', e.target.value)}
+                          rows={3}
+                          className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-indigo-400/60"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {pricingError && <p className="text-red-400 text-sm mt-4">{pricingError}</p>}
+
+              <div className="mt-6">
+                <button
+                  onClick={savePricing}
+                  disabled={loadingPricing}
+                  className="w-full rounded-full bg-white px-4 py-3 font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50"
+                >
+                  {loadingPricing ? 'Enregistrement...' : 'Enregistrer les tarifs'}
+                </button>
+              </div>
+            </div>
+          </div>
         ) : activeMode === 'availability' ? (
           /* Mode disponibilités */
           <div className="space-y-6">
             <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 md:p-8 shadow-2xl">
               <h2 className="text-2xl font-semibold mb-6">Gestion des disponibilités</h2>
-              
+
               <div className="mb-6 p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
                 <p className="text-sm text-slate-300">
                   <strong>Règles par défaut :</strong> Les réservations sont disponibles uniquement les week-ends (samedi et dimanche).
@@ -2202,7 +2477,7 @@ export default function AdminPage() {
                 {categories.map((category) => {
                   const categoryProjects = existingProjects.filter(p => p.category === category);
                   if (categoryProjects.length === 0) return null;
-                  
+
                   return (
                     <div
                       key={category}
@@ -2223,6 +2498,11 @@ export default function AdminPage() {
                               style={{ backgroundImage: `url('${project.image}')` }}
                             />
                             <h4 className="font-semibold text-white mb-1">{project.title}</h4>
+                            {project.hidden && (
+                              <span className="inline-flex items-center rounded-full bg-red-500/20 px-2 py-1 text-xs font-semibold text-red-200">
+                                Masqué
+                              </span>
+                            )}
                             <p className="text-xs text-slate-300">{project.photos.length} photo(s)</p>
                           </button>
                         ))}
@@ -2242,13 +2522,46 @@ export default function AdminPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={async () => {
+                        setLoading(true);
+                        setError('');
+                        try {
+                          const res = await fetch('/api/projects/visibility', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              slug: editingProject.slug,
+                              hidden: !editingProject.hidden,
+                            }),
+                          });
+
+                          const data = await res.json();
+
+                          if (data.success) {
+                            await loadProjects();
+                            setEditingProject({ ...editingProject, hidden: !editingProject.hidden });
+                          } else {
+                            setError(data.error || 'Erreur lors de la mise à jour');
+                          }
+                        } catch (err) {
+                          setError('Erreur lors de la mise à jour');
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      disabled={loading}
+                      className="rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10 disabled:opacity-50"
+                    >
+                      {editingProject.hidden ? 'Rendre visible' : 'Masquer'}
+                    </button>
+                    <button
+                      onClick={async () => {
                         if (!confirm(`Êtes-vous sûr de vouloir supprimer le projet "${editingProject.title}" ? Cette action est irréversible.`)) {
                           return;
                         }
-                        
+
                         setLoading(true);
                         setError('');
-                        
+
                         try {
                           const res = await fetch('/api/projects/delete', {
                             method: 'POST',
@@ -2257,9 +2570,9 @@ export default function AdminPage() {
                               slug: editingProject.slug,
                             }),
                           });
-                          
+
                           const data = await res.json();
-                          
+
                           if (data.success) {
                             await loadProjects();
                             setEditingProject(null);
@@ -2295,7 +2608,7 @@ export default function AdminPage() {
                   <p className="text-sm mb-3 text-slate-300">
                     Glissez-déposez les photos pour réorganiser leur ordre. Cliquez sur × pour supprimer une photo.
                   </p>
-                  
+
                   {editedPhotos.length === 0 ? (
                     <p className="text-slate-400 text-center py-8">Aucune photo dans ce projet</p>
                   ) : (
@@ -2326,13 +2639,12 @@ export default function AdminPage() {
                             setDragIndex(null);
                             setDragOverIndex(null);
                           }}
-                          className={`relative group cursor-move rounded-xl border-2 transition ${
-                            dragIndex === index
+                          className={`relative group cursor-move rounded-xl border-2 transition ${dragIndex === index
                               ? 'border-indigo-500 opacity-50'
                               : dragOverIndex === index
-                              ? 'border-indigo-400 border-dashed'
-                              : 'border-white/10 hover:border-white/30'
-                          }`}
+                                ? 'border-indigo-400 border-dashed'
+                                : 'border-white/10 hover:border-white/30'
+                            }`}
                         >
                           <img
                             src={photo}
@@ -2370,7 +2682,7 @@ export default function AdminPage() {
                         setError('Le projet doit contenir au moins une photo');
                         return;
                       }
-                      
+
                       setLoading(true);
                       setError('');
 
