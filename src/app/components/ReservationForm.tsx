@@ -290,22 +290,22 @@ export default function ReservationForm() {
     <form onSubmit={handleSubmit} className="mt-6 space-y-4">
       {/* Nom et Prénom */}
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className="space-y-2 text-base text-slate-100">
+        <label className="space-y-2 text-base text-stone-700">
           Nom <span className="text-red-400">*</span>
           <input
             type="text"
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
             placeholder="Ex. Dupont"
             value={formData.lastName}
             onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
             required
           />
         </label>
-        <label className="space-y-2 text-base text-slate-100">
+        <label className="space-y-2 text-base text-stone-700">
           Prénom <span className="text-red-400">*</span>
           <input
             type="text"
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
             placeholder="Ex. Marie"
             value={formData.firstName}
             onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
@@ -315,11 +315,11 @@ export default function ReservationForm() {
       </div>
 
       {/* Email */}
-      <label className="space-y-2 text-base text-slate-100">
+      <label className="space-y-2 text-base text-stone-700">
         Email <span className="text-red-400">*</span>
         <input
           type="email"
-          className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+          className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
           placeholder="exemple@email.com"
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -328,10 +328,10 @@ export default function ReservationForm() {
       </label>
 
       {/* Type de prestation */}
-      <label className="space-y-2 text-base text-slate-100">
+      <label className="space-y-2 text-base text-stone-700">
         Type de prestation <span className="text-red-400">*</span>
         <select
-          className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+          className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
           value={formData.prestationType}
           onChange={(e) => {
             const newType = e.target.value;
@@ -351,17 +351,17 @@ export default function ReservationForm() {
           }}
           required
         >
-          <option value="" className="bg-slate-900 text-white">Sélectionner une prestation</option>
-          <option value="Séance Express" className="bg-slate-900 text-white">Séance Express (30 min)</option>
-          <option value="Signature" className="bg-slate-900 text-white">Signature (1h30)</option>
-          <option value="Événement" className="bg-slate-900 text-white">Événement</option>
-          <option value="Portrait" className="bg-slate-900 text-white">Portrait</option>
-          <option value="Branding / Produit" className="bg-slate-900 text-white">Branding / Produit</option>
-          <option value="Retouche seule" className="bg-slate-900 text-white">Retouche seule</option>
-          <option value="Autre" className="bg-slate-900 text-white">Autre</option>
+          <option value="" className="bg-white text-stone-900">Sélectionner une prestation</option>
+          <option value="Séance Express" className="bg-white text-stone-900">Séance Express (30 min)</option>
+          <option value="Signature" className="bg-white text-stone-900">Signature (1h30)</option>
+          <option value="Événement" className="bg-white text-stone-900">Événement</option>
+          <option value="Portrait" className="bg-white text-stone-900">Portrait</option>
+          <option value="Branding / Produit" className="bg-white text-stone-900">Branding / Produit</option>
+          <option value="Retouche seule" className="bg-white text-stone-900">Retouche seule</option>
+          <option value="Autre" className="bg-white text-stone-900">Autre</option>
         </select>
         {!!formData.prestationType && !isEventPrestation && (
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-stone-500">
             Durée de la prestation: {formatDuration(formData.duration)}
           </p>
         )}
@@ -369,13 +369,13 @@ export default function ReservationForm() {
 
       {/* Date avec option "À définir sur RDV" */}
       <div className="space-y-3">
-        <label className="space-y-2 text-base text-slate-100">
+        <label className="space-y-2 text-base text-stone-700">
           Date <span className="text-red-400">*</span>
           <div className="space-y-3">
             {/* Affichage de la date sélectionnée ou bouton pour ouvrir le calendrier */}
             {!formData.isDateToDefine && formData.date ? (
               <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex-1 min-w-[200px] rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white">
+                <div className="flex-1 min-w-[200px] rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900">
                   {new Date(formData.date + 'T00:00:00').toLocaleDateString('fr-FR', { 
                     weekday: 'long', 
                     day: 'numeric', 
@@ -389,9 +389,9 @@ export default function ReservationForm() {
                     setShowCalendar(!showCalendar);
                     setDateError('');
                   }}
-                  className="rounded-xl border px-4 py-3 text-base font-semibold transition whitespace-nowrap border-white/20 text-white hover:border-white/40 hover:bg-white/10"
+                  className="rounded-xl border px-4 py-3 text-base font-semibold transition whitespace-nowrap border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white"
                 >
-                  📅 Changer la date
+                  Changer la date
                 </button>
                 {!isEventPrestation && (
                   <button
@@ -400,7 +400,7 @@ export default function ReservationForm() {
                       setFormData({ ...formData, isDateToDefine: !formData.isDateToDefine, date: '' });
                       setShowCalendar(false);
                     }}
-                    className="rounded-xl border px-4 py-3 text-base font-semibold transition whitespace-nowrap border-white/20 text-white hover:border-white/40 hover:bg-white/10"
+                    className="rounded-xl border px-4 py-3 text-base font-semibold transition whitespace-nowrap border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white"
                   >
                     À définir sur RDV
                   </button>
@@ -408,7 +408,7 @@ export default function ReservationForm() {
               </div>
             ) : formData.isDateToDefine && !isEventPrestation ? (
               <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex-1 min-w-[200px] rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-base text-white font-semibold">
+                <div className="flex-1 min-w-[200px] rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 font-semibold">
                   À définir sur RDV
                 </div>
                 <button
@@ -417,9 +417,9 @@ export default function ReservationForm() {
                     setFormData({ ...formData, isDateToDefine: false });
                     setShowCalendar(true);
                   }}
-                  className="rounded-xl border px-4 py-3 text-base font-semibold transition whitespace-nowrap border-white/20 text-white hover:border-white/40 hover:bg-white/10"
+                  className="rounded-xl border px-4 py-3 text-base font-semibold transition whitespace-nowrap border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white"
                 >
-                  📅 Choisir une date
+                  Choisir une date
                 </button>
               </div>
             ) : (
@@ -430,11 +430,11 @@ export default function ReservationForm() {
                 }}
                 className={`w-full rounded-xl border px-4 py-3 text-base font-semibold transition whitespace-nowrap ${
                   showCalendar
-                    ? 'bg-indigo-500 text-white border-indigo-400'
-                    : 'border-white/20 text-white hover:border-white/40 hover:bg-white/10'
+                    ? 'bg-[#1c1916] text-[#faf7f2] border-[#1c1916]'
+                    : 'border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
                 }`}
               >
-                📅 Choisir une date
+                Choisir une date
               </button>
             )}
             
@@ -498,49 +498,49 @@ export default function ReservationForm() {
 
       {/* Informations événement */}
       {isEventPrestation && (
-        <div className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-4">
-          <label className="space-y-2 text-base text-slate-100">
+        <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4">
+          <label className="space-y-2 text-base text-stone-700">
             Type d’événement <span className="text-red-400">*</span>
             <select
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+              className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
               value={formData.eventType}
               onChange={(e) => setFormData({ ...formData, eventType: e.target.value })}
               required
             >
-              <option value="" className="bg-slate-900 text-white">Sélectionner un type</option>
-              <option value="Mariage" className="bg-slate-900 text-white">Mariage</option>
-              <option value="Anniversaire" className="bg-slate-900 text-white">Anniversaire</option>
-              <option value="Événement professionnel" className="bg-slate-900 text-white">Événement professionnel</option>
-              <option value="Soirée privée" className="bg-slate-900 text-white">Soirée privée</option>
-              <option value="Autre" className="bg-slate-900 text-white">Autre</option>
+              <option value="" className="bg-white text-stone-900">Sélectionner un type</option>
+              <option value="Mariage" className="bg-white text-stone-900">Mariage</option>
+              <option value="Anniversaire" className="bg-white text-stone-900">Anniversaire</option>
+              <option value="Événement professionnel" className="bg-white text-stone-900">Événement professionnel</option>
+              <option value="Soirée privée" className="bg-white text-stone-900">Soirée privée</option>
+              <option value="Autre" className="bg-white text-stone-900">Autre</option>
             </select>
           </label>
 
-          <label className="space-y-2 text-base text-slate-100">
+          <label className="space-y-2 text-base text-stone-700">
             Description de l’événement <span className="text-red-400">*</span>
             <textarea
               value={formData.eventDetails}
               onChange={(e) => setFormData({ ...formData, eventDetails: e.target.value })}
               rows={4}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+              className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
               placeholder="Décrivez votre événement et vos besoins (lieu, horaires, nombre d’invités, style, etc.)"
               required
             />
           </label>
 
-          <label className="space-y-2 text-base text-slate-100">
+          <label className="space-y-2 text-base text-stone-700">
             Mode de contact préféré <span className="text-red-400">*</span>
             <select
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+              className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
               value={formData.contactPreference}
               onChange={(e) => setFormData({ ...formData, contactPreference: e.target.value })}
               required
             >
-              <option value="" className="bg-slate-900 text-white">Sélectionner un mode</option>
-              <option value="Téléphone" className="bg-slate-900 text-white">Téléphone</option>
-              <option value="Rendez-vous en face à face" className="bg-slate-900 text-white">Rendez-vous en face à face</option>
-              <option value="Visio" className="bg-slate-900 text-white">Visio</option>
-              <option value="Email" className="bg-slate-900 text-white">Email</option>
+              <option value="" className="bg-white text-stone-900">Sélectionner un mode</option>
+              <option value="Téléphone" className="bg-white text-stone-900">Téléphone</option>
+              <option value="Rendez-vous en face à face" className="bg-white text-stone-900">Rendez-vous en face à face</option>
+              <option value="Visio" className="bg-white text-stone-900">Visio</option>
+              <option value="Email" className="bg-white text-stone-900">Email</option>
             </select>
           </label>
         </div>
@@ -548,7 +548,7 @@ export default function ReservationForm() {
 
       {/* Heure de début */}
       {!formData.isDateToDefine && formData.date && !isEventPrestation && (
-        <label className="space-y-2 text-base text-slate-100">
+        <label className="space-y-2 text-base text-stone-700">
           Heure de début <span className="text-red-400">*</span>
           <select
             value={formData.startTime}
@@ -578,7 +578,7 @@ export default function ReservationForm() {
                 }
               }
             }}
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
             required
           >
             {(() => {
@@ -611,7 +611,7 @@ export default function ReservationForm() {
                   <option 
                     key={timeStr} 
                     value={timeStr} 
-                    className={isBooked ? "bg-slate-700 text-slate-400" : "bg-slate-900 text-white"}
+                    className={isBooked ? "bg-stone-200 text-stone-500" : "bg-stone-900 text-white"}
                     disabled={isBooked}
                   >
                     {isBooked
@@ -640,26 +640,26 @@ export default function ReservationForm() {
 
       {/* Lieu */}
       {!isEventPrestation && (
-        <label className="space-y-2 text-base text-slate-100">
+        <label className="space-y-2 text-base text-stone-700">
           Lieu <span className="text-red-400">*</span>
           <select
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
             value={formData.location}
             onChange={(e) => setFormData({ ...formData, location: e.target.value })}
             required
           >
-            <option value="" className="bg-slate-900 text-white">Sélectionner un lieu</option>
-            <option value="Studio" className="bg-slate-900 text-white">Studio</option>
-            <option value="Domicile" className="bg-slate-900 text-white">Domicile *plus cher</option>
-            <option value="Extérieur" className="bg-slate-900 text-white">Extérieur</option>
-            <option value="Autre" className="bg-slate-900 text-white">Autre</option>
+            <option value="" className="bg-white text-stone-900">Sélectionner un lieu</option>
+            <option value="Studio" className="bg-white text-stone-900">Studio</option>
+            <option value="Domicile" className="bg-white text-stone-900">Domicile *plus cher</option>
+            <option value="Extérieur" className="bg-white text-stone-900">Extérieur</option>
+            <option value="Autre" className="bg-white text-stone-900">Autre</option>
           </select>
         </label>
       )}
 
 
       {/* Inspirations (optionnel) - avec upload de photos */}
-      <label className="space-y-2 text-base text-slate-100">
+      <label className="space-y-2 text-base text-stone-700">
         Inspirations (optionnel)
         <div className="space-y-2">
           <input
@@ -667,7 +667,7 @@ export default function ReservationForm() {
             type="file"
             accept="image/*"
             multiple
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20"
+            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-stone-100 file:text-stone-700 hover:file:bg-stone-200"
             onChange={(e) => {
               if (e.target.files) {
                 setInspirationPhotos(e.target.files);
@@ -683,11 +683,11 @@ export default function ReservationForm() {
       </label>
 
       {/* Retouches spéciales (optionnel) */}
-      <label className="space-y-2 text-base text-slate-100">
+      <label className="space-y-2 text-base text-stone-700">
         Retouches spéciales (optionnel)
         <textarea
           rows={3}
-          className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+          className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
           placeholder="Décrivez vos besoins spécifiques en retouche..."
           value={formData.specialRetouches}
           onChange={(e) => setFormData({ ...formData, specialRetouches: e.target.value })}
@@ -713,7 +713,7 @@ export default function ReservationForm() {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-full bg-white px-5 py-3 sm:px-5 sm:py-2 text-sm sm:text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/30 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-full bg-[#1c1916] px-5 py-3 sm:px-5 sm:py-2 text-sm sm:text-sm font-semibold text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Envoi en cours...' : 'Réserver mon shooting maintenant'}
         </button>

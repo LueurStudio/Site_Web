@@ -134,41 +134,37 @@ export default function AvailabilityCalendar({
   const dayNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 sm:p-4 max-w-2xl mx-auto">
+    <div className="rounded-2xl border border-stone-200 bg-white p-4 sm:p-5 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={previousMonth}
-          className="rounded-lg p-1.5 hover:bg-white/10 transition"
+          className="rounded-full border border-stone-300 px-3 py-1 text-sm text-stone-700 hover:bg-stone-100 transition"
           aria-label="Mois précédent"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
+          ‹
         </button>
         <h3 className="text-base sm:text-lg font-semibold capitalize">{formatMonthYear()}</h3>
         <button
           onClick={nextMonth}
-          className="rounded-lg p-1.5 hover:bg-white/10 transition"
+          className="rounded-full border border-stone-300 px-3 py-1 text-sm text-stone-700 hover:bg-stone-100 transition"
           aria-label="Mois suivant"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+          ›
         </button>
       </div>
 
       {/* Légende */}
-      <div className="flex flex-wrap gap-3 mb-3 text-xs text-slate-400">
+      <div className="flex flex-wrap gap-3 mb-3 text-xs text-stone-600">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded border-2 border-green-500 bg-green-500/20"></div>
+          <div className="w-2.5 h-2.5 rounded border border-emerald-400 bg-emerald-400/30"></div>
           <span>Disponible</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded border-2 border-red-500 bg-red-500/20"></div>
+          <div className="w-2.5 h-2.5 rounded border border-red-400 bg-red-400/20"></div>
           <span>Bloquée</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded border-2 border-slate-600 bg-slate-800"></div>
+          <div className="w-2.5 h-2.5 rounded border border-stone-400 bg-stone-200"></div>
           <span>Indisponible</span>
         </div>
       </div>
@@ -176,7 +172,7 @@ export default function AvailabilityCalendar({
       {/* Jours de la semaine */}
       <div className="grid grid-cols-7 gap-1.5 mb-1.5">
         {dayNames.map((day) => (
-          <div key={day} className="text-center text-xs font-semibold text-slate-400 py-1">
+          <div key={day} className="text-center text-xs font-semibold text-stone-500 py-1 uppercase tracking-wide">
             {day}
           </div>
         ))}
@@ -197,23 +193,23 @@ export default function AvailabilityCalendar({
           const isUnlocked = isDateUnlocked(dateString);
           const isWeekend = date.getDay() === 0 || date.getDay() === 6;
 
-          let bgColor = 'bg-slate-800 border-slate-600';
-          let textColor = 'text-slate-500';
+          let bgColor = 'bg-white border-stone-200';
+          let textColor = 'text-stone-500';
           let cursorClass = 'cursor-not-allowed';
 
           if (isPast) {
-            bgColor = 'bg-slate-900 border-slate-700';
-            textColor = 'text-slate-700';
+            bgColor = 'bg-stone-50 border-stone-200';
+            textColor = 'text-stone-400';
           } else if (isBlocked) {
-            bgColor = 'bg-red-500/20 border-red-500';
-            textColor = 'text-red-400';
+            bgColor = 'bg-red-500/15 border-red-400';
+            textColor = 'text-red-700';
           } else if (isAvailable) {
-            bgColor = isSelected ? 'bg-indigo-500 border-indigo-400' : 'bg-green-500/20 border-green-500';
-            textColor = isSelected ? 'text-white' : 'text-green-400';
-            cursorClass = 'cursor-pointer hover:bg-green-500/30';
+            bgColor = isSelected ? 'bg-[#1c1916] border-[#1c1916]' : 'bg-emerald-400/15 border-emerald-400';
+            textColor = isSelected ? 'text-[#faf7f2]' : 'text-emerald-700';
+            cursorClass = 'cursor-pointer hover:bg-emerald-400/25';
           } else {
-            bgColor = 'bg-slate-800 border-slate-600';
-            textColor = 'text-slate-500';
+            bgColor = 'bg-stone-50 border-stone-200';
+            textColor = 'text-stone-500';
           }
 
           return (
@@ -226,9 +222,8 @@ export default function AvailabilityCalendar({
               }}
               disabled={isPast || !isAvailable || isBlocked}
               className={`
-                aspect-square rounded border-2 transition-all
+                aspect-square rounded border transition-all
                 ${bgColor} ${textColor} ${cursorClass}
-                ${isSelected ? 'ring-2 ring-indigo-400 ring-offset-1 ring-offset-slate-900' : ''}
                 disabled:opacity-50 disabled:cursor-not-allowed
               `}
               title={
@@ -254,7 +249,7 @@ export default function AvailabilityCalendar({
         })}
       </div>
 
-      <p className="text-xs text-slate-400 mt-3 text-center">
+      <p className="text-xs text-stone-500 mt-3 text-center">
         Cliquez sur une date disponible (vert) pour la sélectionner
       </p>
     </div>
