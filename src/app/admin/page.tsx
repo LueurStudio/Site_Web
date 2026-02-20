@@ -105,6 +105,8 @@ export default function AdminPage() {
     return `${wholeHours}h${minutes.toString().padStart(2, '0')}`;
   };
 
+  const isProjectMode = activeMode === 'rapide' || activeMode === 'complet' || activeMode === 'edit';
+
   useEffect(() => {
     checkAuth();
     loadProjects();
@@ -576,7 +578,7 @@ export default function AdminPage() {
 
   if (authenticated === null) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#faf7f2] text-[#1c1916] flex items-center justify-center">
         <p>Vérification...</p>
       </div>
     );
@@ -584,17 +586,17 @@ export default function AdminPage() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-8 shadow-2xl">
-          <h1 className="text-3xl font-semibold mb-6">Administration</h1>
+      <div className="min-h-screen bg-[#faf7f2] text-[#1c1916] flex items-center justify-center p-4">
+        <div className="w-full max-w-md rounded-3xl border border-stone-200 bg-white p-8 shadow-sm">
+          <h1 className="text-3xl font-semibold mb-6 text-stone-900">Administration</h1>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm mb-2">Mot de passe</label>
+              <label className="block text-sm mb-2 text-stone-700">Mot de passe</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                 placeholder="Entrez le mot de passe"
                 required
               />
@@ -603,7 +605,7 @@ export default function AdminPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-full bg-white px-4 py-2 font-semibold text-slate-900 transition hover:shadow-lg disabled:opacity-50"
+              className="w-full rounded-full bg-[#1c1916] px-4 py-2 font-semibold text-[#faf7f2] transition hover:shadow-lg hover:shadow-black/20 disabled:opacity-50"
             >
               {loading ? 'Connexion...' : 'Se connecter'}
             </button>
@@ -614,13 +616,13 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 p-4 md:p-8">
+    <div className="min-h-screen bg-[#faf7f2] text-[#1c1916] p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-semibold">Administration du Portfolio</h1>
+          <h1 className="text-3xl font-semibold text-stone-900">Administration du Portfolio</h1>
           <button
             onClick={handleLogout}
-            className="rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10"
+            className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-stone-400 hover:bg-white"
           >
             Déconnexion
           </button>
@@ -632,37 +634,14 @@ export default function AdminPage() {
             onClick={() => {
               setActiveMode('rapide');
               setEditingProject(null);
-            }}
-            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'rapide'
-                ? 'bg-white text-slate-900'
-                : 'border border-white/20 text-white hover:border-white/40 hover:bg-white/10'
-              }`}
-          >
-            Upload rapide par catégorie
-          </button>
-          <button
-            onClick={() => {
-              setActiveMode('complet');
-              setEditingProject(null);
-            }}
-            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'complet'
-                ? 'bg-white text-slate-900'
-                : 'border border-white/20 text-white hover:border-white/40 hover:bg-white/10'
-              }`}
-          >
-            Formulaire complet
-          </button>
-          <button
-            onClick={() => {
-              setActiveMode('edit');
               loadProjects();
             }}
-            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'edit'
-                ? 'bg-white text-slate-900'
-                : 'border border-white/20 text-white hover:border-white/40 hover:bg-white/10'
+            className={`px-6 py-3 rounded-full font-semibold transition ${isProjectMode
+                ? 'bg-[#1c1916] text-[#faf7f2]'
+                : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
               }`}
           >
-            Gérer les projets existants
+            Projets
           </button>
           <button
             onClick={() => {
@@ -671,8 +650,8 @@ export default function AdminPage() {
               loadCodes();
             }}
             className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'testimonials'
-                ? 'bg-white text-slate-900'
-                : 'border border-white/20 text-white hover:border-white/40 hover:bg-white/10'
+                ? 'bg-[#1c1916] text-[#faf7f2]'
+                : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
               }`}
           >
             Gérer les avis
@@ -683,8 +662,8 @@ export default function AdminPage() {
               loadReservations();
             }}
             className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'reservations'
-                ? 'bg-white text-slate-900'
-                : 'border border-white/20 text-white hover:border-white/40 hover:bg-white/10'
+                ? 'bg-[#1c1916] text-[#faf7f2]'
+                : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
               }`}
           >
             Réservations
@@ -695,8 +674,8 @@ export default function AdminPage() {
               loadPricing();
             }}
             className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'pricing'
-                ? 'bg-white text-slate-900'
-                : 'border border-white/20 text-white hover:border-white/40 hover:bg-white/10'
+                ? 'bg-[#1c1916] text-[#faf7f2]'
+                : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
               }`}
           >
             Tarifs
@@ -707,15 +686,56 @@ export default function AdminPage() {
               loadAvailability();
             }}
             className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'availability'
-                ? 'bg-white text-slate-900'
-                : 'border border-white/20 text-white hover:border-white/40 hover:bg-white/10'
+                ? 'bg-[#1c1916] text-[#faf7f2]'
+                : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
               }`}
           >
             Disponibilités
           </button>
         </div>
 
-        <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200 flex flex-wrap items-center gap-3">
+        {isProjectMode && (
+          <div className="mb-6 flex flex-wrap gap-2">
+            <button
+              onClick={() => {
+                setActiveMode('rapide');
+                setEditingProject(null);
+              }}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${activeMode === 'rapide'
+                  ? 'bg-[#1c1916] text-[#faf7f2]'
+                  : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
+                }`}
+            >
+              Upload rapide
+            </button>
+            <button
+              onClick={() => {
+                setActiveMode('complet');
+                setEditingProject(null);
+              }}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${activeMode === 'complet'
+                  ? 'bg-[#1c1916] text-[#faf7f2]'
+                  : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
+                }`}
+            >
+              Nouveau projet
+            </button>
+            <button
+              onClick={() => {
+                setActiveMode('edit');
+                loadProjects();
+              }}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${activeMode === 'edit'
+                  ? 'bg-[#1c1916] text-[#faf7f2]'
+                  : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
+                }`}
+            >
+              Gérer les projets
+            </button>
+          </div>
+        )}
+
+        <div className="mb-6 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-600 flex flex-wrap items-center gap-3">
           <span>Migration des projets existants (une seule fois).</span>
           <button
             onClick={async () => {
@@ -741,7 +761,7 @@ export default function AdminPage() {
               }
             }}
             disabled={loading}
-            className="rounded-full border border-white/20 px-4 py-2 text-xs font-semibold text-white transition hover:border-white/40 hover:bg-white/10 disabled:opacity-50"
+            className="rounded-full border border-stone-300 px-4 py-2 text-xs font-semibold text-stone-700 transition hover:border-stone-400 hover:bg-white disabled:opacity-50"
           >
             {loading ? 'Migration...' : 'Migrer les projets'}
           </button>
@@ -755,13 +775,13 @@ export default function AdminPage() {
               return (
                 <div
                   key={category}
-                  className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 shadow-2xl"
+                  className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm"
                 >
-                  <h3 className="text-xl font-semibold mb-4">{category}</h3>
+                  <h3 className="text-xl font-semibold mb-4 text-stone-900">{category}</h3>
 
                   {/* Zone d'upload */}
                   <div className="mb-4">
-                    <label className="block text-sm mb-2">
+                    <label className="block text-sm mb-2 text-stone-700">
                       Sélectionner et uploader des photos
                     </label>
                     <input
@@ -770,7 +790,7 @@ export default function AdminPage() {
                       onChange={(e) => handleFileUpload(e, category)}
                       disabled={categoryData.uploading}
                       multiple
-                      className="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 disabled:opacity-50"
+                      className="block w-full text-sm text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-stone-100 file:text-stone-700 hover:file:bg-stone-200 disabled:opacity-50"
                     />
                     {categoryData.uploading && (
                       <p className="mt-2 text-sm text-blue-400">Upload en cours...</p>
@@ -779,7 +799,7 @@ export default function AdminPage() {
 
                   {/* Sélection projet existant ou nouveau */}
                   <div className="mb-4">
-                    <label className="block text-sm mb-2">Ajouter à un projet existant ou créer un nouveau projet</label>
+                    <label className="block text-sm mb-2 text-stone-700">Ajouter à un projet existant ou créer un nouveau projet</label>
                     <select
                       value={categoryData.selectedProject || 'new'}
                       onChange={(e) => {
@@ -796,19 +816,19 @@ export default function AdminPage() {
                           }
                         }));
                       }}
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                      className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                     >
-                      <option value="new" className="bg-slate-900">➕ Créer un nouveau projet</option>
+                      <option value="new" className="bg-white text-stone-900">➕ Créer un nouveau projet</option>
                       {existingProjects
                         .filter(p => p.category === category)
                         .map((project) => (
-                          <option key={project.slug} value={project.slug} className="bg-slate-900">
+                          <option key={project.slug} value={project.slug} className="bg-white text-stone-900">
                             📸 {project.title}
                           </option>
                         ))}
                     </select>
                     {categoryData.selectedProject && (
-                      <p className="mt-2 text-xs text-indigo-300">
+                      <p className="mt-2 text-xs text-stone-500">
                         Les photos seront ajoutées au projet existant "{existingProjects.find(p => p.slug === categoryData.selectedProject)?.title}"
                       </p>
                     )}
@@ -878,7 +898,7 @@ export default function AdminPage() {
                             />
                           </div>
                           <div>
-                            <label className="block text-sm mb-1">Description (optionnel)</label>
+                            <label className="block text-sm mb-1 text-stone-700">Description (optionnel)</label>
                             <textarea
                               value={categoryData.description}
                               onChange={(e) => {
@@ -888,7 +908,7 @@ export default function AdminPage() {
                                 }));
                               }}
                               rows={2}
-                              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                              className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                               placeholder="Description du projet"
                             />
                           </div>
@@ -897,7 +917,7 @@ export default function AdminPage() {
                       <button
                         onClick={() => handleQuickSubmit(category)}
                         disabled={loading || categoryData.photos.length === 0 || (!categoryData.selectedProject && !categoryData.title.trim())}
-                        className="w-full rounded-full bg-white px-4 py-2 font-semibold text-slate-900 transition hover:shadow-lg disabled:opacity-50"
+                        className="w-full rounded-full bg-[#1c1916] px-4 py-2 font-semibold text-[#faf7f2] transition hover:shadow-lg hover:shadow-black/20 disabled:opacity-50"
                       >
                         {loading
                           ? 'En cours...'
@@ -914,13 +934,13 @@ export default function AdminPage() {
           </div>
         ) : activeMode === 'complet' ? (
           /* Mode complet - Formulaire détaillé */
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 md:p-8 shadow-2xl">
-            <h2 className="text-2xl font-semibold mb-6">Ajouter un nouveau projet</h2>
+          <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
+            <h2 className="text-2xl font-semibold mb-6 text-stone-900">Ajouter un nouveau projet</h2>
 
             <form onSubmit={handleSubmitProject} className="space-y-6">
               {/* Upload de photos */}
               <div>
-                <label className="block text-sm mb-2">
+                <label className="block text-sm mb-2 text-stone-700">
                   Uploader des photos (vous pouvez sélectionner plusieurs fichiers)
                 </label>
                 <input
@@ -929,7 +949,7 @@ export default function AdminPage() {
                   onChange={(e) => handleFileUpload(e)}
                   disabled={uploading}
                   multiple
-                  className="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 disabled:opacity-50"
+                  className="block w-full text-sm text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-stone-100 file:text-stone-700 hover:file:bg-stone-200 disabled:opacity-50"
                 />
                 {uploadProgress && (
                   <p className={`mt-2 text-sm ${uploadProgress.startsWith('✓') ? 'text-green-400' : uploadProgress.startsWith('✗') ? 'text-red-400' : 'text-blue-400'}`}>
@@ -943,7 +963,7 @@ export default function AdminPage() {
                         <img
                           src={url}
                           alt={`Uploadé ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-xl border border-white/10"
+                          className="w-full h-24 object-cover rounded-xl border border-stone-200"
                         />
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
                           <button
@@ -967,12 +987,12 @@ export default function AdminPage() {
 
               {/* Titre */}
               <div>
-                <label className="block text-sm mb-2">Titre *</label>
+                <label className="block text-sm mb-2 text-stone-700">Titre *</label>
                 <input
                   type="text"
                   value={projectForm.title}
                   onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                   placeholder="Ex: Portraits signature"
                   required
                 />
@@ -980,24 +1000,24 @@ export default function AdminPage() {
 
               {/* Sous-titre */}
               <div>
-                <label className="block text-sm mb-2">Sous-titre</label>
+                <label className="block text-sm mb-2 text-stone-700">Sous-titre</label>
                 <input
                   type="text"
                   value={projectForm.subtitle}
                   onChange={(e) => setProjectForm({ ...projectForm, subtitle: e.target.value })}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                   placeholder="Ex: Direction artistique & retouche éditoriale"
                 />
               </div>
 
               {/* Image principale */}
               <div>
-                <label className="block text-sm mb-2">Image principale (URL) *</label>
+                <label className="block text-sm mb-2 text-stone-700">Image principale (URL) *</label>
                 <input
                   type="text"
                   value={projectForm.image}
                   onChange={(e) => setProjectForm({ ...projectForm, image: e.target.value })}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                   placeholder="/images/IMG_XXXX.jpg"
                   required
                 />
@@ -1005,7 +1025,7 @@ export default function AdminPage() {
                   <img
                     src={projectForm.image}
                     alt="Preview"
-                    className="mt-2 max-w-xs rounded-xl border border-white/10"
+                    className="mt-2 max-w-xs rounded-xl border border-stone-200"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}
@@ -1015,15 +1035,15 @@ export default function AdminPage() {
 
               {/* Catégorie */}
               <div>
-                <label className="block text-sm mb-2">Catégorie *</label>
+                <label className="block text-sm mb-2 text-stone-700">Catégorie *</label>
                 <select
                   value={projectForm.category}
                   onChange={(e) => setProjectForm({ ...projectForm, category: e.target.value as Project['category'] })}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                   required
                 >
                   {categories.map((cat) => (
-                    <option key={cat} value={cat} className="bg-slate-900">
+                    <option key={cat} value={cat} className="bg-white text-stone-900">
                       {cat}
                     </option>
                   ))}
@@ -1032,12 +1052,12 @@ export default function AdminPage() {
 
               {/* Description */}
               <div>
-                <label className="block text-sm mb-2">Description *</label>
+                <label className="block text-sm mb-2 text-stone-700">Description *</label>
                 <textarea
                   value={projectForm.description}
                   onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
                   rows={4}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                   placeholder="Description du projet..."
                   required
                 />
@@ -1045,7 +1065,7 @@ export default function AdminPage() {
 
               {/* Détails */}
               <div>
-                <label className="block text-sm mb-2">Détails (un par ligne)</label>
+                <label className="block text-sm mb-2 text-stone-700">Détails (un par ligne)</label>
                 {projectForm.details.map((detail, index) => (
                   <input
                     key={index}
@@ -1056,14 +1076,14 @@ export default function AdminPage() {
                       newDetails[index] = e.target.value;
                       setProjectForm({ ...projectForm, details: newDetails });
                     }}
-                    className="w-full mb-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full mb-2 rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                     placeholder={`Détail ${index + 1}`}
                   />
                 ))}
                 <button
                   type="button"
                   onClick={() => setProjectForm({ ...projectForm, details: [...projectForm.details, ''] })}
-                  className="mt-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10"
+                  className="mt-2 rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-stone-400 hover:bg-white"
                 >
                   + Ajouter un détail
                 </button>
@@ -1071,7 +1091,7 @@ export default function AdminPage() {
 
               {/* Photos */}
               <div>
-                <label className="block text-sm mb-2">Photos du projet (URLs, une par ligne)</label>
+                <label className="block text-sm mb-2 text-stone-700">Photos du projet (URLs, une par ligne)</label>
                 {projectForm.photos.map((photo, index) => (
                   <div key={index} className="flex gap-2 mb-2">
                     <input
@@ -1082,14 +1102,14 @@ export default function AdminPage() {
                         newPhotos[index] = e.target.value;
                         setProjectForm({ ...projectForm, photos: newPhotos });
                       }}
-                      className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                      className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                       placeholder={`/images/IMG_XXXX.jpg`}
                     />
                     {photo && (
                       <img
                         src={photo}
                         alt={`Preview ${index + 1}`}
-                        className="w-20 h-20 object-cover rounded-xl border border-white/10"
+                        className="w-20 h-20 object-cover rounded-xl border border-stone-200"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                         }}
@@ -1110,7 +1130,7 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={() => setProjectForm({ ...projectForm, photos: [...projectForm.photos, ''] })}
-                  className="mt-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10"
+                  className="mt-2 rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-stone-400 hover:bg-white"
                 >
                   + Ajouter une photo
                 </button>
@@ -1121,19 +1141,19 @@ export default function AdminPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-full bg-white px-4 py-3 font-semibold text-slate-900 transition hover:shadow-lg disabled:opacity-50"
+                className="w-full rounded-full bg-[#1c1916] px-4 py-3 font-semibold text-[#faf7f2] transition hover:shadow-lg hover:shadow-black/20 disabled:opacity-50"
               >
                 {loading ? 'Ajout en cours...' : 'Ajouter le projet au portfolio'}
               </button>
             </form>
 
-            <div className="mt-8 pt-8 border-t border-white/10">
-              <p className="text-sm text-slate-400">
+            <div className="mt-8 pt-8 border-t border-stone-200">
+              <p className="text-sm text-stone-500">
                 Après avoir ajouté un projet, il apparaîtra automatiquement dans le portfolio.
               </p>
               <a
                 href="/portfolio"
-                className="mt-4 inline-block rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10"
+                className="mt-4 inline-block rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-stone-400 hover:bg-white"
               >
                 Voir le portfolio
               </a>
@@ -1142,8 +1162,8 @@ export default function AdminPage() {
         ) : activeMode === 'testimonials' ? (
           /* Mode gestion des avis */
           <div className="space-y-6">
-            <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 md:p-8 shadow-2xl">
-              <h2 className="text-2xl font-semibold mb-6">Ajouter un nouvel avis</h2>
+            <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
+              <h2 className="text-2xl font-semibold mb-6 text-stone-900">Ajouter un nouvel avis</h2>
 
               <form
                 onSubmit={async (e) => {
