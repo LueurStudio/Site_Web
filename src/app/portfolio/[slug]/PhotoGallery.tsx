@@ -80,7 +80,7 @@ export default function PhotoGallery({ photos, projectTitle }: PhotoGalleryProps
           <button
             key={index}
             onClick={() => setSelectedPhoto(index)}
-            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#1b1410]/60 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-300"
           >
             <div className="aspect-[4/5] relative">
               <Image

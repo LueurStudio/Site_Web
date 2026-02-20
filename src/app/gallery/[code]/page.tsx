@@ -122,7 +122,7 @@ export default function GalleryPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#faf7f2] text-[#1c1916] flex items-center justify-center">
         <p className="text-xl">Chargement...</p>
       </div>
     );
@@ -130,10 +130,10 @@ export default function GalleryPage() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-8 shadow-2xl">
+      <div className="min-h-screen bg-[#faf7f2] text-[#1c1916] flex items-center justify-center p-4">
+        <div className="max-w-md w-full rounded-3xl border border-stone-200 bg-white p-8 shadow-sm">
           <h1 className="text-3xl font-semibold mb-6 text-center">Accès à votre galerie</h1>
-          <p className="text-slate-300 mb-6 text-center">
+          <p className="text-stone-600 mb-6 text-center">
             Veuillez entrer le code d'accès qui vous a été envoyé par email.
           </p>
           <form
@@ -148,13 +148,13 @@ export default function GalleryPage() {
               value={accessCode}
               onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
               placeholder="Code d'accès"
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-lg text-center text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60 uppercase tracking-widest"
+              className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-lg text-center text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60 uppercase tracking-widest"
               maxLength={8}
               required
             />
             <button
               type="submit"
-              className="w-full rounded-full bg-white px-4 py-3 font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:shadow-lg"
+              className="w-full rounded-full bg-[#1c1916] px-4 py-3 font-semibold text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20"
             >
               Accéder à la galerie
             </button>
@@ -179,14 +179,14 @@ export default function GalleryPage() {
   const expiresAtDate = gallery?.expiresAt ? new Date(gallery.expiresAt) : null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50">
+    <div className="min-h-screen bg-[#faf7f2] text-[#1c1916]">
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <Link href="/" className="text-indigo-400 hover:text-indigo-300">
+          <Link href="/" className="text-stone-600 hover:text-stone-900">
             ← Retour à l'accueil
           </Link>
-          <h1 className="text-4xl font-semibold mt-4">Votre galerie photo</h1>
-          <p className="text-slate-300 mt-2">
+          <h1 className="text-4xl font-semibold mt-4 text-stone-900">Votre galerie photo</h1>
+          <p className="text-stone-600 mt-2">
             {gallery.reservation.firstName} {gallery.reservation.lastName} - {gallery.reservation.prestationType}
           </p>
           
@@ -195,14 +195,14 @@ export default function GalleryPage() {
             <div className={`mt-4 rounded-xl border p-4 ${
               daysRemaining !== null && daysRemaining <= 7
                 ? 'border-yellow-500/50 bg-yellow-500/10'
-                : 'border-blue-500/50 bg-blue-500/10'
+                : 'border-sky-500/30 bg-sky-500/10'
             }`}>
-              <p className="text-sm text-slate-200">
-                <strong>⏰ Durée de disponibilité :</strong> Votre galerie est accessible pendant 2 mois.
+              <p className="text-sm text-stone-600">
+                <strong>Durée de disponibilité :</strong> Votre galerie est accessible pendant 2 mois.
               </p>
               {daysRemaining !== null && (
                 <p className={`text-sm mt-1 ${
-                  daysRemaining <= 7 ? 'text-yellow-300' : 'text-blue-300'
+                  daysRemaining <= 7 ? 'text-yellow-700' : 'text-sky-700'
                 }`}>
                   {daysRemaining > 0 ? (
                     <>
@@ -224,7 +224,7 @@ export default function GalleryPage() {
             <button
               key={index}
               onClick={() => setSelectedPhoto(index)}
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="group relative overflow-hidden rounded-2xl border border-stone-200 bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-300"
             >
               <div className="aspect-square relative">
                 <Image
@@ -343,41 +343,41 @@ export default function GalleryPage() {
         )}
 
         {/* Formulaire d'avis */}
-        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 md:p-8 shadow-2xl">
+        <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
           <h2 className="text-2xl font-semibold mb-4">Laisser un avis</h2>
-          <p className="text-slate-300 mb-6">
+          <p className="text-stone-600 mb-6">
             Partagez votre expérience avec LueurStudio. Votre avis sera publié après modération.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-2">
-                <span className="text-sm text-slate-300">Nom complet *</span>
+                <span className="text-sm text-stone-600">Nom complet *</span>
                 <input
                   type="text"
                   value={testimonialForm.name}
                   onChange={(e) => setTestimonialForm({ ...testimonialForm, name: e.target.value })}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-indigo-400/60"
+                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                   required
                 />
               </label>
               <label className="space-y-2">
-                <span className="text-sm text-slate-300">Fonction (optionnel)</span>
+                <span className="text-sm text-stone-600">Fonction (optionnel)</span>
                 <input
                   type="text"
                   value={testimonialForm.role}
                   onChange={(e) => setTestimonialForm({ ...testimonialForm, role: e.target.value })}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-indigo-400/60"
+                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                 />
               </label>
             </div>
 
             <label className="space-y-2 block">
-              <span className="text-sm text-slate-300">Note (sur 5) *</span>
+              <span className="text-sm text-stone-600">Note (sur 5) *</span>
               <select
                 value={testimonialForm.rating}
                 onChange={(e) => setTestimonialForm({ ...testimonialForm, rating: parseInt(e.target.value) })}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-indigo-400/60"
+                className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                 required
               >
                 <option value={5}>5 étoiles</option>
@@ -389,12 +389,12 @@ export default function GalleryPage() {
             </label>
 
             <label className="space-y-2 block">
-              <span className="text-sm text-slate-300">Votre témoignage *</span>
+              <span className="text-sm text-stone-600">Votre témoignage *</span>
               <textarea
                 rows={4}
                 value={testimonialForm.quote}
                 onChange={(e) => setTestimonialForm({ ...testimonialForm, quote: e.target.value })}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-indigo-400/60"
+                className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                 required
               />
             </label>
@@ -404,7 +404,7 @@ export default function GalleryPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full rounded-full bg-white px-4 py-3 font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50"
+              className="w-full rounded-full bg-[#1c1916] px-4 py-3 font-semibold text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20 disabled:opacity-50"
             >
               {submitting ? 'Envoi en cours...' : 'Envoyer mon avis'}
             </button>

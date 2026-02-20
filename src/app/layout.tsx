@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-slate-50`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#faf7f2] text-[#1c1916]`}
       >
         <script
           type="application/ld+json"
@@ -62,7 +62,7 @@ export default function RootLayout({
         />
         <SmoothScroll />
         <Header />
-        <div className="pt-28 bg-slate-950">
+        <div className="pt-28 bg-[#faf7f2]">
           {children}
         </div>
       </body>

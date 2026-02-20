@@ -76,8 +76,8 @@ export default function Header() {
                 }`}
         >
             <div
-                className={`mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/5 bg-transparent backdrop-blur-lg transition-all duration-300 ${isScrolled
-                        ? 'px-4 py-2 shadow-lg shadow-indigo-950/20'
+                className={`mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 rounded-3xl border border-stone-200/60 bg-white/70 backdrop-blur-lg transition-all duration-300 ${isScrolled
+                        ? 'px-4 py-2 shadow-lg shadow-black/10'
                         : 'px-6 py-4'
                     }`}
             >
@@ -96,7 +96,7 @@ export default function Header() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p
-                            className={`uppercase tracking-[0.25em] text-indigo-200 transition-all duration-300 ${isScrolled 
+                            className={`uppercase tracking-[0.25em] text-stone-700 transition-all duration-300 ${isScrolled 
                                 ? 'text-xs md:text-sm' 
                                 : 'text-sm sm:text-base md:text-lg font-semibold'
                             }`}
@@ -104,7 +104,7 @@ export default function Header() {
                             LUEURSTUDIO
                         </p>
                         <p
-                            className={`text-slate-200 transition-all duration-300 ${isScrolled 
+                            className={`text-stone-500 transition-all duration-300 ${isScrolled 
                                 ? 'text-xs hidden sm:block' 
                                 : 'text-xs sm:text-sm mt-0.5 sm:mt-1'
                             }`}
@@ -114,38 +114,38 @@ export default function Header() {
                     </div>
                 </div>
                 <nav
-                    className={`hidden md:flex flex-wrap items-center gap-2 lg:gap-3 text-slate-200 transition-all duration-300 ${isScrolled ? 'text-xs' : 'text-sm'
+                    className={`hidden md:flex flex-wrap items-center gap-2 lg:gap-3 text-stone-600 transition-all duration-300 ${isScrolled ? 'text-xs' : 'text-sm'
                         }`}
                 >
                     <a
-                        className="rounded-full px-4 py-2 hover:bg-white/10 transition"
+                        className="rounded-full px-4 py-2 hover:bg-stone-100 transition"
                         href="/"
                         onClick={handleHomeClick}
                     >
                         Accueil
                     </a>
                     <a
-                        className="rounded-full px-4 py-2 hover:bg-white/10 transition"
+                        className="rounded-full px-4 py-2 hover:bg-stone-100 transition"
                         href="/#services"
                         onClick={(e) => handleAnchorClick(e, '/#services')}
                     >
                         Services
                     </a>
                     <a
-                        className="rounded-full px-4 py-2 hover:bg-white/10 transition"
+                        className="rounded-full px-4 py-2 hover:bg-stone-100 transition"
                         href="/portfolio"
                     >
                         Portfolio
                     </a>
                     <a
-                        className="rounded-full px-4 py-2 hover:bg-white/10 transition"
+                        className="rounded-full px-4 py-2 hover:bg-stone-100 transition"
                         href="/#contact"
                         onClick={(e) => handleAnchorClick(e, '/#contact')}
                     >
                         Contact
                     </a>
                     <a
-                        className={`rounded-full bg-white text-slate-900 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/30 ${isScrolled ? 'px-3 py-1.5' : 'px-4 py-2'
+                        className={`rounded-full bg-[#1c1916] text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20 ${isScrolled ? 'px-3 py-1.5' : 'px-4 py-2'
                             }`}
                         href="/#contact"
                         onClick={(e) => handleAnchorClick(e, '/#contact')}
@@ -156,7 +156,7 @@ export default function Header() {
                 </nav>
                 <button
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    className="md:hidden rounded-full p-2 hover:bg-white/10 transition text-slate-200"
+                    className="md:hidden rounded-full p-2 hover:bg-stone-100 transition text-stone-600"
                     aria-label="Menu"
                 >
                     <svg
@@ -185,16 +185,16 @@ export default function Header() {
             </div>
             {isMobileMenuOpen && (
                 <nav className="md:hidden mt-4 mx-auto max-w-6xl px-6 sm:px-10 md:px-14 pb-4">
-                    <div className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-900/80 p-4">
+                    <div className="flex flex-col gap-2 rounded-2xl border border-stone-200/60 bg-white p-4 shadow-lg shadow-black/10">
                         <a
-                            className="rounded-full px-4 py-2 hover:bg-white/10 transition text-sm text-slate-200"
+                            className="rounded-full px-4 py-2 hover:bg-stone-100 transition text-sm text-stone-600"
                             href="/"
                             onClick={handleHomeClick}
                         >
                             Accueil
                         </a>
                         <a
-                            className="rounded-full px-4 py-2 hover:bg-white/10 transition text-sm text-slate-200"
+                            className="rounded-full px-4 py-2 hover:bg-stone-100 transition text-sm text-stone-600"
                             href="/#services"
                             onClick={(e) => {
                                 handleAnchorClick(e, '/#services');
@@ -204,14 +204,14 @@ export default function Header() {
                             Services
                         </a>
                         <a
-                            className="rounded-full px-4 py-2 hover:bg-white/10 transition text-sm text-slate-200"
+                            className="rounded-full px-4 py-2 hover:bg-stone-100 transition text-sm text-stone-600"
                             href="/portfolio"
                             onClick={() => setIsMobileMenuOpen(false)}
                         >
                             Portfolio
                         </a>
                         <a
-                            className="rounded-full px-4 py-2 hover:bg-white/10 transition text-sm text-slate-200"
+                            className="rounded-full px-4 py-2 hover:bg-stone-100 transition text-sm text-stone-600"
                             href="/#contact"
                             onClick={(e) => {
                                 handleAnchorClick(e, '/#contact');
@@ -221,7 +221,7 @@ export default function Header() {
                             Contact
                         </a>
                         <a
-                            className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/30"
+                            className="rounded-full bg-[#1c1916] px-4 py-2 text-sm font-semibold text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20"
                             href="/#contact"
                             onClick={(e) => {
                                 handleAnchorClick(e, '/#contact');

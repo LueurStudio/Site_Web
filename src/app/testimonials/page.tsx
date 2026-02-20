@@ -98,19 +98,19 @@ export default function TestimonialsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_50%,rgba(79,70,229,0.25),transparent_30%),radial-gradient(circle_at_80%_40%,rgba(236,72,153,0.25),transparent_28%),radial-gradient(circle_at_50%_60%,rgba(14,165,233,0.2),transparent_30%)]" />
+    <div className="min-h-screen bg-[#faf7f2] text-[#1c1916]">
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_50%,rgba(180,140,96,0.12),transparent_35%),radial-gradient(circle_at_80%_40%,rgba(56,189,248,0.08),transparent_30%)]" />
       
       <main className="mx-auto flex max-w-2xl flex-col gap-8 px-6 pb-24 pt-20 sm:px-10 md:px-14">
-        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 sm:p-8 md:p-10 shadow-2xl shadow-indigo-950/30">
+        <div className="rounded-3xl border border-stone-200 bg-white p-6 sm:p-8 md:p-10 shadow-sm">
           <div className="space-y-3 mb-6">
-            <p className="text-sm uppercase tracking-[0.3em] text-indigo-100">
+            <p className="text-sm uppercase tracking-[0.3em] text-stone-500">
               Laisser un avis
             </p>
             <h1 className="text-3xl sm:text-4xl font-semibold">
               Partagez votre expérience
             </h1>
-            <p className="text-base sm:text-lg text-slate-200">
+            <p className="text-base sm:text-lg text-stone-600">
               {step === 'verify' 
                 ? 'Pour laisser un avis, veuillez d\'abord vérifier votre identité avec le code qui vous a été fourni après votre shooting.'
                 : 'Merci de partager votre expérience avec LueurStudio. Votre avis sera publié après modération.'}
@@ -120,32 +120,32 @@ export default function TestimonialsPage() {
           {step === 'verify' ? (
             <form onSubmit={handleVerify} className="space-y-4">
               <div>
-                <label className="block text-sm mb-2 text-slate-200">
+                <label className="block text-sm mb-2 text-stone-600">
                   Email utilisé pour le shooting *
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
                   placeholder="votre@email.com"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm mb-2 text-slate-200">
+                <label className="block text-sm mb-2 text-stone-600">
                   Code de vérification *
                 </label>
                 <input
                   type="text"
                   value={code}
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
                   placeholder="CODE123"
                   required
                 />
-                <p className="text-xs text-slate-400 mt-2">
+                <p className="text-xs text-stone-500 mt-2">
                   Le code vous a été fourni après votre shooting. Si vous ne l'avez pas, contactez-nous.
                 </p>
               </div>
@@ -155,7 +155,7 @@ export default function TestimonialsPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/30 disabled:opacity-50"
+                className="w-full rounded-full bg-[#1c1916] px-5 py-3 text-sm font-semibold text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20 disabled:opacity-50"
               >
                 {loading ? 'Vérification...' : 'Vérifier'}
               </button>
@@ -163,40 +163,40 @@ export default function TestimonialsPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm mb-2 text-slate-200">
+                <label className="block text-sm mb-2 text-stone-600">
                   Votre nom *
                 </label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
                   placeholder="Ex. Marie Dupont"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm mb-2 text-slate-200">
+                <label className="block text-sm mb-2 text-stone-600">
                   Votre rôle / Fonction (optionnel)
                 </label>
                 <input
                   type="text"
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
                   placeholder="Ex. Directrice marketing"
                 />
               </div>
 
               <div>
-                <label className="block text-sm mb-2 text-slate-200">
+                <label className="block text-sm mb-2 text-stone-600">
                   Votre témoignage *
                 </label>
                 <textarea
                   value={formData.quote}
                   onChange={(e) => setFormData({ ...formData, quote: e.target.value })}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
                   placeholder="Partagez votre expérience..."
                   rows={5}
                   required
@@ -205,16 +205,16 @@ export default function TestimonialsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm mb-2 text-slate-200">
+                  <label className="block text-sm mb-2 text-stone-600">
                     Note (1-5 étoiles)
                   </label>
                   <select
                     value={formData.rating}
                     onChange={(e) => setFormData({ ...formData, rating: parseInt(e.target.value) })}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+                    className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
                   >
                     {[5, 4, 3, 2, 1].map(r => (
-                      <option key={r} value={r} className="bg-slate-900">
+                      <option key={r} value={r} className="bg-white text-stone-900">
                         {r} étoile{r > 1 ? 's' : ''}
                       </option>
                     ))}
@@ -222,27 +222,27 @@ export default function TestimonialsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-2 text-slate-200">
+                  <label className="block text-sm mb-2 text-stone-600">
                     Date du shooting (optionnel)
                   </label>
                   <input
                     type="date"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm mb-2 text-slate-200">
+                <label className="block text-sm mb-2 text-stone-600">
                   Projet (optionnel)
                 </label>
                 <input
                   type="text"
                   value={formData.project}
                   onChange={(e) => setFormData({ ...formData, project: e.target.value })}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white outline-none ring-1 ring-transparent transition focus:ring-indigo-400/60"
+                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none ring-1 ring-transparent transition focus:ring-amber-300/60"
                   placeholder="Ex. Portrait signature"
                 />
               </div>
@@ -253,14 +253,14 @@ export default function TestimonialsPage() {
                 <button
                   type="button"
                   onClick={() => setStep('verify')}
-                  className="flex-1 rounded-full border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10"
+                  className="flex-1 rounded-full border border-white/20 px-5 py-3 text-sm font-semibold text-[#f5f1ea] transition hover:border-white/40 hover:bg-white/10"
                 >
                   ← Retour
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/30 disabled:opacity-50"
+                  className="flex-1 rounded-full bg-[#1c1916] px-5 py-3 text-sm font-semibold text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20 disabled:opacity-50"
                 >
                   {loading ? 'Envoi...' : 'Envoyer mon avis'}
                 </button>
