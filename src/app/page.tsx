@@ -185,8 +185,8 @@ export default async function Home() {
                       style={{
                         backgroundImage:
                           idx === 0
-                            ? "url('/images/IMG_0602.JPG')"
-                            : "url('/images/IMG_0602-2.JPG')",
+                            ? "url('/images/IMG_0602.jpg')"
+                            : "url('/images/IMG_0602-2.jpg')",
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent opacity-0 transition group-hover:opacity-100" />
