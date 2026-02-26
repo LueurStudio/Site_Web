@@ -171,7 +171,7 @@ async function addWatermark(imageBuffer: Buffer, path: string[]): Promise<NextRe
     const contentType = mimeTypes[format] || 'image/jpeg';
 
     // Retourner l'image avec filigrane
-    return new NextResponse(watermarkedImage, {
+    return new NextResponse(new Uint8Array(watermarkedImage), {
       headers: {
         'Content-Type': contentType,
         'Content-Disposition': `attachment; filename="${path[path.length - 1]}"`,
@@ -181,7 +181,7 @@ async function addWatermark(imageBuffer: Buffer, path: string[]): Promise<NextRe
   } catch (watermarkError) {
     console.error('Erreur lors de l\'ajout du filigrane:', watermarkError);
     // En cas d'erreur, retourner l'image originale
-    return new NextResponse(originalBuffer, {
+    return new NextResponse(new Uint8Array(originalBuffer), {
       headers: {
         'Content-Type': 'image/jpeg',
         'Cache-Control': 'public, max-age=31536000, immutable',
@@ -206,7 +206,7 @@ async function serveImageWithoutWatermark(imageBuffer: Buffer, path: string[]): 
     const format = (metadata.format || 'jpeg').toLowerCase();
     const contentType = mimeTypes[format] || 'image/jpeg';
 
-  return new NextResponse(originalBuffer, {
+  return new NextResponse(new Uint8Array(originalBuffer), {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',
