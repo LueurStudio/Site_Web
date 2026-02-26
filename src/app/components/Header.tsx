@@ -83,7 +83,7 @@ export default function Header() {
             >
                 <div className="flex items-center gap-2 sm:gap-3 flex-1">
                     <div
-                        className={`relative flex items-center justify-center transition-all duration-300 ${isScrolled ? 'h-8 w-8' : 'h-10 w-10 sm:h-12 sm:w-12'
+                        className={`relative flex items-center justify-center overflow-hidden rounded-full bg-white transition-all duration-300 ${isScrolled ? 'h-8 w-8' : 'h-10 w-10 sm:h-12 sm:w-12'
                             } flex-shrink-0`}
                     >
                         <Image

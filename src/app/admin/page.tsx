@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Project } from '@/app/portfolio/projects-data';
 import type { PricingOffer } from '@/app/pricing/pricing-data';
+import type { FaqItem } from '@/app/faq/faq-data';
 import { categories } from '@/app/portfolio/projects-data';
 
 export default function AdminPage() {
@@ -27,7 +28,7 @@ export default function AdminPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
-  const [activeMode, setActiveMode] = useState<'rapide' | 'complet' | 'edit' | 'testimonials' | 'reservations' | 'availability' | 'pricing'>('rapide');
+  const [activeMode, setActiveMode] = useState<'rapide' | 'complet' | 'edit' | 'testimonials' | 'reservations' | 'availability' | 'pricing' | 'faq'>('rapide');
 
   // Gestion des avis
   const [testimonials, setTestimonials] = useState<any[]>([]);
@@ -86,6 +87,11 @@ export default function AdminPage() {
   const [loadingPricing, setLoadingPricing] = useState(false);
   const [pricingError, setPricingError] = useState('');
 
+  // Gestion FAQ
+  const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
+  const [loadingFaq, setLoadingFaq] = useState(false);
+  const [faqError, setFaqError] = useState('');
+
   // Fonction pour calculer les jours restants avant expiration de la galerie
   const getDaysRemaining = (expiresAt?: string) => {
     if (!expiresAt) return null;
@@ -125,6 +131,9 @@ export default function AdminPage() {
     }
     if (activeMode === 'pricing') {
       loadPricing();
+    }
+    if (activeMode === 'faq') {
+      loadFaq();
     }
   }, [activeMode]);
 
@@ -195,6 +204,62 @@ export default function AdminPage() {
       setPricingError('Erreur lors de la mise à jour');
     } finally {
       setLoadingPricing(false);
+    }
+  };
+
+  const loadFaq = async () => {
+    try {
+      const res = await fetch('/api/faq/list');
+      const data = await res.json();
+      if (data.items) {
+        setFaqItems(data.items);
+      }
+    } catch (err) {
+      console.error('Erreur lors du chargement de la FAQ:', err);
+    }
+  };
+
+  const addFaqItem = () => {
+    const newItem: FaqItem = {
+      id: `faq-${Date.now()}`,
+      question: '',
+      answer: '',
+    };
+    setFaqItems((prev) => [...prev, newItem]);
+  };
+
+  const updateFaqItem = (id: string, field: keyof Omit<FaqItem, 'id'>, value: string) => {
+    setFaqItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
+    );
+  };
+
+  const removeFaqItem = (id: string) => {
+    setFaqItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const saveFaq = async () => {
+    setLoadingFaq(true);
+    setFaqError('');
+
+    try {
+      const res = await fetch('/api/faq/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: faqItems }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setFaqItems(data.items || []);
+        alert('FAQ mise à jour avec succès');
+      } else {
+        setFaqError(data.error || 'Erreur lors de la mise à jour');
+      }
+    } catch (err) {
+      console.error('Erreur lors de la mise à jour de la FAQ:', err);
+      setFaqError('Erreur lors de la mise à jour');
+    } finally {
+      setLoadingFaq(false);
     }
   };
 
@@ -692,6 +757,18 @@ export default function AdminPage() {
           >
             Disponibilités
           </button>
+          <button
+            onClick={() => {
+              setActiveMode('faq');
+              loadFaq();
+            }}
+            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'faq'
+                ? 'bg-[#1c1916] text-[#faf7f2]'
+                : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
+              }`}
+          >
+            FAQ
+          </button>
         </div>
 
         {isProjectMode && (
@@ -878,7 +955,7 @@ export default function AdminPage() {
                                   [category]: { ...prev[category], title: e.target.value }
                                 }));
                               }}
-                              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                              className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                               placeholder={`Ex: Nouveau projet ${category}`}
                             />
                           </div>
@@ -893,7 +970,7 @@ export default function AdminPage() {
                                   [category]: { ...prev[category], subtitle: e.target.value }
                                 }));
                               }}
-                              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                              className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                               placeholder="Sous-titre du projet"
                             />
                           </div>
@@ -1217,7 +1294,7 @@ export default function AdminPage() {
                     type="text"
                     value={testimonialForm.name}
                     onChange={(e) => setTestimonialForm({ ...testimonialForm, name: e.target.value })}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                     placeholder="Ex. Marie Dupont"
                     required
                   />
@@ -1229,7 +1306,7 @@ export default function AdminPage() {
                     type="email"
                     value={testimonialForm.email}
                     onChange={(e) => setTestimonialForm({ ...testimonialForm, email: e.target.value })}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                     placeholder="client@email.com"
                     required
                   />
@@ -1241,7 +1318,7 @@ export default function AdminPage() {
                     type="text"
                     value={testimonialForm.role}
                     onChange={(e) => setTestimonialForm({ ...testimonialForm, role: e.target.value })}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                     placeholder="Ex. Directrice marketing"
                   />
                 </div>
@@ -1251,7 +1328,7 @@ export default function AdminPage() {
                   <textarea
                     value={testimonialForm.quote}
                     onChange={(e) => setTestimonialForm({ ...testimonialForm, quote: e.target.value })}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                     placeholder="Le témoignage du client..."
                     rows={4}
                     required
@@ -1267,7 +1344,7 @@ export default function AdminPage() {
                       max="5"
                       value={testimonialForm.rating}
                       onChange={(e) => setTestimonialForm({ ...testimonialForm, rating: parseInt(e.target.value) || 5 })}
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                      className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                     />
                   </div>
 
@@ -1277,7 +1354,7 @@ export default function AdminPage() {
                       type="date"
                       value={testimonialForm.date}
                       onChange={(e) => setTestimonialForm({ ...testimonialForm, date: e.target.value })}
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                      className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                     />
                   </div>
                 </div>
@@ -1288,7 +1365,7 @@ export default function AdminPage() {
                     type="text"
                     value={testimonialForm.project}
                     onChange={(e) => setTestimonialForm({ ...testimonialForm, project: e.target.value })}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                     placeholder="Ex. Portrait signature"
                   />
                 </div>
@@ -1299,7 +1376,7 @@ export default function AdminPage() {
                     type="text"
                     value={testimonialForm.image}
                     onChange={(e) => setTestimonialForm({ ...testimonialForm, image: e.target.value })}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                     placeholder="/images/client.jpg"
                   />
                 </div>
@@ -1317,24 +1394,24 @@ export default function AdminPage() {
             </div>
 
             {/* Liste des avis existants */}
-            <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 md:p-8 shadow-2xl">
+            <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
               <h2 className="text-2xl font-semibold mb-6">Avis en attente de modération</h2>
 
               {testimonials.filter(t => t && (!t.approved || t.approved === false)).length === 0 ? (
-                <p className="text-slate-400 text-center py-8">Aucun avis en attente</p>
+                <p className="text-stone-600 text-center py-8">Aucun avis en attente</p>
               ) : (
                 <div className="space-y-4 mb-8">
                   {testimonials.filter(t => t && (!t.approved || t.approved === false)).map((testimonial) => (
                     <div
                       key={testimonial.id}
-                      className="rounded-2xl border border-orange-500/30 bg-slate-900/60 p-4"
+                      className="rounded-2xl border border-orange-200 bg-stone-50 p-4"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-semibold text-white">{testimonial.name}</h3>
+                            <h3 className="text-lg font-semibold text-stone-900">{testimonial.name}</h3>
                             {testimonial.email && (
-                              <span className="text-xs text-slate-400">({testimonial.email})</span>
+                              <span className="text-xs text-stone-500">({testimonial.email})</span>
                             )}
                             {testimonial.rating && (
                               <div className="flex gap-1">
@@ -1350,14 +1427,14 @@ export default function AdminPage() {
                             )}
                           </div>
                           {testimonial.role && (
-                            <p className="text-sm text-slate-300 mb-2">{testimonial.role}</p>
+                            <p className="text-sm text-stone-600 mb-2">{testimonial.role}</p>
                           )}
                           {testimonial.project && (
                             <p className="text-xs text-indigo-300 mb-2">Projet: {testimonial.project}</p>
                           )}
                           <p className="text-slate-200 italic">"{testimonial.quote}"</p>
                           {testimonial.date && (
-                            <p className="text-xs text-slate-400 mt-2">{new Date(testimonial.date).toLocaleDateString('fr-FR')}</p>
+                            <p className="text-xs text-stone-500 mt-2">{new Date(testimonial.date).toLocaleDateString('fr-FR')}</p>
                           )}
                         </div>
                         <div className="flex flex-col gap-2">
@@ -1437,18 +1514,18 @@ export default function AdminPage() {
               <h2 className="text-2xl font-semibold mb-6 mt-8">Avis approuvés</h2>
 
               {testimonials.filter(t => t && t.approved === true).length === 0 ? (
-                <p className="text-slate-400 text-center py-8">Aucun avis approuvé pour le moment</p>
+                <p className="text-stone-600 text-center py-8">Aucun avis approuvé pour le moment</p>
               ) : (
                 <div className="space-y-4">
                   {testimonials.filter(t => t && t.approved === true).map((testimonial) => (
                     <div
                       key={testimonial.id}
-                      className="rounded-2xl border border-white/10 bg-slate-900/60 p-4"
+                      className="rounded-2xl border border-stone-200 bg-white p-4"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-semibold text-white">{testimonial.name}</h3>
+                            <h3 className="text-lg font-semibold text-stone-900">{testimonial.name}</h3>
                             {testimonial.rating && (
                               <div className="flex gap-1">
                                 {[...Array(5)].map((_, i) => (
@@ -1463,14 +1540,14 @@ export default function AdminPage() {
                             )}
                           </div>
                           {testimonial.role && (
-                            <p className="text-sm text-slate-300 mb-2">{testimonial.role}</p>
+                            <p className="text-sm text-stone-600 mb-2">{testimonial.role}</p>
                           )}
                           {testimonial.project && (
                             <p className="text-xs text-indigo-300 mb-2">Projet: {testimonial.project}</p>
                           )}
                           <p className="text-slate-200 italic">"{testimonial.quote}"</p>
                           {testimonial.date && (
-                            <p className="text-xs text-slate-400 mt-2">{new Date(testimonial.date).toLocaleDateString('fr-FR')}</p>
+                            <p className="text-xs text-stone-500 mt-2">{new Date(testimonial.date).toLocaleDateString('fr-FR')}</p>
                           )}
                         </div>
                         <div className="flex flex-col gap-2">
@@ -1549,7 +1626,7 @@ export default function AdminPage() {
             </div>
 
             {/* Gestion des codes de vérification */}
-            <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 md:p-8 shadow-2xl">
+            <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
               <h2 className="text-2xl font-semibold mb-6">Gérer les codes de vérification</h2>
 
               <form
@@ -1598,7 +1675,7 @@ export default function AdminPage() {
                       type="email"
                       value={newCodeForm.email}
                       onChange={(e) => setNewCodeForm({ ...newCodeForm, email: e.target.value })}
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                      className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                       placeholder="client@example.com"
                       required
                     />
@@ -1609,7 +1686,7 @@ export default function AdminPage() {
                       type="text"
                       value={newCodeForm.code}
                       onChange={(e) => setNewCodeForm({ ...newCodeForm, code: e.target.value.toUpperCase() })}
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+                      className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                       placeholder="CODE123"
                       required
                     />
@@ -1627,17 +1704,17 @@ export default function AdminPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-4">Codes existants</h3>
                 {Object.keys(verificationCodes).length === 0 ? (
-                  <p className="text-slate-400 text-center py-4">Aucun code configuré</p>
+                <p className="text-stone-600 text-center py-4">Aucun code configuré</p>
                 ) : (
                   <div className="space-y-2">
                     {Object.entries(verificationCodes).map(([email, code]) => (
                       <div
                         key={email}
-                        className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-2"
+                        className="flex items-center justify-between rounded-xl border border-stone-300 bg-white px-4 py-2"
                       >
                         <div>
-                          <p className="text-sm font-medium text-white">{email}</p>
-                          <p className="text-xs text-slate-300">Code: {code}</p>
+                          <p className="text-sm font-medium text-stone-900">{email}</p>
+                          <p className="text-xs text-stone-600">Code: {code}</p>
                         </div>
                         <button
                           onClick={async () => {
@@ -1687,26 +1764,26 @@ export default function AdminPage() {
         ) : activeMode === 'reservations' ? (
           /* Mode réservations */
           <div className="space-y-6">
-            <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 md:p-8 shadow-2xl">
+            <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
               <h2 className="text-2xl font-semibold mb-6">Gestion des réservations</h2>
 
               {!selectedReservation ? (
                 /* Liste des réservations */
                 <div className="space-y-4">
                   {reservations.length === 0 ? (
-                    <p className="text-slate-400 text-center py-8">Aucune réservation pour le moment</p>
+                <p className="text-stone-600 text-center py-8">Aucune réservation pour le moment</p>
                   ) : (
                     <div className="grid gap-4">
                       {reservations.filter(r => r && r.id && r.firstName).map((reservation) => (
                         <div
                           key={reservation.id}
-                          className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 sm:p-5 hover:border-white/20 transition cursor-pointer"
+                          className="rounded-2xl border border-stone-200 bg-white p-4 sm:p-5 hover:border-stone-300 transition cursor-pointer"
                           onClick={() => setSelectedReservation(reservation)}
                         >
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-lg font-semibold text-white">
+                                <h3 className="text-lg font-semibold text-stone-900">
                                   {reservation.firstName} {reservation.lastName}
                                 </h3>
                                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${reservation.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
@@ -1730,8 +1807,8 @@ export default function AdminPage() {
                                   </span>
                                 )}
                               </div>
-                              <p className="text-sm text-slate-300">{reservation.email}</p>
-                              <div className="flex flex-wrap gap-4 mt-2 text-sm text-slate-400">
+                              <p className="text-sm text-stone-600">{reservation.email}</p>
+                              <div className="flex flex-wrap gap-4 mt-2 text-sm text-stone-500">
                                 <span>📅 {reservation.date}{reservation.startTime ? ` à ${reservation.startTime}` : ''}</span>
                                 <span>🎯 {reservation.prestationType}</span>
                                 <span>📍 {reservation.location}</span>
@@ -1753,7 +1830,7 @@ export default function AdminPage() {
                                   </div>
                                 );
                               })()}
-                              <p className="text-xs text-slate-500 mt-2">
+                              <p className="text-xs text-stone-500 mt-2">
                                 Créée le {new Date(reservation.createdAt).toLocaleDateString('fr-FR')}
                               </p>
                             </div>
@@ -1785,18 +1862,18 @@ export default function AdminPage() {
                     ← Retour à la liste
                   </button>
 
-                  <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-6">
+                  <div className="rounded-2xl border border-stone-200 bg-white p-6">
                     <h3 className="text-2xl font-semibold mb-4">
                       {selectedReservation.firstName} {selectedReservation.lastName}
                     </h3>
 
                     <div className="grid gap-4 sm:grid-cols-2 mb-6">
                       <div>
-                        <p className="text-sm text-slate-400">Email</p>
+                        <p className="text-sm text-stone-600">Email</p>
                         <p className="text-white">{selectedReservation.email}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-slate-400">Date prévue</p>
+                        <p className="text-sm text-stone-600">Date prévue</p>
                         <p className="text-white">
                           {selectedReservation.date}
                           {selectedReservation.startTime && (
@@ -1807,30 +1884,30 @@ export default function AdminPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-slate-400">Type de prestation</p>
+                        <p className="text-sm text-stone-600">Type de prestation</p>
                         <p className="text-white">{selectedReservation.prestationType}</p>
                       </div>
                       {selectedReservation.prestationType === 'Événement' && (
                         <>
                           <div>
-                            <p className="text-sm text-slate-400">Type d’événement</p>
+                            <p className="text-sm text-stone-600">Type d’événement</p>
                             <p className="text-white">{selectedReservation.eventType || 'Non renseigné'}</p>
                           </div>
                           <div>
-                            <p className="text-sm text-slate-400">Contact préféré</p>
+                            <p className="text-sm text-stone-600">Contact préféré</p>
                             <p className="text-white">{selectedReservation.contactPreference || 'Non renseigné'}</p>
                           </div>
                         </>
                       )}
                       <div>
-                        <p className="text-sm text-slate-400">Lieu</p>
+                        <p className="text-sm text-stone-600">Lieu</p>
                         <p className="text-white">
                           {selectedReservation.location || 'Non renseigné'}
                         </p>
                       </div>
                       {selectedReservation.galleryCode && selectedReservation.galleryCreated && (
                         <div>
-                          <p className="text-sm text-slate-400">Code d'accès galerie</p>
+                          <p className="text-sm text-stone-600">Code d'accès galerie</p>
                           <p className="text-white font-mono">{selectedReservation.galleryCode}</p>
                         </div>
                       )}
@@ -1839,7 +1916,7 @@ export default function AdminPage() {
                         const expiresDate = new Date(selectedReservation.galleryExpiresAt);
                         return (
                           <div>
-                            <p className="text-sm text-slate-400">Expiration de la galerie</p>
+                            <p className="text-sm text-stone-600">Expiration de la galerie</p>
                             <p className={`text-white ${daysRemaining !== null && daysRemaining <= 0
                                 ? 'text-red-400'
                                 : daysRemaining !== null && daysRemaining <= 7
@@ -1850,7 +1927,7 @@ export default function AdminPage() {
                                 <>
                                   <strong>{daysRemaining} jour{daysRemaining > 1 ? 's' : ''} restant{daysRemaining > 1 ? 's' : ''}</strong>
                                   <br />
-                                  <span className="text-sm text-slate-400">
+                                  <span className="text-sm text-stone-500">
                                     Jusqu'au {expiresDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                                   </span>
                                 </>
@@ -1858,7 +1935,7 @@ export default function AdminPage() {
                                 <>
                                   <strong>Galerie expirée</strong>
                                   <br />
-                                  <span className="text-sm text-slate-400">
+                                  <span className="text-sm text-stone-500">
                                     Depuis le {expiresDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                                   </span>
                                 </>
@@ -1871,21 +1948,21 @@ export default function AdminPage() {
 
                     {selectedReservation.specialRetouches && (
                       <div className="mb-6">
-                        <p className="text-sm text-slate-400 mb-2">Retouches spéciales</p>
+                        <p className="text-sm text-stone-600 mb-2">Retouches spéciales</p>
                         <p className="text-white">{selectedReservation.specialRetouches}</p>
                       </div>
                     )}
 
                     {selectedReservation.prestationType === 'Événement' && selectedReservation.eventDetails && (
                       <div className="mb-6">
-                        <p className="text-sm text-slate-400 mb-2">Description de l’événement</p>
+                        <p className="text-sm text-stone-600 mb-2">Description de l’événement</p>
                         <p className="text-white whitespace-pre-line">{selectedReservation.eventDetails}</p>
                       </div>
                     )}
 
                     {selectedReservation.inspirationPhotos && selectedReservation.inspirationPhotos.length > 0 && (
                       <div className="mb-6">
-                        <p className="text-sm text-slate-400 mb-2">Photos d'inspiration</p>
+                        <p className="text-sm text-stone-600 mb-2">Photos d'inspiration</p>
                         <div className="grid grid-cols-4 gap-2">
                           {selectedReservation.inspirationPhotos.map((photo: string, index: number) => (
                             <img key={index} src={photo} alt={`Inspiration ${index + 1}`} className="rounded-lg" />
@@ -1897,14 +1974,14 @@ export default function AdminPage() {
                     {/* Gestion des photos de la galerie */}
                     <div className="mb-6 rounded-xl border border-green-500/30 bg-green-500/10 p-6">
                       <h4 className="text-lg font-semibold mb-4">📸 Photos de la galerie client</h4>
-                      <p className="text-sm text-slate-300 mb-4">
+                      <p className="text-sm text-stone-600 mb-4">
                         Ajoutez les photos finales qui seront visibles dans la galerie personnelle du client.
                       </p>
 
                       <div className="space-y-4">
                         {/* Upload de photos */}
                         <label className="block">
-                          <span className="text-sm text-slate-300 mb-2 block">Ajouter des photos</span>
+                          <span className="text-sm text-stone-600 mb-2 block">Ajouter des photos</span>
                           <input
                             type="file"
                             multiple
@@ -1966,7 +2043,7 @@ export default function AdminPage() {
                               }
                             }}
                             disabled={uploadingGalleryPhotos}
-                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-green-400/60 disabled:opacity-50"
+                            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60 disabled:opacity-50"
                           />
                           {uploadingGalleryPhotos && (
                             <p className="mt-2 text-sm text-green-400">Upload en cours...</p>
@@ -1976,7 +2053,7 @@ export default function AdminPage() {
                         {/* Affichage des photos existantes */}
                         {selectedReservation.galleryPhotos && selectedReservation.galleryPhotos.length > 0 ? (
                           <div>
-                            <p className="text-sm text-slate-300 mb-3">
+                            <p className="text-sm text-stone-600 mb-3">
                               {selectedReservation.galleryPhotos.length} photo(s) dans la galerie
                             </p>
                             <div className="grid grid-cols-4 gap-2">
@@ -2027,7 +2104,7 @@ export default function AdminPage() {
                             </div>
                           </div>
                         ) : (
-                          <p className="text-sm text-slate-400 italic">
+                          <p className="text-sm text-stone-500 italic">
                             Aucune photo dans la galerie pour le moment. Ajoutez des photos ci-dessus.
                           </p>
                         )}
@@ -2038,18 +2115,18 @@ export default function AdminPage() {
                     {selectedReservation.status === 'completed' && (
                       <div className="rounded-xl border border-indigo-500/30 bg-indigo-500/10 p-6">
                         <h4 className="text-lg font-semibold mb-4">📧 Envoyer la galerie photo</h4>
-                        <p className="text-sm text-slate-300 mb-4">
+                        <p className="text-sm text-stone-600 mb-4">
                           Entrez l'URL de la galerie photo et un email sera automatiquement envoyé au client avec le code d'accès.
                         </p>
                         <div className="space-y-4">
                           <label className="block">
-                            <span className="text-sm text-slate-300 mb-2 block">URL de la galerie</span>
+                            <span className="text-sm text-stone-600 mb-2 block">URL de la galerie</span>
                             <input
                               type="text"
                               value={galleryUrl}
                               onChange={(e) => setGalleryUrl(e.target.value)}
                               placeholder={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://lueurstudio'}/gallery/CODE`}
-                              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-indigo-400/60"
+                              className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                             />
                           </label>
                           <button
@@ -2102,7 +2179,7 @@ export default function AdminPage() {
                             {sendingEmail ? 'Envoi en cours...' : 'Envoyer l\'email avec la galerie'}
                           </button>
                           {selectedReservation.galleryCode && (
-                            <p className="text-sm text-slate-300 mt-2">
+                            <p className="text-sm text-stone-600 mt-2">
                               Code d'accès actuel: <span className="font-mono font-semibold">{selectedReservation.galleryCode}</span>
                             </p>
                           )}
@@ -2112,7 +2189,7 @@ export default function AdminPage() {
 
                     {/* Changer le statut */}
                     <div className="mt-6 pt-6 border-t border-white/10">
-                      <p className="text-sm text-slate-400 mb-3">Changer le statut</p>
+                      <p className="text-sm text-stone-600 mb-3">Changer le statut</p>
                       <div className="flex gap-2 flex-wrap">
                         {(['pending', 'confirmed', 'completed', 'cancelled'] as const).map((status) => (
                           <button
@@ -2169,11 +2246,11 @@ export default function AdminPage() {
         ) : activeMode === 'pricing' ? (
           /* Mode tarifs */
           <div className="space-y-6">
-            <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 md:p-8 shadow-2xl">
+            <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
                   <h2 className="text-2xl font-semibold">Gestion des tarifs</h2>
-                  <p className="text-sm text-slate-300 mt-1">
+                  <p className="text-sm text-stone-600 mt-1">
                     Modifiez les offres affichées sur la page d'accueil.
                   </p>
                 </div>
@@ -2186,16 +2263,16 @@ export default function AdminPage() {
               </div>
 
               {pricingOffers.length === 0 ? (
-                <p className="text-slate-400 text-center py-8">Aucune offre configurée.</p>
+                <p className="text-stone-600 text-center py-8">Aucune offre configurée.</p>
               ) : (
                 <div className="space-y-4">
                   {pricingOffers.map((offer) => (
                     <div
                       key={offer.id}
-                      className="rounded-2xl border border-white/10 bg-slate-900/60 p-5"
+                      className="rounded-2xl border border-stone-200 bg-white p-5"
                     >
                       <div className="flex items-center justify-between mb-4">
-                        <p className="text-sm text-slate-300">Offre</p>
+                        <p className="text-sm text-stone-600">Offre</p>
                         <button
                           onClick={() => removePricingOffer(offer.id)}
                           className="text-red-400 hover:text-red-300 text-sm"
@@ -2205,32 +2282,32 @@ export default function AdminPage() {
                       </div>
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div>
-                          <label className="block text-sm text-slate-300 mb-2">Nom</label>
+                          <label className="block text-sm text-stone-600 mb-2">Nom</label>
                           <input
                             type="text"
                             value={offer.name}
                             onChange={(e) => updatePricingOffer(offer.id, 'name', e.target.value)}
-                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-indigo-400/60"
+                            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm text-slate-300 mb-2">Prix</label>
+                          <label className="block text-sm text-stone-600 mb-2">Prix</label>
                           <input
                             type="text"
                             value={offer.price}
                             onChange={(e) => updatePricingOffer(offer.id, 'price', e.target.value)}
                             placeholder="Ex: 150€ ou Sur devis"
-                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-indigo-400/60"
+                            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                           />
                         </div>
                       </div>
                       <div className="mt-4">
-                        <label className="block text-sm text-slate-300 mb-2">Description</label>
+                        <label className="block text-sm text-stone-600 mb-2">Description</label>
                         <textarea
                           value={offer.desc}
                           onChange={(e) => updatePricingOffer(offer.id, 'desc', e.target.value)}
                           rows={3}
-                          className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-indigo-400/60"
+                          className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                         />
                       </div>
                     </div>
@@ -2254,33 +2331,33 @@ export default function AdminPage() {
         ) : activeMode === 'availability' ? (
           /* Mode disponibilités */
           <div className="space-y-6">
-            <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 md:p-8 shadow-2xl">
+            <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
               <h2 className="text-2xl font-semibold mb-6">Gestion des disponibilités</h2>
 
-              <div className="mb-6 p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
-                <p className="text-sm text-slate-300">
+              <div className="mb-6 p-4 rounded-xl bg-blue-500/15 border border-blue-500/40">
+                <p className="text-sm text-stone-700">
                   <strong>Règles par défaut :</strong> Les réservations sont disponibles uniquement les week-ends (samedi et dimanche).
                 </p>
-                <p className="text-sm text-slate-300 mt-2">
+                <p className="text-sm text-stone-700 mt-2">
                   <strong>Déverrouiller :</strong> Permet de rendre disponible une date en semaine.
                 </p>
-                <p className="text-sm text-slate-300 mt-2">
+                <p className="text-sm text-stone-700 mt-2">
                   <strong>Bloquer :</strong> Rend une date indisponible (week-end ou semaine).
                 </p>
               </div>
 
               {/* Gestion rapide d'une date */}
-              <div className="mb-8 p-6 rounded-2xl border border-white/10 bg-slate-900/60">
+              <div className="mb-8 p-6 rounded-2xl border border-stone-300 bg-stone-50">
                 <h3 className="text-lg font-semibold mb-4">Gérer une date spécifique</h3>
                 <div className="flex gap-4 items-end flex-wrap">
                   <div className="flex-1 min-w-[200px]">
-                    <label className="block text-sm text-slate-300 mb-2">Date</label>
+                    <label className="block text-sm text-stone-800 mb-2">Date</label>
                     <input
                       type="date"
                       value={selectedDate}
                       onChange={(e) => setSelectedDate(e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-indigo-400/60"
+                      className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                     />
                   </div>
                   <div className="flex gap-2 flex-wrap">
@@ -2312,7 +2389,7 @@ export default function AdminPage() {
                         }
                       }}
                       disabled={loadingAvailability || !selectedDate}
-                      className="px-4 py-3 rounded-xl bg-green-500/20 border border-green-500/50 text-green-400 font-semibold transition hover:bg-green-500/30 disabled:opacity-50"
+                      className="px-4 py-3 rounded-xl bg-green-600/20 border border-green-600/60 text-green-700 font-semibold transition hover:bg-green-600/30 disabled:opacity-50"
                     >
                       Déverrouiller
                     </button>
@@ -2344,7 +2421,7 @@ export default function AdminPage() {
                         }
                       }}
                       disabled={loadingAvailability || !selectedDate}
-                      className="px-4 py-3 rounded-xl bg-red-500/20 border border-red-500/50 text-red-400 font-semibold transition hover:bg-red-500/30 disabled:opacity-50"
+                      className="px-4 py-3 rounded-xl bg-red-600/20 border border-red-600/60 text-red-700 font-semibold transition hover:bg-red-600/30 disabled:opacity-50"
                     >
                       Bloquer
                     </button>
@@ -2376,7 +2453,7 @@ export default function AdminPage() {
                         }
                       }}
                       disabled={loadingAvailability || !selectedDate}
-                      className="px-4 py-3 rounded-xl bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 font-semibold transition hover:bg-yellow-500/30 disabled:opacity-50"
+                      className="px-4 py-3 rounded-xl bg-amber-500/20 border border-amber-500/60 text-amber-700 font-semibold transition hover:bg-amber-500/30 disabled:opacity-50"
                     >
                       Débloquer
                     </button>
@@ -2386,10 +2463,10 @@ export default function AdminPage() {
 
               {/* Liste des dates déverrouillées */}
               {unlockedDates.length > 0 && (
-                <div className="mb-8 p-6 rounded-2xl border border-white/10 bg-slate-900/60">
+                <div className="mb-8 p-6 rounded-2xl border border-stone-300 bg-stone-50">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold">📅 Dates déverrouillées (disponibles en semaine)</h3>
-                    <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm font-semibold">
+                    <span className="px-3 py-1 rounded-full bg-green-600/20 text-green-700 text-sm font-semibold">
                       {unlockedDates.length}
                     </span>
                   </div>
@@ -2397,9 +2474,9 @@ export default function AdminPage() {
                     {unlockedDates.map((date) => (
                       <div
                         key={date}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/30"
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-600/15 border border-green-600/40"
                       >
-                        <span className="text-white">{new Date(date + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                        <span className="text-stone-900">{new Date(date + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
                         <button
                           onClick={async () => {
                             if (confirm(`Retirer le déverrouillage pour le ${new Date(date + 'T00:00:00').toLocaleDateString('fr-FR')} ?`)) {
@@ -2421,7 +2498,7 @@ export default function AdminPage() {
                               }
                             }
                           }}
-                          className="text-red-400 hover:text-red-300 text-sm"
+                          className="text-red-600 hover:text-red-500 text-sm"
                           disabled={loadingAvailability}
                         >
                           ✕
@@ -2434,10 +2511,10 @@ export default function AdminPage() {
 
               {/* Liste des dates bloquées */}
               {blockedDates.length > 0 && (
-                <div className="p-6 rounded-2xl border border-white/10 bg-slate-900/60">
+                <div className="p-6 rounded-2xl border border-stone-300 bg-stone-50">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold">🚫 Dates bloquées (indisponibles)</h3>
-                    <span className="px-3 py-1 rounded-full bg-red-500/20 text-red-400 text-sm font-semibold">
+                    <span className="px-3 py-1 rounded-full bg-red-600/20 text-red-700 text-sm font-semibold">
                       {blockedDates.length}
                     </span>
                   </div>
@@ -2445,9 +2522,9 @@ export default function AdminPage() {
                     {blockedDates.map((date) => (
                       <div
                         key={date}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/30"
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600/15 border border-red-600/40"
                       >
-                        <span className="text-white">{new Date(date + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                        <span className="text-stone-900">{new Date(date + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
                         <button
                           onClick={async () => {
                             if (confirm(`Débloquer le ${new Date(date + 'T00:00:00').toLocaleDateString('fr-FR')} ?`)) {
@@ -2469,7 +2546,7 @@ export default function AdminPage() {
                               }
                             }
                           }}
-                          className="text-green-400 hover:text-green-300 text-sm"
+                          className="text-green-600 hover:text-green-500 text-sm"
                           disabled={loadingAvailability}
                         >
                           ✕
@@ -2487,6 +2564,83 @@ export default function AdminPage() {
               )}
             </div>
           </div>
+        ) : activeMode === 'faq' ? (
+          /* Mode FAQ */
+          <div className="space-y-6">
+            <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                  <h2 className="text-2xl font-semibold">Gestion de la FAQ</h2>
+                  <p className="text-sm text-stone-600 mt-1">
+                    Ajoutez, modifiez ou supprimez les questions affichées sur la page d'accueil.
+                  </p>
+                </div>
+                <button
+                  onClick={addFaqItem}
+                  className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-stone-900 transition hover:-translate-y-0.5 hover:shadow-lg"
+                >
+                  + Ajouter une question
+                </button>
+              </div>
+
+              {faqItems.length === 0 ? (
+                <p className="text-stone-600 text-center py-8">Aucune question configurée.</p>
+              ) : (
+                <div className="space-y-4">
+                  {faqItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="rounded-2xl border border-stone-200 bg-white p-5"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <p className="text-sm text-stone-600">Question</p>
+                        <button
+                          onClick={() => removeFaqItem(item.id)}
+                          className="text-red-600 hover:text-red-500 text-sm"
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm text-stone-600 mb-2">Question</label>
+                          <input
+                            type="text"
+                            value={item.question}
+                            onChange={(e) => updateFaqItem(item.id, 'question', e.target.value)}
+                            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                            placeholder="Ex: Quels sont les délais ?"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm text-stone-600 mb-2">Réponse</label>
+                          <textarea
+                            value={item.answer}
+                            onChange={(e) => updateFaqItem(item.id, 'answer', e.target.value)}
+                            rows={3}
+                            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                            placeholder="Ex: Livraison rapide selon la prestation..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {faqError && <p className="text-red-600 text-sm mt-4">{faqError}</p>}
+
+              <div className="mt-6">
+                <button
+                  onClick={saveFaq}
+                  disabled={loadingFaq}
+                  className="w-full rounded-full bg-[#1c1916] px-4 py-3 font-semibold text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50"
+                >
+                  {loadingFaq ? 'Enregistrement...' : 'Enregistrer la FAQ'}
+                </button>
+              </div>
+            </div>
+          </div>
         ) : (
           /* Mode édition - Gérer les projets existants */
           <div className="space-y-6">
@@ -2501,7 +2655,7 @@ export default function AdminPage() {
                   return (
                     <div
                       key={category}
-                      className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 shadow-2xl"
+                      className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm"
                     >
                       <h3 className="text-xl font-semibold mb-4">{category}</h3>
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -2512,18 +2666,18 @@ export default function AdminPage() {
                               setEditingProject(project);
                               setEditedPhotos([...project.photos]);
                             }}
-                            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:border-white/30 hover:bg-white/10"
+                            className="group relative overflow-hidden rounded-2xl border border-stone-200 bg-white p-4 text-left transition hover:border-stone-300 hover:bg-stone-50"
                           >
                             <div className="aspect-[4/5] bg-cover bg-center rounded-xl mb-3 transition group-hover:scale-105"
                               style={{ backgroundImage: `url('${project.image}')` }}
                             />
-                            <h4 className="font-semibold text-white mb-1">{project.title}</h4>
+                            <h4 className="font-semibold text-stone-900 mb-1">{project.title}</h4>
                             {project.hidden && (
                               <span className="inline-flex items-center rounded-full bg-red-500/20 px-2 py-1 text-xs font-semibold text-red-200">
                                 Masqué
                               </span>
                             )}
-                            <p className="text-xs text-slate-300">{project.photos.length} photo(s)</p>
+                            <p className="text-xs text-stone-500">{project.photos.length} photo(s)</p>
                           </button>
                         ))}
                       </div>
@@ -2533,11 +2687,11 @@ export default function AdminPage() {
               </div>
             ) : (
               /* Interface d'édition du projet */
-              <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-slate-900/70 p-6 md:p-8 shadow-2xl">
+              <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-2xl font-semibold">{editingProject.title}</h2>
-                    <p className="text-sm text-slate-300 mt-1">{editingProject.category}</p>
+                    <p className="text-sm text-stone-600 mt-1">{editingProject.category}</p>
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -2569,7 +2723,7 @@ export default function AdminPage() {
                         }
                       }}
                       disabled={loading}
-                      className="rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10 disabled:opacity-50"
+                      className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-900 transition hover:border-stone-400 hover:bg-stone-100 disabled:opacity-50"
                     >
                       {editingProject.hidden ? 'Rendre visible' : 'Masquer'}
                     </button>
@@ -2617,7 +2771,7 @@ export default function AdminPage() {
                         setEditingProject(null);
                         setEditedPhotos([]);
                       }}
-                      className="rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10"
+                      className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-900 transition hover:border-stone-400 hover:bg-stone-100"
                     >
                       ← Retour
                     </button>
@@ -2625,12 +2779,12 @@ export default function AdminPage() {
                 </div>
 
                 <div className="mb-6">
-                  <p className="text-sm mb-3 text-slate-300">
+                  <p className="text-sm mb-3 text-stone-600">
                     Glissez-déposez les photos pour réorganiser leur ordre. Cliquez sur × pour supprimer une photo.
                   </p>
 
                   {editedPhotos.length === 0 ? (
-                    <p className="text-slate-400 text-center py-8">Aucune photo dans ce projet</p>
+                    <p className="text-stone-500 text-center py-8">Aucune photo dans ce projet</p>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                       {editedPhotos.map((photo, index) => (
@@ -2663,7 +2817,7 @@ export default function AdminPage() {
                               ? 'border-indigo-500 opacity-50'
                               : dragOverIndex === index
                                 ? 'border-indigo-400 border-dashed'
-                                : 'border-white/10 hover:border-white/30'
+                                : 'border-stone-200 hover:border-stone-300'
                             }`}
                         >
                           <img
@@ -2686,8 +2840,8 @@ export default function AdminPage() {
                           >
                             ×
                           </button>
-                          <div className="absolute inset-0 bg-indigo-500/20 opacity-0 group-hover:opacity-100 transition rounded-xl flex items-center justify-center">
-                            <span className="text-xs text-white font-semibold">Glisser pour réorganiser</span>
+                          <div className="absolute inset-0 bg-stone-900/10 opacity-0 group-hover:opacity-100 transition rounded-xl flex items-center justify-center">
+                            <span className="text-xs text-stone-900 font-semibold">Glisser pour réorganiser</span>
                           </div>
                         </div>
                       ))}
@@ -2742,7 +2896,7 @@ export default function AdminPage() {
                     onClick={() => {
                       setEditedPhotos([...editingProject.photos]);
                     }}
-                    className="rounded-full border border-white/20 px-4 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10"
+                    className="rounded-full border border-stone-300 px-4 py-3 text-sm font-semibold text-stone-900 transition hover:border-stone-400 hover:bg-stone-100"
                   >
                     Annuler
                   </button>

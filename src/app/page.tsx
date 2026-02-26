@@ -1,9 +1,11 @@
 import Link from "next/link";
+import Script from "next/script";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { pricingOffers } from "./pricing/pricing-data";
 import { CONTACT_EMAIL, SOCIAL_LINKS } from "@/config/contact";
 import type { Metadata } from "next";
 import ReservationForm from "./components/ReservationForm";
+import { faqItems } from "./faq/faq-data";
 
 export const metadata: Metadata = {
   title: "Accueil",
@@ -74,8 +76,10 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-[#faf7f2] text-[#1c1916]">
-      <script
+      <Script
+        id="ld-json-website"
         type="application/ld+json"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
@@ -92,8 +96,10 @@ export default async function Home() {
           }),
         }}
       />
-      <script
+      <Script
+        id="ld-json-organization"
         type="application/ld+json"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
@@ -110,7 +116,7 @@ export default async function Home() {
             },
             sameAs: [
               // Ajoutez vos liens réseaux sociaux ici
-             "https://www.instagram.com/lueurstudio91/",
+              "https://www.instagram.com/lueurstudio91/",
               // "https://www.facebook.com/lueurstudio",
             ],
           }),
@@ -153,22 +159,6 @@ export default async function Home() {
                 </svg>
                 Instagram
               </a>
-            </div>
-            <div className="grid grid-cols-2 gap-2 sm:gap-4 sm:grid-cols-4">
-              {[
-                { label: "Clients fidèles", value: "20+" },
-                { label: "Taux de satisfaction", value: "98%" },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="rounded-2xl border border-stone-200 bg-white px-4 py-3 text-center shadow-sm"
-                >
-                  <p className="text-2xl font-semibold text-stone-900">{item.value}</p>
-                  <p className="text-sm uppercase tracking-wide text-stone-500">
-                    {item.label}
-                  </p>
-                </div>
-              ))}
             </div>
           </div>
 
@@ -515,26 +505,13 @@ export default async function Home() {
             </p>
             <h2 className="text-3xl font-semibold text-stone-900">Questions fréquentes</h2>
             <div className="mt-6 grid gap-4 lg:grid-cols-3">
-              {[
-                {
-                  title: "Quels sont les délais ?",
-                  desc: "Livraison rapide selon la prestation, avec priorisation possible.",
-                },
-                {
-                  title: "Où se déroule le shooting ?",
-                  desc: "Studio, extérieur ou sur site client. On définit ça ensemble.",
-                },
-                {
-                  title: "Que comprend la retouche ?",
-                  desc: "Retouche fine, colorimétrie, export web & impression.",
-                },
-              ].map((item) => (
+              {faqItems.map((item) => (
                 <div
-                  key={item.title}
+                  key={item.id}
                   className="rounded-2xl border border-stone-200 bg-white p-5"
                 >
-                  <p className="text-base font-semibold text-stone-900">{item.title}</p>
-                  <p className="mt-2 text-sm text-stone-600">{item.desc}</p>
+                  <p className="text-base font-semibold text-stone-900">{item.question}</p>
+                  <p className="mt-2 text-sm text-stone-600">{item.answer}</p>
                 </div>
               ))}
             </div>

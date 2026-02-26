@@ -2,9 +2,7 @@
 export const blockedDates: string[] = [];
 
 // Dates déverrouillées (disponibles même en semaine) - format YYYY-MM-DD
-export const unlockedDates: string[] = [
-  "2026-01-16"
-];
+export const unlockedDates: string[] = [];
 
 // Fonction pour vérifier si une date est disponible
 export function isDateAvailable(dateString: string): { available: boolean; reason?: string } {
