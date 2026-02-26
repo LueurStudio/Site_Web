@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Script from "next/script";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { toWebPUrl, toWebPUrls } from "@/lib/imageUrl";
 import { pricingOffers } from "./pricing/pricing-data";
 import { CONTACT_EMAIL, SOCIAL_LINKS } from "@/config/contact";
 import type { Metadata } from "next";
@@ -44,7 +45,8 @@ export default async function Home() {
     .map((project: any) => ({
       ...project,
       details: project.details ?? [],
-      photos: project.photos ?? [],
+      image: toWebPUrl(project.image ?? ''),
+      photos: toWebPUrls(project.photos ?? []),
     }));
 
   const { data: testimonialsData } = await supabaseServer

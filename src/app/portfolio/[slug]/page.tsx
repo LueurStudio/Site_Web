@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import PhotoGallery from "./PhotoGallery";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { toWebPUrl, toWebPUrls } from "@/lib/imageUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +35,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const normalizedProject = {
     ...project,
     details: project.details ?? [],
-    photos: project.photos ?? [],
+    image: toWebPUrl(project.image ?? ''),
+    photos: toWebPUrls(project.photos ?? []),
   };
 
   const keywords = [
@@ -84,7 +86,8 @@ export default async function ProjectPage({ params }: Props) {
   const normalizedProject = {
     ...project,
     details: project.details ?? [],
-    photos: project.photos ?? [],
+    image: toWebPUrl(project.image ?? ''),
+    photos: toWebPUrls(project.photos ?? []),
   };
 
   return (

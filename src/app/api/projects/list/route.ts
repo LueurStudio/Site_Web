@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { checkAuth } from '@/lib/auth';
+import { toWebPUrl, toWebPUrls } from '@/lib/imageUrl';
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,7 +24,8 @@ export async function GET(request: NextRequest) {
     const projects = (data || []).map((project: any) => ({
       ...project,
       details: project.details ?? [],
-      photos: project.photos ?? [],
+      image: toWebPUrl(project.image ?? ''),
+      photos: toWebPUrls(project.photos ?? []),
     }));
 
     return NextResponse.json({ projects });
