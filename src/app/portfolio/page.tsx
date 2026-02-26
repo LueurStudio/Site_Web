@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import PortfolioClient from "./PortfolioClient";
 
 export const metadata: Metadata = {
@@ -28,6 +29,10 @@ export const metadata: Metadata = {
 };
 
 export default function PortfolioPage() {
-  return <PortfolioClient />;
+  return (
+    <Suspense fallback={<div className="min-h-[40vh]" />}>
+      <PortfolioClient />
+    </Suspense>
+  );
 }
 
