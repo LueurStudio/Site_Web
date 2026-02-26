@@ -10,6 +10,30 @@ interface PhotoGalleryProps {
 
 export default function PhotoGallery({ photos, projectTitle }: PhotoGalleryProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
+  const [photoSources, setPhotoSources] = useState<string[]>(photos);
+
+  useEffect(() => {
+    setPhotoSources(photos);
+  }, [photos]);
+
+  const getAlternateSrc = (src: string) => {
+    const match = src.match(/\.(jpg|jpeg|png|webp|gif)$/);
+    if (!match) return null;
+    const ext = match[1];
+    const altExt = ext === ext.toLowerCase() ? ext.toUpperCase() : ext.toLowerCase();
+    return `${src.slice(0, -ext.length)}${altExt}`;
+  };
+
+  const handleImageError = (index: number) => {
+    setPhotoSources((prev) => {
+      const current = prev[index];
+      const alternate = getAlternateSrc(current);
+      if (!alternate || alternate === current) return prev;
+      const next = [...prev];
+      next[index] = alternate;
+      return next;
+    });
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -76,7 +100,7 @@ export default function PhotoGallery({ photos, projectTitle }: PhotoGalleryProps
   return (
     <>
       <section className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        {photos.map((photo, index) => (
+        {photoSources.map((photo, index) => (
           <button
             key={index}
             onClick={() => setSelectedPhoto(index)}
@@ -90,6 +114,7 @@ export default function PhotoGallery({ photos, projectTitle }: PhotoGalleryProps
                 className="object-cover transition duration-500 group-hover:scale-110 select-none"
                 sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 20vw"
                 unoptimized
+                onError={() => handleImageError(index)}
                 onContextMenu={(e) => {
                   // Empêcher le clic droit
                   e.preventDefault();
@@ -195,13 +220,14 @@ export default function PhotoGallery({ photos, projectTitle }: PhotoGalleryProps
           {/* Image plein écran */}
           <div className="relative w-full h-full max-w-7xl max-h-[90vh] flex items-center justify-center">
             <Image
-              src={photos[selectedPhoto]}
-              alt={`${projectTitle} - Photo ${selectedPhoto + 1} sur ${photos.length}`}
+              src={photoSources[selectedPhoto]}
+              alt={`${projectTitle} - Photo ${selectedPhoto + 1} sur ${photoSources.length}`}
               fill
               className="object-contain p-4 select-none"
               sizes="100vw"
               priority
               unoptimized
+              onError={() => handleImageError(selectedPhoto)}
               onContextMenu={(e) => {
                 // Empêcher le clic droit
                 e.preventDefault();
