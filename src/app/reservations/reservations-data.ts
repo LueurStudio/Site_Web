@@ -54,10 +54,10 @@ export const reservations: Reservation[] = [
     "galleryCreated": true,
     "emailSent": true,
     "galleryPhotos": [
-      "/images/1767951304894_IMG_0575.jpg",
-      "/images/1767951304985_IMG_0576.jpg",
-      "/images/1767951305056_IMG_0577.jpg",
-      "/images/1767951305143_IMG_0578.jpg"
+      "/images/1767951304894_IMG_0575.webp",
+      "/images/1767951304985_IMG_0576.webp",
+      "/images/1767951305056_IMG_0577.webp",
+      "/images/1767951305143_IMG_0578.webp"
     ],
     "galleryExpiresAt": "2026-03-09T09:53:43.150Z"
   },
@@ -87,10 +87,10 @@ export const reservations: Reservation[] = [
     "createdAt": "2026-01-27T09:05:44.213Z",
     "status": "completed",
     "galleryPhotos": [
-      "/images/1769504825733_IMG_0575.jpg",
-      "/images/1769504825905_IMG_0576.jpg",
-      "/images/1769504826057_IMG_0577.jpg",
-      "/images/1769504826202_IMG_0578.jpg"
+      "/images/1769504825733_IMG_0575.webp",
+      "/images/1769504825905_IMG_0576.webp",
+      "/images/1769504826057_IMG_0577.webp",
+      "/images/1769504826202_IMG_0578.webp"
     ],
     "galleryCode": "VMWRM4G9",
     "galleryCreated": true,

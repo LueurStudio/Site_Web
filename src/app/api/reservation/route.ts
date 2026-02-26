@@ -5,6 +5,7 @@ import { sendEmail } from '@/lib/email';
 import { isDateAvailable } from '@/app/availability/availability-data';
 import { supabaseServer } from "@/lib/supabaseServer";
 import { writeFile, mkdir } from 'fs/promises';
+import sharp from 'sharp';
 
 // Sauvegarder aussi la réservation dans le système de gestion
 async function saveReservation(
@@ -106,7 +107,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Sauvegarder les photos d'inspiration si présentes
+    // Sauvegarder les photos d'inspiration (conversion JPG/JPEG → WebP automatique)
+    const WEBP_QUALITY = 82;
+    const CONVERT_TO_WEBP_TYPES = ['image/jpeg', 'image/jpg'];
     let savedPhotos: string[] = [];
     if (inspirationPhotos.length > 0) {
       const uploadDir = join(process.cwd(), 'public', 'uploads', 'inspirations');
@@ -119,12 +122,19 @@ export async function POST(request: NextRequest) {
       for (const photo of inspirationPhotos) {
         if (photo.size > 0) {
           const bytes = await photo.arrayBuffer();
-          const buffer = Buffer.from(bytes);
+          const inputBuffer = Buffer.from(bytes);
           const timestamp = Date.now();
-          const filename = `${timestamp}-${photo.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+          const safeName = photo.name.replace(/[^a-zA-Z0-9.-]/g, '_').replace(/\.(jpe?g|png|webp)$/i, '') || 'image';
+          const isJpeg = CONVERT_TO_WEBP_TYPES.includes(photo.type);
+
+          const outputBuffer: Buffer = isJpeg
+            ? await sharp(inputBuffer).webp({ quality: WEBP_QUALITY }).toBuffer()
+            : inputBuffer;
+
+          const filename = isJpeg ? `${timestamp}-${safeName}.webp` : `${timestamp}-${photo.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
           const filepath = join(uploadDir, filename);
 
-          await writeFile(filepath, buffer);
+          await writeFile(filepath, outputBuffer);
           savedPhotos.push(`/uploads/inspirations/${filename}`);
         }
       }

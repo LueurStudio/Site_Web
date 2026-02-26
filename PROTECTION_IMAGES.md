@@ -100,8 +100,8 @@ Pour tester le système :
    - Le filigrane est détecté et ajouté automatiquement par le serveur
 
 3. **Test direct de l'API** :
-   - URL normale : `http://localhost:3000/api/images/protected/images/IMG_0602-1.jpg`
-   - URL téléchargement : `http://localhost:3000/api/images/protected/images/IMG_0602-1.jpg?download=true`
+  - URL normale : `http://localhost:3000/api/images/protected/images/IMG_0602-1.webp`
+  - URL téléchargement : `http://localhost:3000/api/images/protected/images/IMG_0602-1.webp?download=true`
 
 ## Performance
 
@@ -111,7 +111,7 @@ Pour tester le système :
 
 ## Maintenance
 
-- Les images originales restent dans `public/images/`
-- Aucune modification des fichiers originaux
+- Les images WebP restent dans `public/images/`
+- Les versions WebP servent de sources
 - Le filigrane est généré dynamiquement à chaque téléchargement
 

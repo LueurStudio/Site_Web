@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkAuth } from '@/lib/auth';
 import { supabaseServer } from '@/lib/supabaseServer';
+import sharp from 'sharp';
+
+const WEBP_QUALITY = 82;
+const CONVERT_TO_WEBP_TYPES = ['image/jpeg', 'image/jpg'];
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,16 +45,28 @@ export async function POST(request: NextRequest) {
     }
 
     const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
+    let buffer = Buffer.from(bytes);
+    let contentType = file.type;
     const timestamp = Date.now();
     const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const filePath = `uploads/${timestamp}_${sanitizedName}`;
+    const baseName = sanitizedName.replace(/\.(jpe?g|png|webp)$/i, '') || sanitizedName;
+
+    // Conversion automatique JPG/JPEG → WebP pour un meilleur poids et qualité web
+    if (CONVERT_TO_WEBP_TYPES.includes(file.type)) {
+      buffer = await sharp(buffer)
+        .webp({ quality: WEBP_QUALITY })
+        .toBuffer();
+      contentType = 'image/webp';
+    }
+
+    const filePath = CONVERT_TO_WEBP_TYPES.includes(file.type)
+      ? `uploads/${timestamp}_${baseName}.webp`
+      : `uploads/${timestamp}_${sanitizedName}`;
 
     const { error: uploadError } = await supabaseServer.storage
       .from('projects')
       .upload(filePath, buffer, {
-        contentType: file.type,
+        contentType,
         upsert: false,
       });
 

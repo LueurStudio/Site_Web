@@ -1095,7 +1095,7 @@ export default function AdminPage() {
                   value={projectForm.image}
                   onChange={(e) => setProjectForm({ ...projectForm, image: e.target.value })}
                   className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
-                  placeholder="/images/IMG_XXXX.jpg"
+                  placeholder="/images/IMG_XXXX.webp"
                   required
                 />
                 {projectForm.image && (
@@ -1180,7 +1180,7 @@ export default function AdminPage() {
                         setProjectForm({ ...projectForm, photos: newPhotos });
                       }}
                       className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
-                      placeholder={`/images/IMG_XXXX.jpg`}
+                      placeholder={`/images/IMG_XXXX.webp`}
                     />
                     {photo && (
                       <img
@@ -1377,7 +1377,7 @@ export default function AdminPage() {
                     value={testimonialForm.image}
                     onChange={(e) => setTestimonialForm({ ...testimonialForm, image: e.target.value })}
                     className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
-                    placeholder="/images/client.jpg"
+                    placeholder="/images/client.webp"
                   />
                 </div>
 
