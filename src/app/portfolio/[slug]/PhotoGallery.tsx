@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
+import { toWebPUrls } from '@/lib/imageUrl';
 
 interface PhotoGalleryProps {
   photos: string[];
@@ -9,19 +10,20 @@ interface PhotoGalleryProps {
 }
 
 export default function PhotoGallery({ photos, projectTitle }: PhotoGalleryProps) {
+  const normalizedPhotos = useMemo(() => toWebPUrls(photos), [photos]);
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
-  const [photoSources, setPhotoSources] = useState<string[]>(photos);
+  const [photoSources, setPhotoSources] = useState<string[]>(normalizedPhotos);
 
   useEffect(() => {
-    setPhotoSources(photos);
-  }, [photos]);
+    setPhotoSources(normalizedPhotos);
+  }, [normalizedPhotos]);
 
   const getAlternateSrc = (src: string) => {
-    const match = src.match(/\.(jpg|jpeg|png|webp|gif)$/);
+    const match = src.match(/\.(jpg|jpeg|png|webp|gif)(\?|#|$)/i);
     if (!match) return null;
-    const ext = match[1];
-    const altExt = ext === ext.toLowerCase() ? ext.toUpperCase() : ext.toLowerCase();
-    return `${src.slice(0, -ext.length)}${altExt}`;
+    const ext = match[1].toLowerCase();
+    if (ext === 'webp') return null;
+    return src.replace(/\.(jpe?g)(\?|#|$)/gi, '.webp$2');
   };
 
   const handleImageError = (index: number) => {
