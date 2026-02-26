@@ -224,7 +224,7 @@ async function serveImageWithoutWatermark(imageBuffer: Buffer, path: string[]): 
     };
     const contentType = mimeTypes[extension] || 'image/jpeg';
 
-    return new NextResponse(originalBuffer.buffer, {
+    return new NextResponse(new Uint8Array(originalBuffer), {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',
