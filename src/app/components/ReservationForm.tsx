@@ -327,7 +327,7 @@ export default function ReservationForm() {
         />
       </label>
 
-      {/* Type de prestation */}
+      {/* Type de prestation (mis a jour) */}
       <label className="space-y-2 text-base text-stone-700">
         Type de prestation <span className="text-red-400">*</span>
         <select
