@@ -65,6 +65,19 @@ export default function PhotoGallery({ photos, projectTitle }: PhotoGalleryProps
     };
   }, [selectedPhoto]);
 
+  useEffect(() => {
+    if (selectedPhoto === null) return;
+    const preloadIndexes = [selectedPhoto - 1, selectedPhoto + 1].filter(
+      (idx) => idx >= 0 && idx < photoSources.length
+    );
+    preloadIndexes.forEach((idx) => {
+      const src = photoSources[idx];
+      if (!src) return;
+      const img = new window.Image();
+      img.src = src;
+    });
+  }, [selectedPhoto, photoSources]);
+
   // Empêcher les raccourcis clavier pour sauvegarder
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -115,7 +128,7 @@ export default function PhotoGallery({ photos, projectTitle }: PhotoGalleryProps
                 fill
                 className="object-cover transition duration-500 group-hover:scale-110 select-none"
                 sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 20vw"
-                unoptimized
+                priority={index < 4}
                 onError={() => handleImageError(index)}
                 onContextMenu={(e) => {
                   // Empêcher le clic droit
@@ -228,7 +241,6 @@ export default function PhotoGallery({ photos, projectTitle }: PhotoGalleryProps
               className="object-contain p-4 select-none"
               sizes="100vw"
               priority
-              unoptimized
               onError={() => handleImageError(selectedPhoto)}
               onContextMenu={(e) => {
                 // Empêcher le clic droit

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "convert:webp": "node scripts/convert-to-webp.js"
+    "convert:webp": "node scripts/convert-to-webp.js",
+    "migrate:supabase:webp": "node scripts/migrate-supabase-jpg-to-webp.js"
   },
   "dependencies": {
     "@getbrevo/brevo": "^3.0.1",

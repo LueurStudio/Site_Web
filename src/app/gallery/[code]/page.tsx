@@ -58,6 +58,19 @@ export default function GalleryPage() {
     };
   }, [selectedPhoto]);
 
+  useEffect(() => {
+    if (selectedPhoto === null || !gallery?.photos?.length) return;
+    const preloadIndexes = [selectedPhoto - 1, selectedPhoto + 1].filter(
+      (idx) => idx >= 0 && idx < gallery.photos.length
+    );
+    preloadIndexes.forEach((idx) => {
+      const src = gallery.photos[idx];
+      if (!src) return;
+      const img = new window.Image();
+      img.src = src;
+    });
+  }, [selectedPhoto, gallery]);
+
   const checkAccess = async (codeToCheck: string) => {
     try {
       const res = await fetch(`/api/gallery/verify?code=${codeToCheck}`);
@@ -233,6 +246,7 @@ export default function GalleryPage() {
                   fill
                   className="object-cover transition duration-500 group-hover:scale-110"
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  priority={index < 3}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition group-hover:opacity-100" />
               </div>
