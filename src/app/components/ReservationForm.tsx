@@ -114,9 +114,9 @@ export default function ReservationForm() {
   const [bookedTimes, setBookedTimes] = useState<Array<{ startTime: string; endTime: string; duration: number }>>([]);
   const planningBufferHours = 0.5;
   const prestationDurations: Record<string, number> = {
-    'Séance Express': 0.5,
-    Signature: 1.5,
     Portrait: 1,
+    'Réseaux sociaux': 1,
+    'Événement': 2,
     'Branding / Produit': 2,
     'Retouche seule': 0.5,
     Autre: 1,
@@ -353,7 +353,8 @@ export default function ReservationForm() {
         >
           <option value="" className="bg-white text-stone-900">Sélectionner une prestation</option>
           <option value="Portrait" className="bg-white text-stone-900">Portrait</option>
-          <option value="Événement" className="bg-white text-stone-900">réseaux sociaux</option>
+          <option value="Réseaux sociaux" className="bg-white text-stone-900">Réseaux sociaux</option>
+          <option value="Événement" className="bg-white text-stone-900">Événement</option>
           <option value="Branding / Produit" className="bg-white text-stone-900">Branding / Produit</option>
           <option value="Retouche seule" className="bg-white text-stone-900">Retouche seule</option>
           <option value="Autre" className="bg-white text-stone-900">Autre</option>
