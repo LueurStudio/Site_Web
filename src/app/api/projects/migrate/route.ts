@@ -12,6 +12,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const { data: existingProjects } = await supabaseServer
+      .from('projects')
+      .select('slug, hidden');
+
+    const hiddenBySlug = new Map<string, boolean>(
+      (existingProjects ?? []).map((p: { slug: string; hidden?: boolean }) => [
+        p.slug,
+        p.hidden === true,
+      ])
+    );
+
     const payload = projects.map((project) => ({
       slug: project.slug,
       title: project.title,
@@ -21,7 +32,7 @@ export async function POST(request: NextRequest) {
       details: project.details || [],
       photos: project.photos || [],
       category: project.category,
-      hidden: false,
+      hidden: hiddenBySlug.get(project.slug) ?? false,
     }));
 
     const { error } = await supabaseServer

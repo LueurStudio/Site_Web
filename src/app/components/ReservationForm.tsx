@@ -352,10 +352,8 @@ export default function ReservationForm() {
           required
         >
           <option value="" className="bg-white text-stone-900">Sélectionner une prestation</option>
-          <option value="Séance Express" className="bg-white text-stone-900">Séance Express (30 min)</option>
-          <option value="Signature" className="bg-white text-stone-900">Signature (1h30)</option>
-          <option value="Événement" className="bg-white text-stone-900">Événement</option>
           <option value="Portrait" className="bg-white text-stone-900">Portrait</option>
+          <option value="Événement" className="bg-white text-stone-900">réseaux sociaux</option>
           <option value="Branding / Produit" className="bg-white text-stone-900">Branding / Produit</option>
           <option value="Retouche seule" className="bg-white text-stone-900">Retouche seule</option>
           <option value="Autre" className="bg-white text-stone-900">Autre</option>
