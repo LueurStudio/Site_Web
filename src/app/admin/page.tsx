@@ -2090,16 +2090,22 @@ export default function AdminPage() {
                                           headers: { 'Content-Type': 'application/json' },
                                           body: JSON.stringify({
                                             id: selectedReservation.id,
-                                            updates: { galleryPhotos: newPhotos },
+                                            updates: { gallery_photos: newPhotos },
                                           }),
                                         });
 
                                         if (updateRes.ok) {
                                           const updateData = await updateRes.json();
-                                          if (updateData.success && updateData.reservation) {
-                                            setSelectedReservation(updateData.reservation);
+                                          if (updateData.success) {
+                                            setSelectedReservation({
+                                              ...selectedReservation,
+                                              galleryPhotos: newPhotos,
+                                            });
                                             alert('✅ Photo supprimée de la galerie');
                                           }
+                                        } else {
+                                          const updateError = await updateRes.json().catch(() => ({}));
+                                          alert(updateError.error || '❌ Erreur lors de la suppression de la photo');
                                         }
                                       } catch (err) {
                                         console.error('Erreur lors de la suppression:', err);
