@@ -1839,7 +1839,7 @@ export default function AdminPage() {
                                 e.stopPropagation();
                                 setSelectedReservation(reservation);
                               }}
-                              className="px-4 py-2 rounded-full bg-white/10 text-white text-sm font-semibold transition hover:bg-white/20"
+                              className="px-4 py-2 rounded-full bg-stone-100 text-stone-700 text-sm font-semibold transition hover:bg-stone-200"
                             >
                               Voir détails
                             </button>
@@ -1870,11 +1870,11 @@ export default function AdminPage() {
                     <div className="grid gap-4 sm:grid-cols-2 mb-6">
                       <div>
                         <p className="text-sm text-stone-600">Email</p>
-                        <p className="text-white">{selectedReservation.email}</p>
+                        <p className="text-stone-900">{selectedReservation.email}</p>
                       </div>
                       <div>
                         <p className="text-sm text-stone-600">Date prévue</p>
-                        <p className="text-white">
+                        <p className="text-stone-900">
                           {selectedReservation.date}
                           {selectedReservation.startTime && (
                             <span className="text-indigo-300">
@@ -1885,30 +1885,30 @@ export default function AdminPage() {
                       </div>
                       <div>
                         <p className="text-sm text-stone-600">Type de prestation</p>
-                        <p className="text-white">{selectedReservation.prestationType}</p>
+                        <p className="text-stone-900">{selectedReservation.prestationType}</p>
                       </div>
                       {selectedReservation.prestationType === 'Événement' && (
                         <>
                           <div>
                             <p className="text-sm text-stone-600">Type d’événement</p>
-                            <p className="text-white">{selectedReservation.eventType || 'Non renseigné'}</p>
+                            <p className="text-stone-900">{selectedReservation.eventType || 'Non renseigné'}</p>
                           </div>
                           <div>
                             <p className="text-sm text-stone-600">Contact préféré</p>
-                            <p className="text-white">{selectedReservation.contactPreference || 'Non renseigné'}</p>
+                            <p className="text-stone-900">{selectedReservation.contactPreference || 'Non renseigné'}</p>
                           </div>
                         </>
                       )}
                       <div>
                         <p className="text-sm text-stone-600">Lieu</p>
-                        <p className="text-white">
+                        <p className="text-stone-900">
                           {selectedReservation.location || 'Non renseigné'}
                         </p>
                       </div>
                       {selectedReservation.galleryCode && selectedReservation.galleryCreated && (
                         <div>
                           <p className="text-sm text-stone-600">Code d'accès galerie</p>
-                          <p className="text-white font-mono">{selectedReservation.galleryCode}</p>
+                          <p className="text-stone-900 font-mono">{selectedReservation.galleryCode}</p>
                         </div>
                       )}
                       {selectedReservation.galleryExpiresAt && (() => {
@@ -1917,7 +1917,7 @@ export default function AdminPage() {
                         return (
                           <div>
                             <p className="text-sm text-stone-600">Expiration de la galerie</p>
-                            <p className={`text-white ${daysRemaining !== null && daysRemaining <= 0
+                            <p className={`text-stone-700 ${daysRemaining !== null && daysRemaining <= 0
                                 ? 'text-red-400'
                                 : daysRemaining !== null && daysRemaining <= 7
                                   ? 'text-yellow-400'
@@ -1949,14 +1949,14 @@ export default function AdminPage() {
                     {selectedReservation.specialRetouches && (
                       <div className="mb-6">
                         <p className="text-sm text-stone-600 mb-2">Retouches spéciales</p>
-                        <p className="text-white">{selectedReservation.specialRetouches}</p>
+                        <p className="text-stone-900">{selectedReservation.specialRetouches}</p>
                       </div>
                     )}
 
                     {selectedReservation.prestationType === 'Événement' && selectedReservation.eventDetails && (
                       <div className="mb-6">
                         <p className="text-sm text-stone-600 mb-2">Description de l’événement</p>
-                        <p className="text-white whitespace-pre-line">{selectedReservation.eventDetails}</p>
+                        <p className="text-stone-900 whitespace-pre-line">{selectedReservation.eventDetails}</p>
                       </div>
                     )}
 
@@ -2227,7 +2227,7 @@ export default function AdminPage() {
                             }}
                             className={`px-4 py-2 rounded-full text-xs font-semibold transition ${selectedReservation.status === status
                                 ? 'bg-white text-slate-900'
-                                : 'bg-white/10 text-white hover:bg-white/20'
+                                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
                               }`}
                           >
                             {status === 'pending' ? 'En attente' :
