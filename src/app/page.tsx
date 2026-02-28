@@ -541,6 +541,20 @@ export default async function Home() {
           <div>
             <p className="font-semibold text-stone-900">LueurStudio</p>
             <p className="text-sm sm:text-sm">Photographie, retouche, direction artistique — basé près de Paris.</p>
+            <div className="mt-2 flex flex-wrap items-center gap-3 text-xs sm:text-sm">
+              <Link className="underline hover:text-stone-900" href="/mentions-legales">
+                Mentions légales
+              </Link>
+              <Link className="underline hover:text-stone-900" href="/politique-confidentialite">
+                Politique de confidentialité
+              </Link>
+              <Link className="underline hover:text-stone-900" href="/infos-hebergeur">
+                Infos hébergeur
+              </Link>
+              <a className="underline hover:text-stone-900" href="#contact">
+                Contact
+              </a>
+            </div>
           </div>
           <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:gap-3">
             <a 
