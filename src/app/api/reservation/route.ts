@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CONTACT_EMAIL } from '@/config/contact';
-import { join } from 'path';
 import { sendEmail } from '@/lib/email';
 import { isDateAvailable } from '@/app/availability/availability-data';
 import { supabaseServer } from "@/lib/supabaseServer";
-import { writeFile, mkdir } from 'fs/promises';
 import sharp from 'sharp';
 
 // Sauvegarder aussi la réservation dans le système de gestion
@@ -107,35 +105,54 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Sauvegarder les photos d'inspiration (conversion JPG/JPEG → WebP automatique)
+    // Sauvegarder les photos d'inspiration (conversion → WebP automatique)
     const WEBP_QUALITY = 82;
-    const CONVERT_TO_WEBP_TYPES = ['image/jpeg', 'image/jpg'];
+    const CONVERT_TO_WEBP_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
     let savedPhotos: string[] = [];
     if (inspirationPhotos.length > 0) {
-      const uploadDir = join(process.cwd(), 'public', 'uploads', 'inspirations');
-      try {
-        await mkdir(uploadDir, { recursive: true });
-      } catch (error) {
-        // Le répertoire existe peut-être déjà
-      }
-
       for (const photo of inspirationPhotos) {
         if (photo.size > 0) {
-          const bytes = await photo.arrayBuffer();
-          const inputBuffer = Buffer.from(bytes);
-          const timestamp = Date.now();
-          const safeName = photo.name.replace(/[^a-zA-Z0-9.-]/g, '_').replace(/\.(jpe?g|png|webp)$/i, '') || 'image';
-          const isJpeg = CONVERT_TO_WEBP_TYPES.includes(photo.type);
+          try {
+            const bytes = await photo.arrayBuffer();
+            const inputBuffer = Buffer.from(bytes);
+            const timestamp = Date.now();
+            const safeName = photo.name
+              .replace(/[^a-zA-Z0-9.-]/g, '_')
+              .replace(/\.(jpe?g|png|webp)$/i, '') || 'image';
+            const shouldConvert = CONVERT_TO_WEBP_TYPES.includes(photo.type);
 
-          const outputBuffer: Buffer = isJpeg
-            ? await sharp(inputBuffer).webp({ quality: WEBP_QUALITY }).toBuffer()
-            : inputBuffer;
+            const outputBuffer: Buffer = shouldConvert
+              ? await sharp(inputBuffer).webp({ quality: WEBP_QUALITY }).toBuffer()
+              : inputBuffer;
 
-          const filename = isJpeg ? `${timestamp}-${safeName}.webp` : `${timestamp}-${photo.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-          const filepath = join(uploadDir, filename);
+            const filename = shouldConvert
+              ? `${timestamp}-${safeName}.webp`
+              : `${timestamp}-${photo.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+            const filePath = `inspirations/${filename}`;
+            const contentType = shouldConvert ? 'image/webp' : photo.type;
 
-          await writeFile(filepath, outputBuffer);
-          savedPhotos.push(`/uploads/inspirations/${filename}`);
+            const { error: uploadError } = await supabaseServer.storage
+              .from('projects')
+              .upload(filePath, outputBuffer, {
+                contentType,
+                upsert: false,
+              });
+
+            if (uploadError) {
+              console.error('Erreur upload inspiration:', uploadError);
+              continue;
+            }
+
+            const { data: publicData } = supabaseServer.storage
+              .from('projects')
+              .getPublicUrl(filePath);
+
+            if (publicData?.publicUrl) {
+              savedPhotos.push(publicData.publicUrl);
+            }
+          } catch (uploadError) {
+            console.error('Erreur traitement inspiration:', uploadError);
+          }
         }
       }
     }
