@@ -8,6 +8,8 @@ import type { Metadata } from "next";
 import ReservationForm from "./components/ReservationForm";
 import { faqItems } from "./faq/faq-data";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Accueil",
   description:
