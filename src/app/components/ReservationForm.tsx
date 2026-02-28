@@ -648,8 +648,10 @@ export default function ReservationForm() {
             required
           >
             <option value="" className="bg-white text-stone-900">Sélectionner un lieu</option>
-            <option value="Studio" className="bg-white text-stone-900">Studio</option>
-            <option value="Domicile" className="bg-white text-stone-900">Domicile *plus cher</option>
+            <option value="Studio" className="bg-white text-stone-400" disabled>
+              Studio (à venir)
+            </option>
+            <option value="Domicile" className="bg-white text-stone-900">Domicile</option>
             <option value="Extérieur" className="bg-white text-stone-900">Extérieur</option>
             <option value="Autre" className="bg-white text-stone-900">Autre</option>
           </select>
