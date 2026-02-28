@@ -2001,6 +2001,7 @@ export default function AdminPage() {
                                   const res = await fetch('/api/upload', {
                                     method: 'POST',
                                     body: formData,
+                                    credentials: 'include',
                                   });
 
                                   if (res.ok) {
@@ -2008,6 +2009,9 @@ export default function AdminPage() {
                                     if (data.url) {
                                       uploadedUrls.push(data.url);
                                     }
+                                  } else {
+                                    const errorData = await res.json().catch(() => ({}));
+                                    throw new Error(errorData.error || 'Upload échoué');
                                   }
                                 }
 
@@ -2021,17 +2025,25 @@ export default function AdminPage() {
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
                                       id: selectedReservation.id,
-                                      updates: { galleryPhotos: newPhotos },
+                                      updates: { gallery_photos: newPhotos },
                                     }),
                                   });
 
                                   if (updateRes.ok) {
                                     const updateData = await updateRes.json();
-                                    if (updateData.success && updateData.reservation) {
-                                      setSelectedReservation(updateData.reservation);
+                                    if (updateData.success) {
+                                      setSelectedReservation({
+                                        ...selectedReservation,
+                                        galleryPhotos: newPhotos,
+                                      });
                                       alert(`✅ ${uploadedUrls.length} photo(s) ajoutée(s) à la galerie !`);
                                     }
+                                  } else {
+                                    const updateError = await updateRes.json().catch(() => ({}));
+                                    alert(updateError.error || '❌ Erreur lors de la mise à jour de la galerie');
                                   }
+                                } else {
+                                  alert('❌ Aucune photo n’a été uploadée');
                                 }
                               } catch (err) {
                                 console.error('Erreur lors de l\'upload:', err);
