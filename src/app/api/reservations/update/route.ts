@@ -27,17 +27,63 @@ export async function POST(request: NextRequest) {
     }
 
     const wasConfirmed = existing.status === "confirmed";
-    const isNowConfirmed = updates?.status === "confirmed";
+
+    const normalizeUpdates = (rawUpdates: Record<string, any> | null | undefined) => {
+      if (!rawUpdates || typeof rawUpdates !== "object") return {};
+      const normalized: Record<string, any> = {};
+      for (const [key, value] of Object.entries(rawUpdates)) {
+        if (value === undefined) continue;
+        switch (key) {
+          case "galleryPhotos":
+            normalized.gallery_photos = value;
+            break;
+          case "galleryCreated":
+            normalized.gallery_created = value;
+            break;
+          case "galleryCode":
+            normalized.gallery_code = value;
+            break;
+          case "galleryExpiresAt":
+            normalized.gallery_expires_at = value;
+            break;
+          case "emailSent":
+            normalized.email_sent = value;
+            break;
+          case "startTime":
+            normalized.start_time = value;
+            break;
+          case "eventType":
+            normalized.event_type = value;
+            break;
+          case "eventDetails":
+            normalized.event_details = value;
+            break;
+          case "contactPreference":
+            normalized.contact_preference = value;
+            break;
+          case "specialRetouches":
+            normalized.special_retouches = value;
+            break;
+          default:
+            normalized[key] = value;
+        }
+      }
+      return normalized;
+    };
+
+    const normalizedUpdates = normalizeUpdates(updates);
+    const isNowConfirmed = normalizedUpdates?.status === "confirmed";
 
     // Update
     const { data: updatedReservation, error: updateError } = await supabaseServer
       .from("reservations")
-      .update(updates)
+      .update(normalizedUpdates)
       .eq("id", id)
       .select("*")
       .single();
 
     if (updateError || !updatedReservation) {
+      console.error("Erreur Supabase update:", updateError);
       return NextResponse.json({ error: "Erreur lors de la mise à jour" }, { status: 500 });
     }
 
