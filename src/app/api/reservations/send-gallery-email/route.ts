@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkAuth } from '@/lib/auth';
 import { sendEmail } from '@/lib/email';
-import { readFile, writeFile } from 'fs/promises';
-import { join } from 'path';
-import type { Reservation } from '@/app/reservations/reservations-data';
+import { supabaseServer } from '@/lib/supabaseServer';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,60 +12,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { reservationId, galleryUrl }: { reservationId: string; galleryUrl: string } = await request.json();
+    const { reservationId, galleryUrl }: { reservationId: string; galleryUrl?: string } = await request.json();
 
-    if (!reservationId || !galleryUrl) {
+    if (!reservationId) {
       return NextResponse.json(
-        { error: 'ID de réservation et URL de galerie requis' },
+        { error: 'ID de réservation requis' },
         { status: 400 }
       );
     }
 
     // Les identifiants SMTP sont dans src/lib/email.ts
 
-    // Charger la réservation
-    const dataFile = join(process.cwd(), 'src', 'app', 'reservations', 'reservations-data.ts');
-    let content = await readFile(dataFile, 'utf-8');
-    
-    console.log('📄 Lecture du fichier reservations-data.ts');
-    
-    // Essayer plusieurs formats de matching
-    let reservationsMatch = content.match(/export const reservations: Reservation\[\] = (\[[\s\S]*?\]);/);
-    
-    if (!reservationsMatch) {
-      console.error('❌ Impossible de trouver le tableau reservations dans le fichier');
-      throw new Error('Impossible de trouver le tableau reservations');
-    }
+    const { data: reservation, error: reservationError } = await supabaseServer
+      .from('reservations')
+      .select('*')
+      .eq('id', reservationId)
+      .single();
 
-    let reservations: Reservation[] = [];
-    try {
-      // Essayer d'abord avec JSON.parse (si le format est JSON pur)
-      reservations = JSON.parse(reservationsMatch[1]);
-      console.log('✅ Réservations parsées avec JSON.parse');
-    } catch (parseError) {
-      try {
-        // Si ça ne marche pas, utiliser eval (pour le format TypeScript/JavaScript)
-        reservations = eval(reservationsMatch[1]);
-        console.log('✅ Réservations parsées avec eval');
-      } catch (evalError) {
-        console.error('❌ Erreur lors du parsing des réservations:', parseError, evalError);
-        throw new Error('Impossible de parser les réservations');
-      }
-    }
-    
-    // Filtrer les valeurs null
-    reservations = reservations.filter((r: any) => r !== null && r !== undefined && r.id);
-    console.log(`📋 ${reservations.length} réservation(s) trouvée(s)`);
-    
-    const reservation = reservations.find((r: any) => r.id === reservationId);
-    
-    if (!reservation) {
-      console.error(`❌ Réservation avec ID ${reservationId} non trouvée`);
-    } else {
-      console.log(`✅ Réservation trouvée: ${reservation.firstName} ${reservation.lastName} (${reservation.email})`);
-    }
-
-    if (!reservation) {
+    if (reservationError || !reservation) {
       return NextResponse.json(
         { error: 'Réservation non trouvée' },
         { status: 404 }
@@ -75,10 +37,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Générer un code d'accès unique si pas déjà généré
-    let galleryCode = reservation.galleryCode;
+    let galleryCode = reservation.gallery_code;
     if (!galleryCode) {
       galleryCode = Math.random().toString(36).substring(2, 10).toUpperCase();
     }
+
+    const resolvedGalleryUrl =
+      galleryUrl && galleryUrl.trim().length > 0
+        ? galleryUrl.trim()
+        : `${process.env.NEXT_PUBLIC_SITE_URL || 'https://lueurstudio'}/gallery/`;
 
     // Définir la date d'expiration (2 mois à partir de maintenant)
     const expiresAt = new Date();
@@ -103,7 +70,7 @@ export async function POST(request: NextRequest) {
         <body>
           <div class="container">
             <h1>Vos photos sont prêtes ! 📸</h1>
-            <p>Bonjour ${reservation.firstName},</p>
+            <p>Bonjour ${reservation.first_name},</p>
             <p>Nous avons le plaisir de vous informer que vos photos sont maintenant disponibles en ligne.</p>
             
             <div class="message">
@@ -111,7 +78,7 @@ export async function POST(request: NextRequest) {
             </div>
 
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${galleryUrl}" class="button">Accéder à ma galerie</a>
+              <a href="${resolvedGalleryUrl}" class="button">Accéder à ma galerie</a>
             </div>
 
             <p><strong>Code d'accès :</strong></p>
@@ -136,7 +103,7 @@ export async function POST(request: NextRequest) {
     // Envoyer l'email
     const emailToSend = reservation.email.trim();
     console.log(`📧 Tentative d'envoi d'email à: ${emailToSend}`);
-    console.log(`📧 URL de la galerie: ${galleryUrl}`);
+    console.log(`📧 URL de la galerie: ${resolvedGalleryUrl}`);
     console.log(`📧 Code d'accès: ${galleryCode}`);
     
     // Validation basique de l'email
@@ -163,20 +130,28 @@ export async function POST(request: NextRequest) {
       throw new Error(`Erreur lors de l'envoi de l'email: ${emailError?.message || 'Erreur inconnue'}`);
     }
 
-    // Mettre à jour la réservation pour marquer l'email comme envoyé
-    const index = reservations.findIndex(r => r.id === reservationId);
-    reservations[index] = {
-      ...reservations[index],
-      galleryCode,
-      galleryCreated: true,
-      galleryExpiresAt: reservation.galleryExpiresAt || galleryExpiresAt, // Garder la date existante si déjà définie
-      emailSent: true,
-    };
+    const { error: updateError } = await supabaseServer
+      .from('reservations')
+      .update({
+        gallery_code: galleryCode,
+        gallery_created: true,
+        gallery_expires_at: reservation.gallery_expires_at || galleryExpiresAt,
+        email_sent: true,
+      })
+      .eq('id', reservationId);
 
-    // Sauvegarder les modifications
-    const newReservationsContent = `export const reservations: Reservation[] = ${JSON.stringify(reservations, null, 2)};`;
-    const newContent = content.replace(/export const reservations: Reservation\[\] = (\[[\s\S]*?\]);/, newReservationsContent);
-    await writeFile(dataFile, newContent, 'utf-8');
+    if (updateError) {
+      console.error('❌ Erreur mise à jour réservation:', updateError);
+      return NextResponse.json(
+        {
+          error: 'Erreur lors de la mise à jour de la réservation',
+          details: updateError?.message,
+          hint: updateError?.hint,
+          code: updateError?.code,
+        },
+        { status: 500 }
+      );
+    }
 
     console.log('✅ Réservation mise à jour avec galleryCode et emailSent = true');
 

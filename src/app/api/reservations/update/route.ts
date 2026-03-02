@@ -28,6 +28,14 @@ export async function POST(request: NextRequest) {
 
     const wasConfirmed = existing.status === "confirmed";
 
+    const getColumnKey = (record: Record<string, any>, snake: string, camel: string) => {
+      if (Object.prototype.hasOwnProperty.call(record, snake)) return snake;
+      if (Object.prototype.hasOwnProperty.call(record, camel)) return camel;
+      return null;
+    };
+
+    const galleryPhotosKey = getColumnKey(existing, "gallery_photos", "galleryPhotos");
+
     const normalizeUpdates = (rawUpdates: Record<string, any> | null | undefined) => {
       if (!rawUpdates || typeof rawUpdates !== "object") return {};
       const normalized: Record<string, any> = {};
@@ -35,7 +43,12 @@ export async function POST(request: NextRequest) {
         if (value === undefined) continue;
         switch (key) {
           case "galleryPhotos":
-            normalized.gallery_photos = value;
+          case "gallery_photos":
+            if (!galleryPhotosKey) {
+              normalized.__error = "La colonne galerie n'existe pas (gallery_photos / galleryPhotos).";
+            } else {
+              normalized[galleryPhotosKey] = value;
+            }
             break;
           case "galleryCreated":
             normalized.gallery_created = value;
@@ -72,6 +85,18 @@ export async function POST(request: NextRequest) {
     };
 
     const normalizedUpdates = normalizeUpdates(updates);
+    if (normalizedUpdates.__error) {
+      return NextResponse.json(
+        { error: normalizedUpdates.__error },
+        { status: 400 }
+      );
+    }
+    if (Object.keys(normalizedUpdates).length === 0) {
+      return NextResponse.json(
+        { error: "Aucune mise à jour valide fournie" },
+        { status: 400 }
+      );
+    }
     const isNowConfirmed = normalizedUpdates?.status === "confirmed";
 
     // Update
@@ -84,7 +109,15 @@ export async function POST(request: NextRequest) {
 
     if (updateError || !updatedReservation) {
       console.error("Erreur Supabase update:", updateError);
-      return NextResponse.json({ error: "Erreur lors de la mise à jour" }, { status: 500 });
+      return NextResponse.json(
+        {
+          error: "Erreur lors de la mise à jour",
+          details: updateError?.message,
+          hint: updateError?.hint,
+          code: updateError?.code,
+        },
+        { status: 500 }
+      );
     }
 
     // Email de confirmation si passage à "confirmed"

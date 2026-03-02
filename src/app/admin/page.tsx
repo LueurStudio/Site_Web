@@ -73,6 +73,9 @@ export default function AdminPage() {
   const [reservations, setReservations] = useState<any[]>([]);
   const [selectedReservation, setSelectedReservation] = useState<any | null>(null);
   const [galleryUrl, setGalleryUrl] = useState('');
+  const [baseGalleryUrl, setBaseGalleryUrl] = useState(
+    `${process.env.NEXT_PUBLIC_SITE_URL || 'https://lueurstudio'}/gallery`
+  );
   const [sendingEmail, setSendingEmail] = useState(false);
   const [uploadingGalleryPhotos, setUploadingGalleryPhotos] = useState(false);
 
@@ -111,6 +114,44 @@ export default function AdminPage() {
     return `${wholeHours}h${minutes.toString().padStart(2, '0')}`;
   };
 
+  const MAX_UPLOAD_BYTES = 4 * 1024 * 1024; // 4 MB pour éviter les 413 en prod
+  const MAX_IMAGE_DIMENSION = 2000;
+
+  const compressImageForUpload = async (file: File) => {
+    if (!file.type.startsWith('image/')) return file;
+    if (file.size <= MAX_UPLOAD_BYTES && file.type === 'image/webp') return file;
+
+    try {
+      const imageBitmap = await createImageBitmap(file);
+      const maxSide = Math.max(imageBitmap.width, imageBitmap.height);
+      const scale = Math.min(1, MAX_IMAGE_DIMENSION / maxSide);
+      const targetWidth = Math.round(imageBitmap.width * scale);
+      const targetHeight = Math.round(imageBitmap.height * scale);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return file;
+
+      ctx.drawImage(imageBitmap, 0, 0, targetWidth, targetHeight);
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (result) => (result ? resolve(result) : reject(new Error('Conversion impossible'))),
+          'image/webp',
+          0.82
+        );
+      });
+
+      const nextName = file.name.replace(/\.[^.]+$/, '') + '.webp';
+      return new File([blob], nextName, { type: 'image/webp' });
+    } catch (err) {
+      console.error('Erreur compression image:', err);
+      return file;
+    }
+  };
+
   const isProjectMode = activeMode === 'rapide' || activeMode === 'complet' || activeMode === 'edit';
 
   useEffect(() => {
@@ -118,6 +159,18 @@ export default function AdminPage() {
     loadProjects();
     loadTestimonials();
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setBaseGalleryUrl(`${window.location.origin}/gallery`);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedReservation) return;
+    if (galleryUrl) return;
+    const code = selectedReservation.galleryCode;
+    setGalleryUrl(code ? `${baseGalleryUrl}/${code}` : `${baseGalleryUrl}/`);
+  }, [selectedReservation?.id, selectedReservation?.galleryCode]);
 
   useEffect(() => {
     if (activeMode === 'testimonials' && authenticated) {
@@ -292,7 +345,7 @@ export default function AdminPage() {
             galleryCreated: r.gallery_created,
             galleryExpiresAt: r.gallery_expires_at,
             emailSent: r.email_sent,
-            galleryPhotos: r.gallery_photos,
+            galleryPhotos: r.gallery_photos ?? r.galleryPhotos ?? [],
           }));
 
         setReservations(mapped);
@@ -1995,8 +2048,13 @@ export default function AdminPage() {
                                 const uploadedUrls: string[] = [];
 
                                 for (const file of Array.from(files)) {
+                                  const fileToUpload = await compressImageForUpload(file);
+                                  if (fileToUpload.size > MAX_UPLOAD_BYTES) {
+                                    throw new Error('Fichier trop volumineux. Réduis la taille de l’image.');
+                                  }
+
                                   const formData = new FormData();
-                                  formData.append('file', file);
+                                  formData.append('file', fileToUpload);
 
                                   const res = await fetch('/api/upload', {
                                     method: 'POST',
@@ -2009,6 +2067,8 @@ export default function AdminPage() {
                                     if (data.url) {
                                       uploadedUrls.push(data.url);
                                     }
+                                  } else if (res.status === 413) {
+                                    throw new Error('Fichier trop volumineux. Réduis la taille de l’image.');
                                   } else {
                                     const errorData = await res.json().catch(() => ({}));
                                     throw new Error(errorData.error || 'Upload échoué');
@@ -2149,11 +2209,6 @@ export default function AdminPage() {
                           </label>
                           <button
                             onClick={async () => {
-                              if (!galleryUrl) {
-                                alert('Veuillez entrer une URL de galerie');
-                                return;
-                              }
-
                               setSendingEmail(true);
                               try {
                                 const res = await fetch('/api/reservations/send-gallery-email', {
@@ -2161,7 +2216,7 @@ export default function AdminPage() {
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({
                                     reservationId: selectedReservation.id,
-                                    galleryUrl,
+                                    galleryUrl: galleryUrl || undefined,
                                   }),
                                 });
 

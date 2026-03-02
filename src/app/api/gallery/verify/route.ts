@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile } from 'fs/promises';
-import { join } from 'path';
-import type { Reservation } from '@/app/reservations/reservations-data';
+import { supabaseServer } from '@/lib/supabaseServer';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,24 +13,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Charger les réservations
-    const dataFile = join(process.cwd(), 'src', 'app', 'reservations', 'reservations-data.ts');
-    let content = await readFile(dataFile, 'utf-8');
-    const reservationsMatch = content.match(/export const reservations: Reservation\[\] = (\[[\s\S]*?\]);/);
-    
-    if (!reservationsMatch) {
-      return NextResponse.json(
-        { success: false, error: 'Impossible de charger les réservations' },
-        { status: 500 }
-      );
-    }
+    const { data: reservation, error: reservationError } = await supabaseServer
+      .from('reservations')
+      .select('*')
+      .eq('gallery_code', code.toUpperCase())
+      .single();
 
-    let reservations: Reservation[] = eval(reservationsMatch[1]);
-    
-    // Trouver la réservation avec ce code
-    const reservation = reservations.find(r => r.galleryCode?.toUpperCase() === code.toUpperCase());
-
-    if (!reservation || !reservation.galleryCreated) {
+    if (reservationError || !reservation || !reservation.gallery_created) {
       return NextResponse.json(
         { success: false, error: 'Code d\'accès invalide ou galerie non créée' },
         { status: 404 }
@@ -40,8 +27,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Vérifier si la galerie est expirée
-    if (reservation.galleryExpiresAt) {
-      const expiresAt = new Date(reservation.galleryExpiresAt);
+    if (reservation.gallery_expires_at) {
+      const expiresAt = new Date(reservation.gallery_expires_at);
       const now = new Date();
       
       if (now > expiresAt) {
@@ -50,7 +37,7 @@ export async function GET(request: NextRequest) {
             success: false, 
             error: 'Cette galerie a expiré',
             expired: true,
-            expiresAt: reservation.galleryExpiresAt
+            expiresAt: reservation.gallery_expires_at
           },
           { status: 403 }
         );
@@ -60,8 +47,8 @@ export async function GET(request: NextRequest) {
     // Retourner les photos de la galerie client
     const gallery = {
       reservation,
-      photos: reservation.galleryPhotos || [], // Photos finales pour la galerie client
-      expiresAt: reservation.galleryExpiresAt,
+      photos: reservation.gallery_photos || [], // Photos finales pour la galerie client
+      expiresAt: reservation.gallery_expires_at,
     };
 
     return NextResponse.json({
