@@ -1,6 +1,11 @@
 import GalleryClient from '../GalleryClient';
 
-export default function GalleryPage({ params }: { params: { code: string } }) {
-  return <GalleryClient initialCode={params.code} />;
+export default async function GalleryPage({
+  params,
+}: {
+  params: Promise<{ code: string }>;
+}) {
+  const { code } = await params;
+  return <GalleryClient initialCode={code} />;
 }
 
