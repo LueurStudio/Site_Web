@@ -703,36 +703,33 @@ export default function AdminPage() {
 
   if (authenticated === null) {
     return (
-      <div className="min-h-screen bg-[#faf7f2] text-[#1c1916] flex items-center justify-center">
-        <p>Vérification...</p>
+      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "var(--bg)", color: "var(--fg)" }}>
+        <p className="muted">Vérification…</p>
       </div>
     );
   }
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-[#faf7f2] text-[#1c1916] flex items-center justify-center p-4">
-        <div className="w-full max-w-md rounded-3xl border border-stone-200 bg-white p-8 shadow-sm">
-          <h1 className="text-3xl font-semibold mb-6 text-stone-900">Administration</h1>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-sm mb-2 text-stone-700">Mot de passe</label>
+      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "var(--bg)", padding: 24 }}>
+        <div className="surface-card" style={{ width: "100%", maxWidth: 420, padding: "clamp(28px,4vw,48px)" }}>
+          <span className="kicker">Administration</span>
+          <h1 className="display" style={{ marginTop: 18, fontSize: "2.2rem" }}>Connexion</h1>
+          <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 18, marginTop: 32 }}>
+            <div className="field">
+              <label>Mot de passe</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
-                placeholder="Entrez le mot de passe"
+                className="input"
+                placeholder="••••••••"
                 required
               />
             </div>
-            {error && <p className="text-red-400 text-sm">{error}</p>}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-full bg-[#1c1916] px-4 py-2 font-semibold text-[#faf7f2] transition hover:shadow-lg hover:shadow-black/20 disabled:opacity-50"
-            >
-              {loading ? 'Connexion...' : 'Se connecter'}
+            {error && <p style={{ color: "#e87070", fontSize: "0.9rem" }}>{error}</p>}
+            <button type="submit" disabled={loading} className="btn btn-gold" style={{ justifyContent: "center" }}>
+              {loading ? 'Connexion…' : 'Se connecter'}
             </button>
           </form>
         </div>
@@ -740,148 +737,39 @@ export default function AdminPage() {
     );
   }
 
+  const tabCls = (active: boolean) => "btn " + (active ? "btn-gold" : "btn-outline");
+
   return (
-    <div className="min-h-screen bg-[#faf7f2] text-[#1c1916] p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-semibold text-stone-900">Administration du Portfolio</h1>
-          <button
-            onClick={handleLogout}
-            className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-stone-400 hover:bg-white"
-          >
-            Déconnexion
-          </button>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--fg)", padding: "clamp(16px,3vw,40px)" }}>
+      <div style={{ maxWidth: 960, margin: "0 auto" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 40, flexWrap: "wrap", paddingTop: 24 }}>
+          <div>
+            <span className="kicker">LueurStudio</span>
+            <h1 className="display" style={{ marginTop: 10, fontSize: "clamp(1.8rem,3vw,2.8rem)" }}>Administration</h1>
+          </div>
+          <button onClick={handleLogout} className="btn btn-outline">Déconnexion</button>
         </div>
 
         {/* Onglets de navigation */}
-        <div className="flex gap-4 mb-6 flex-wrap">
-          <button
-            onClick={() => {
-              setActiveMode('rapide');
-              setEditingProject(null);
-              loadProjects();
-            }}
-            className={`px-6 py-3 rounded-full font-semibold transition ${isProjectMode
-                ? 'bg-[#1c1916] text-[#faf7f2]'
-                : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
-              }`}
-          >
-            Projets
-          </button>
-          <button
-            onClick={() => {
-              setActiveMode('testimonials');
-              loadTestimonials();
-              loadCodes();
-            }}
-            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'testimonials'
-                ? 'bg-[#1c1916] text-[#faf7f2]'
-                : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
-              }`}
-          >
-            Gérer les avis
-          </button>
-          <button
-            onClick={() => {
-              setActiveMode('reservations');
-              loadReservations();
-            }}
-            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'reservations'
-                ? 'bg-[#1c1916] text-[#faf7f2]'
-                : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
-              }`}
-          >
-            Réservations
-          </button>
-          <button
-            onClick={() => {
-              setActiveMode('pricing');
-              loadPricing();
-            }}
-            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'pricing'
-                ? 'bg-[#1c1916] text-[#faf7f2]'
-                : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
-              }`}
-          >
-            Tarifs
-          </button>
-          <button
-            onClick={() => {
-              setActiveMode('availability');
-              loadAvailability();
-            }}
-            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'availability'
-                ? 'bg-[#1c1916] text-[#faf7f2]'
-                : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
-              }`}
-          >
-            Disponibilités
-          </button>
-          <button
-            onClick={() => {
-              setActiveMode('faq');
-              loadFaq();
-            }}
-            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'faq'
-                ? 'bg-[#1c1916] text-[#faf7f2]'
-                : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
-              }`}
-          >
-            FAQ
-          </button>
-          <button
-            onClick={() => setActiveMode('spots')}
-            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'spots'
-                ? 'bg-[#1c1916] text-[#faf7f2]'
-                : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
-              }`}
-          >
-            Spots photo
-          </button>
+        <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
+          <button onClick={() => { setActiveMode('rapide'); setEditingProject(null); loadProjects(); }} className={tabCls(isProjectMode)}>Projets</button>
+          <button onClick={() => { setActiveMode('testimonials'); loadTestimonials(); loadCodes(); }} className={tabCls(activeMode === 'testimonials')}>Avis</button>
+          <button onClick={() => { setActiveMode('reservations'); loadReservations(); }} className={tabCls(activeMode === 'reservations')}>Réservations</button>
+          <button onClick={() => { setActiveMode('pricing'); loadPricing(); }} className={tabCls(activeMode === 'pricing')}>Tarifs</button>
+          <button onClick={() => { setActiveMode('availability'); loadAvailability(); }} className={tabCls(activeMode === 'availability')}>Disponibilités</button>
+          <button onClick={() => { setActiveMode('faq'); loadFaq(); }} className={tabCls(activeMode === 'faq')}>FAQ</button>
+          <button onClick={() => setActiveMode('spots')} className={tabCls(activeMode === 'spots')}>Spots</button>
         </div>
 
         {isProjectMode && (
-          <div className="mb-6 flex flex-wrap gap-2">
-            <button
-              onClick={() => {
-                setActiveMode('rapide');
-                setEditingProject(null);
-              }}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${activeMode === 'rapide'
-                  ? 'bg-[#1c1916] text-[#faf7f2]'
-                  : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
-                }`}
-            >
-              Upload rapide
-            </button>
-            <button
-              onClick={() => {
-                setActiveMode('complet');
-                setEditingProject(null);
-              }}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${activeMode === 'complet'
-                  ? 'bg-[#1c1916] text-[#faf7f2]'
-                  : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
-                }`}
-            >
-              Nouveau projet
-            </button>
-            <button
-              onClick={() => {
-                setActiveMode('edit');
-                loadProjects();
-              }}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${activeMode === 'edit'
-                  ? 'bg-[#1c1916] text-[#faf7f2]'
-                  : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
-                }`}
-            >
-              Gérer les projets
-            </button>
+          <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
+            <button onClick={() => { setActiveMode('rapide'); setEditingProject(null); }} className={tabCls(activeMode === 'rapide')}>Upload rapide</button>
+            <button onClick={() => { setActiveMode('complet'); setEditingProject(null); }} className={tabCls(activeMode === 'complet')}>Nouveau projet</button>
+            <button onClick={() => { setActiveMode('edit'); loadProjects(); }} className={tabCls(activeMode === 'edit')}>Gérer les projets</button>
           </div>
         )}
 
-        <div className="mb-6 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-600 flex flex-wrap items-center gap-3">
+        <div className="surface-card" style={{ marginBottom: 24, padding: "12px 20px", fontSize: "0.88rem", color: "var(--muted)", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12 }}>
           <span>Migration des projets existants (une seule fois).</span>
           <button
             onClick={async () => {
@@ -907,7 +795,7 @@ export default function AdminPage() {
               }
             }}
             disabled={loading}
-            className="rounded-full border border-stone-300 px-4 py-2 text-xs font-semibold text-stone-700 transition hover:border-stone-400 hover:bg-white disabled:opacity-50"
+            className="btn btn-outline" style={{ fontSize: "0.8rem", padding: "6px 14px" }}
           >
             {loading ? 'Migration...' : 'Migrer les projets'}
           </button>
@@ -915,19 +803,19 @@ export default function AdminPage() {
 
         {activeMode === 'rapide' ? (
           /* Mode rapide - Upload par catégorie */
-          <div className="space-y-6">
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             {categories.map((category) => {
               const categoryData = quickUploads[category];
               return (
                 <div
                   key={category}
-                  className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm"
+                  className="surface-card" style={{ padding: "clamp(20px,3vw,32px)" }}
                 >
-                  <h3 className="text-xl font-semibold mb-4 text-stone-900">{category}</h3>
+                  <h3 className="display" style={{ fontSize: "1.4rem", marginBottom: 18 }}>{category}</h3>
 
                   {/* Zone d'upload */}
                   <div className="mb-4">
-                    <label className="block text-sm mb-2 text-stone-700">
+                    <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8, color: "var(--fg-soft)" }}>
                       Sélectionner et uploader des photos
                     </label>
                     <input
@@ -936,7 +824,7 @@ export default function AdminPage() {
                       onChange={(e) => handleFileUpload(e, category)}
                       disabled={categoryData.uploading}
                       multiple
-                      className="block w-full text-sm text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-stone-100 file:text-stone-700 hover:file:bg-stone-200 disabled:opacity-50"
+                      className="input" style={{ padding: "10px 0", background: "transparent", border: "none", borderBottom: "1px solid var(--line)" }}
                     />
                     {categoryData.uploading && (
                       <p className="mt-2 text-sm text-blue-400">Upload en cours...</p>
@@ -945,7 +833,7 @@ export default function AdminPage() {
 
                   {/* Sélection projet existant ou nouveau */}
                   <div className="mb-4">
-                    <label className="block text-sm mb-2 text-stone-700">Ajouter à un projet existant ou créer un nouveau projet</label>
+                    <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8, color: "var(--fg-soft)" }}>Ajouter à un projet existant ou créer un nouveau projet</label>
                     <select
                       value={categoryData.selectedProject || 'new'}
                       onChange={(e) => {
@@ -962,19 +850,19 @@ export default function AdminPage() {
                           }
                         }));
                       }}
-                      className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                      className="input"
                     >
-                      <option value="new" className="bg-white text-stone-900">➕ Créer un nouveau projet</option>
+                      <option value="new" style={{ background: "var(--surface)", color: "var(--fg)" }}>➕ Créer un nouveau projet</option>
                       {existingProjects
                         .filter(p => p.category === category)
                         .map((project) => (
-                          <option key={project.slug} value={project.slug} className="bg-white text-stone-900">
+                          <option key={project.slug} value={project.slug} style={{ background: "var(--surface)", color: "var(--fg)" }}>
                             📸 {project.title}
                           </option>
                         ))}
                     </select>
                     {categoryData.selectedProject && (
-                      <p className="mt-2 text-xs text-stone-500">
+                      <p className="muted" style={{ marginTop: 8, fontSize: "0.8rem" }}>
                         Les photos seront ajoutées au projet existant "{existingProjects.find(p => p.slug === categoryData.selectedProject)?.title}"
                       </p>
                     )}
@@ -1012,9 +900,9 @@ export default function AdminPage() {
 
                       {/* Formulaire rapide - seulement si nouveau projet */}
                       {!categoryData.selectedProject && (
-                        <div className="space-y-3">
+                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                           <div>
-                            <label className="block text-sm mb-1">Titre du projet *</label>
+                            <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 6 }}>Titre du projet *</label>
                             <input
                               type="text"
                               value={categoryData.title}
@@ -1024,12 +912,12 @@ export default function AdminPage() {
                                   [category]: { ...prev[category], title: e.target.value }
                                 }));
                               }}
-                              className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                              className="input"
                               placeholder={`Ex: Nouveau projet ${category}`}
                             />
                           </div>
                           <div>
-                            <label className="block text-sm mb-1">Sous-titre (optionnel)</label>
+                            <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 6 }}>Sous-titre (optionnel)</label>
                             <input
                               type="text"
                               value={categoryData.subtitle}
@@ -1039,12 +927,12 @@ export default function AdminPage() {
                                   [category]: { ...prev[category], subtitle: e.target.value }
                                 }));
                               }}
-                              className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                              className="input"
                               placeholder="Sous-titre du projet"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm mb-1 text-stone-700">Description (optionnel)</label>
+                            <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 6, color: "var(--fg-soft)" }}>Description (optionnel)</label>
                             <textarea
                               value={categoryData.description}
                               onChange={(e) => {
@@ -1054,7 +942,7 @@ export default function AdminPage() {
                                 }));
                               }}
                               rows={2}
-                              className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                              className="input"
                               placeholder="Description du projet"
                             />
                           </div>
@@ -1063,7 +951,7 @@ export default function AdminPage() {
                       <button
                         onClick={() => handleQuickSubmit(category)}
                         disabled={loading || categoryData.photos.length === 0 || (!categoryData.selectedProject && !categoryData.title.trim())}
-                        className="w-full rounded-full bg-[#1c1916] px-4 py-2 font-semibold text-[#faf7f2] transition hover:shadow-lg hover:shadow-black/20 disabled:opacity-50"
+                        className="btn btn-gold" style={{ width: "100%", justifyContent: "center" }}
                       >
                         {loading
                           ? 'En cours...'
@@ -1080,13 +968,13 @@ export default function AdminPage() {
           </div>
         ) : activeMode === 'complet' ? (
           /* Mode complet - Formulaire détaillé */
-          <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
-            <h2 className="text-2xl font-semibold mb-6 text-stone-900">Ajouter un nouveau projet</h2>
+          <div className="surface-card" style={{ padding: "clamp(20px,3vw,40px)" }}>
+            <h2 className="display" style={{ fontSize: "1.7rem", marginBottom: 24 }}>Ajouter un nouveau projet</h2>
 
-            <form onSubmit={handleSubmitProject} className="space-y-6">
+            <form onSubmit={handleSubmitProject} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               {/* Upload de photos */}
               <div>
-                <label className="block text-sm mb-2 text-stone-700">
+                <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8, color: "var(--fg-soft)" }}>
                   Uploader des photos (vous pouvez sélectionner plusieurs fichiers)
                 </label>
                 <input
@@ -1095,7 +983,7 @@ export default function AdminPage() {
                   onChange={(e) => handleFileUpload(e)}
                   disabled={uploading}
                   multiple
-                  className="block w-full text-sm text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-stone-100 file:text-stone-700 hover:file:bg-stone-200 disabled:opacity-50"
+                  className="input" style={{ padding: "10px 0", background: "transparent", border: "none", borderBottom: "1px solid var(--line)" }}
                 />
                 {uploadProgress && (
                   <p className={`mt-2 text-sm ${uploadProgress.startsWith('✓') ? 'text-green-400' : uploadProgress.startsWith('✗') ? 'text-red-400' : 'text-blue-400'}`}>
@@ -1109,7 +997,7 @@ export default function AdminPage() {
                         <img
                           src={url}
                           alt={`Uploadé ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-xl border border-stone-200"
+                          style={{ width: "100%", height: 96, objectFit: "cover", borderRadius: 10, border: "1px solid var(--line)" }}
                         />
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
                           <button
@@ -1120,7 +1008,7 @@ export default function AdminPage() {
                                 image: url,
                               });
                             }}
-                            className="px-3 py-1 text-xs bg-white text-slate-900 rounded-full font-semibold"
+                            style={{ padding: "4px 10px", fontSize: "0.78rem", background: "var(--accent)", color: "#0c0a09", borderRadius: 99, fontWeight: 600 }}
                           >
                             Définir comme image principale
                           </button>
@@ -1133,12 +1021,12 @@ export default function AdminPage() {
 
               {/* Titre */}
               <div>
-                <label className="block text-sm mb-2 text-stone-700">Titre *</label>
+                <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8, color: "var(--fg-soft)" }}>Titre *</label>
                 <input
                   type="text"
                   value={projectForm.title}
                   onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
-                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                  className="input"
                   placeholder="Ex: Portraits signature"
                   required
                 />
@@ -1146,24 +1034,24 @@ export default function AdminPage() {
 
               {/* Sous-titre */}
               <div>
-                <label className="block text-sm mb-2 text-stone-700">Sous-titre</label>
+                <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8, color: "var(--fg-soft)" }}>Sous-titre</label>
                 <input
                   type="text"
                   value={projectForm.subtitle}
                   onChange={(e) => setProjectForm({ ...projectForm, subtitle: e.target.value })}
-                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                  className="input"
                   placeholder="Ex: Direction artistique & retouche éditoriale"
                 />
               </div>
 
               {/* Image principale */}
               <div>
-                <label className="block text-sm mb-2 text-stone-700">Image principale (URL) *</label>
+                <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8, color: "var(--fg-soft)" }}>Image principale (URL) *</label>
                 <input
                   type="text"
                   value={projectForm.image}
                   onChange={(e) => setProjectForm({ ...projectForm, image: e.target.value })}
-                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                  className="input"
                   placeholder="/images/IMG_XXXX.webp"
                   required
                 />
@@ -1171,7 +1059,7 @@ export default function AdminPage() {
                   <img
                     src={projectForm.image}
                     alt="Preview"
-                    className="mt-2 max-w-xs rounded-xl border border-stone-200"
+                    style={{ marginTop: 8, maxWidth: 320, borderRadius: 10, border: "1px solid var(--line)" }}
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}
@@ -1181,15 +1069,15 @@ export default function AdminPage() {
 
               {/* Catégorie */}
               <div>
-                <label className="block text-sm mb-2 text-stone-700">Catégorie *</label>
+                <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8, color: "var(--fg-soft)" }}>Catégorie *</label>
                 <select
                   value={projectForm.category}
                   onChange={(e) => setProjectForm({ ...projectForm, category: e.target.value as Project['category'] })}
-                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                  className="input"
                   required
                 >
                   {categories.map((cat) => (
-                    <option key={cat} value={cat} className="bg-white text-stone-900">
+                    <option key={cat} value={cat} style={{ background: "var(--surface)", color: "var(--fg)" }}>
                       {cat}
                     </option>
                   ))}
@@ -1198,12 +1086,12 @@ export default function AdminPage() {
 
               {/* Description */}
               <div>
-                <label className="block text-sm mb-2 text-stone-700">Description *</label>
+                <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8, color: "var(--fg-soft)" }}>Description *</label>
                 <textarea
                   value={projectForm.description}
                   onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
                   rows={4}
-                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                  className="input"
                   placeholder="Description du projet..."
                   required
                 />
@@ -1211,7 +1099,7 @@ export default function AdminPage() {
 
               {/* Détails */}
               <div>
-                <label className="block text-sm mb-2 text-stone-700">Détails (un par ligne)</label>
+                <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8, color: "var(--fg-soft)" }}>Détails (un par ligne)</label>
                 {projectForm.details.map((detail, index) => (
                   <input
                     key={index}
@@ -1222,14 +1110,14 @@ export default function AdminPage() {
                       newDetails[index] = e.target.value;
                       setProjectForm({ ...projectForm, details: newDetails });
                     }}
-                    className="w-full mb-2 rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                    className="input" style={{ marginBottom: 8 }}
                     placeholder={`Détail ${index + 1}`}
                   />
                 ))}
                 <button
                   type="button"
                   onClick={() => setProjectForm({ ...projectForm, details: [...projectForm.details, ''] })}
-                  className="mt-2 rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-stone-400 hover:bg-white"
+                  className="btn btn-outline" style={{ marginTop: 8, fontSize: "0.88rem" }}
                 >
                   + Ajouter un détail
                 </button>
@@ -1237,7 +1125,7 @@ export default function AdminPage() {
 
               {/* Photos */}
               <div>
-                <label className="block text-sm mb-2 text-stone-700">Photos du projet (URLs, une par ligne)</label>
+                <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8, color: "var(--fg-soft)" }}>Photos du projet (URLs, une par ligne)</label>
                 {projectForm.photos.map((photo, index) => (
                   <div key={index} className="flex gap-2 mb-2">
                     <input
@@ -1248,14 +1136,14 @@ export default function AdminPage() {
                         newPhotos[index] = e.target.value;
                         setProjectForm({ ...projectForm, photos: newPhotos });
                       }}
-                      className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                      className="input"
                       placeholder={`/images/IMG_XXXX.webp`}
                     />
                     {photo && (
                       <img
                         src={photo}
                         alt={`Preview ${index + 1}`}
-                        className="w-20 h-20 object-cover rounded-xl border border-stone-200"
+                        style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 10, border: "1px solid var(--line)" }}
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                         }}
@@ -1276,7 +1164,7 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={() => setProjectForm({ ...projectForm, photos: [...projectForm.photos, ''] })}
-                  className="mt-2 rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-stone-400 hover:bg-white"
+                  className="btn btn-outline" style={{ marginTop: 8, fontSize: "0.88rem" }}
                 >
                   + Ajouter une photo
                 </button>
@@ -1287,19 +1175,19 @@ export default function AdminPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-full bg-[#1c1916] px-4 py-3 font-semibold text-[#faf7f2] transition hover:shadow-lg hover:shadow-black/20 disabled:opacity-50"
+                className="btn btn-gold" style={{ width: "100%", justifyContent: "center" }}
               >
                 {loading ? 'Ajout en cours...' : 'Ajouter le projet au portfolio'}
               </button>
             </form>
 
-            <div className="mt-8 pt-8 border-t border-stone-200">
-              <p className="text-sm text-stone-500">
+            <div style={{ marginTop: 32, paddingTop: 32, borderTop: "1px solid var(--line)" }}>
+              <p className="muted" style={{ fontSize: "0.85rem" }}>
                 Après avoir ajouté un projet, il apparaîtra automatiquement dans le portfolio.
               </p>
               <a
                 href="/portfolio"
-                className="mt-4 inline-block rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-stone-400 hover:bg-white"
+                className="btn btn-outline" style={{ marginTop: 16, fontSize: "0.88rem" }}
               >
                 Voir le portfolio
               </a>
@@ -1307,9 +1195,9 @@ export default function AdminPage() {
           </div>
         ) : activeMode === 'testimonials' ? (
           /* Mode gestion des avis */
-          <div className="space-y-6">
-            <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
-              <h2 className="text-2xl font-semibold mb-6 text-stone-900">Ajouter un nouvel avis</h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <div className="surface-card" style={{ padding: "clamp(20px,3vw,40px)" }}>
+              <h2 className="display" style={{ fontSize: "1.7rem", marginBottom: 24 }}>Ajouter un nouvel avis</h2>
 
               <form
                 onSubmit={async (e) => {
@@ -1355,49 +1243,49 @@ export default function AdminPage() {
                     setLoading(false);
                   }
                 }}
-                className="space-y-4"
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
               >
                 <div>
-                  <label className="block text-sm mb-2">Nom du client *</label>
+                  <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8 }}>Nom du client *</label>
                   <input
                     type="text"
                     value={testimonialForm.name}
                     onChange={(e) => setTestimonialForm({ ...testimonialForm, name: e.target.value })}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                    className="input"
                     placeholder="Ex. Marie Dupont"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-2">Email du client *</label>
+                  <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8 }}>Email du client *</label>
                   <input
                     type="email"
                     value={testimonialForm.email}
                     onChange={(e) => setTestimonialForm({ ...testimonialForm, email: e.target.value })}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                    className="input"
                     placeholder="client@email.com"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-2">Rôle / Fonction (optionnel)</label>
+                  <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8 }}>Rôle / Fonction (optionnel)</label>
                   <input
                     type="text"
                     value={testimonialForm.role}
                     onChange={(e) => setTestimonialForm({ ...testimonialForm, role: e.target.value })}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                    className="input"
                     placeholder="Ex. Directrice marketing"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-2">Témoignage *</label>
+                  <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8 }}>Témoignage *</label>
                   <textarea
                     value={testimonialForm.quote}
                     onChange={(e) => setTestimonialForm({ ...testimonialForm, quote: e.target.value })}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                    className="input"
                     placeholder="Le témoignage du client..."
                     rows={4}
                     required
@@ -1406,46 +1294,46 @@ export default function AdminPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm mb-2">Note (1-5)</label>
+                    <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8 }}>Note (1-5)</label>
                     <input
                       type="number"
                       min="1"
                       max="5"
                       value={testimonialForm.rating}
                       onChange={(e) => setTestimonialForm({ ...testimonialForm, rating: parseInt(e.target.value) || 5 })}
-                      className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                      className="input"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm mb-2">Date (optionnel)</label>
+                    <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8 }}>Date (optionnel)</label>
                     <input
                       type="date"
                       value={testimonialForm.date}
                       onChange={(e) => setTestimonialForm({ ...testimonialForm, date: e.target.value })}
-                      className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                      className="input"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-2">Projet lié (optionnel)</label>
+                  <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8 }}>Projet lié (optionnel)</label>
                   <input
                     type="text"
                     value={testimonialForm.project}
                     onChange={(e) => setTestimonialForm({ ...testimonialForm, project: e.target.value })}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                    className="input"
                     placeholder="Ex. Portrait signature"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-2">URL de la photo (optionnel)</label>
+                  <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8 }}>URL de la photo (optionnel)</label>
                   <input
                     type="text"
                     value={testimonialForm.image}
                     onChange={(e) => setTestimonialForm({ ...testimonialForm, image: e.target.value })}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                    className="input"
                     placeholder="/images/client.webp"
                   />
                 </div>
@@ -1455,7 +1343,7 @@ export default function AdminPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full rounded-full bg-white px-4 py-3 font-semibold text-slate-900 transition hover:shadow-lg disabled:opacity-50"
+                  className="btn btn-gold" style={{ width: "100%", justifyContent: "center" }}
                 >
                   {loading ? 'Ajout en cours...' : 'Ajouter l\'avis'}
                 </button>
@@ -1463,24 +1351,24 @@ export default function AdminPage() {
             </div>
 
             {/* Liste des avis existants */}
-            <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
+            <div className="surface-card" style={{ padding: "clamp(20px,3vw,40px)" }}>
               <h2 className="text-2xl font-semibold mb-6">Avis en attente de modération</h2>
 
               {testimonials.filter(t => t && (!t.approved || t.approved === false)).length === 0 ? (
-                <p className="text-stone-600 text-center py-8">Aucun avis en attente</p>
+                <p className="muted" style={{ textAlign: "center", padding: "32px 0" }}>Aucun avis en attente</p>
               ) : (
-                <div className="space-y-4 mb-8">
+                <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 32 }}>
                   {testimonials.filter(t => t && (!t.approved || t.approved === false)).map((testimonial) => (
                     <div
                       key={testimonial.id}
-                      className="rounded-2xl border border-orange-200 bg-stone-50 p-4"
+                      className="surface-card" style={{ padding: 16, borderColor: "var(--accent)" }}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-semibold text-stone-900">{testimonial.name}</h3>
+                            <h3 className="display" style={{ fontSize: "1.2rem" }}>{testimonial.name}</h3>
                             {testimonial.email && (
-                              <span className="text-xs text-stone-500">({testimonial.email})</span>
+                              <span className="muted" style={{ fontSize: "0.78rem" }}>({testimonial.email})</span>
                             )}
                             {testimonial.rating && (
                               <div className="flex gap-1">
@@ -1496,14 +1384,14 @@ export default function AdminPage() {
                             )}
                           </div>
                           {testimonial.role && (
-                            <p className="text-sm text-stone-600 mb-2">{testimonial.role}</p>
+                            <p className="muted" style={{ fontSize: "0.88rem", marginBottom: 8 }}>{testimonial.role}</p>
                           )}
                           {testimonial.project && (
                             <p className="text-xs text-indigo-300 mb-2">Projet: {testimonial.project}</p>
                           )}
                           <p className="text-slate-200 italic">"{testimonial.quote}"</p>
                           {testimonial.date && (
-                            <p className="text-xs text-stone-500 mt-2">{new Date(testimonial.date).toLocaleDateString('fr-FR')}</p>
+                            <p className="muted" style={{ fontSize: "0.78rem", marginTop: 8 }}>{new Date(testimonial.date).toLocaleDateString('fr-FR')}</p>
                           )}
                         </div>
                         <div className="flex flex-col gap-2">
@@ -1583,18 +1471,18 @@ export default function AdminPage() {
               <h2 className="text-2xl font-semibold mb-6 mt-8">Avis approuvés</h2>
 
               {testimonials.filter(t => t && t.approved === true).length === 0 ? (
-                <p className="text-stone-600 text-center py-8">Aucun avis approuvé pour le moment</p>
+                <p className="muted" style={{ textAlign: "center", padding: "32px 0" }}>Aucun avis approuvé pour le moment</p>
               ) : (
-                <div className="space-y-4">
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   {testimonials.filter(t => t && t.approved === true).map((testimonial) => (
                     <div
                       key={testimonial.id}
-                      className="rounded-2xl border border-stone-200 bg-white p-4"
+                      className="surface-card" style={{ padding: 16 }}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-semibold text-stone-900">{testimonial.name}</h3>
+                            <h3 className="display" style={{ fontSize: "1.2rem" }}>{testimonial.name}</h3>
                             {testimonial.rating && (
                               <div className="flex gap-1">
                                 {[...Array(5)].map((_, i) => (
@@ -1609,14 +1497,14 @@ export default function AdminPage() {
                             )}
                           </div>
                           {testimonial.role && (
-                            <p className="text-sm text-stone-600 mb-2">{testimonial.role}</p>
+                            <p className="muted" style={{ fontSize: "0.88rem", marginBottom: 8 }}>{testimonial.role}</p>
                           )}
                           {testimonial.project && (
                             <p className="text-xs text-indigo-300 mb-2">Projet: {testimonial.project}</p>
                           )}
                           <p className="text-slate-200 italic">"{testimonial.quote}"</p>
                           {testimonial.date && (
-                            <p className="text-xs text-stone-500 mt-2">{new Date(testimonial.date).toLocaleDateString('fr-FR')}</p>
+                            <p className="muted" style={{ fontSize: "0.78rem", marginTop: 8 }}>{new Date(testimonial.date).toLocaleDateString('fr-FR')}</p>
                           )}
                         </div>
                         <div className="flex flex-col gap-2">
@@ -1695,7 +1583,7 @@ export default function AdminPage() {
             </div>
 
             {/* Gestion des codes de vérification */}
-            <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
+            <div className="surface-card" style={{ padding: "clamp(20px,3vw,40px)" }}>
               <h2 className="text-2xl font-semibold mb-6">Gérer les codes de vérification</h2>
 
               <form
@@ -1735,27 +1623,27 @@ export default function AdminPage() {
                     setLoading(false);
                   }
                 }}
-                className="space-y-4 mb-6"
+                style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}
               >
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm mb-2">Email du client</label>
+                    <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8 }}>Email du client</label>
                     <input
                       type="email"
                       value={newCodeForm.email}
                       onChange={(e) => setNewCodeForm({ ...newCodeForm, email: e.target.value })}
-                      className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                      className="input"
                       placeholder="client@example.com"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm mb-2">Code de vérification</label>
+                    <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8 }}>Code de vérification</label>
                     <input
                       type="text"
                       value={newCodeForm.code}
                       onChange={(e) => setNewCodeForm({ ...newCodeForm, code: e.target.value.toUpperCase() })}
-                      className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                      className="input"
                       placeholder="CODE123"
                       required
                     />
@@ -1764,26 +1652,26 @@ export default function AdminPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:shadow-lg disabled:opacity-50"
+                  className="btn btn-gold" style={{ fontSize: "0.88rem" }}
                 >
                   {loading ? 'Ajout...' : 'Ajouter le code'}
                 </button>
               </form>
 
               <div>
-                <h3 className="text-lg font-semibold mb-4">Codes existants</h3>
+                <h3 className="display" style={{ fontSize: "1.2rem", marginBottom: 18 }}>Codes existants</h3>
                 {Object.keys(verificationCodes).length === 0 ? (
-                <p className="text-stone-600 text-center py-4">Aucun code configuré</p>
+                <p className="muted" style={{ textAlign: "center", padding: "16px 0" }}>Aucun code configuré</p>
                 ) : (
-                  <div className="space-y-2">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {Object.entries(verificationCodes).map(([email, code]) => (
                       <div
                         key={email}
-                        className="flex items-center justify-between rounded-xl border border-stone-300 bg-white px-4 py-2"
+                        className="surface-card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px" }}
                       >
                         <div>
-                          <p className="text-sm font-medium text-stone-900">{email}</p>
-                          <p className="text-xs text-stone-600">Code: {code}</p>
+                          <p style={{ fontSize: "0.9rem", fontWeight: 500 }}>{email}</p>
+                          <p className="muted" style={{ fontSize: "0.78rem" }}>Code: {code}</p>
                         </div>
                         <button
                           onClick={async () => {
@@ -1832,27 +1720,27 @@ export default function AdminPage() {
           </div>
         ) : activeMode === 'reservations' ? (
           /* Mode réservations */
-          <div className="space-y-6">
-            <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <div className="surface-card" style={{ padding: "clamp(20px,3vw,40px)" }}>
               <h2 className="text-2xl font-semibold mb-6">Gestion des réservations</h2>
 
               {!selectedReservation ? (
                 /* Liste des réservations */
-                <div className="space-y-4">
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   {reservations.length === 0 ? (
-                <p className="text-stone-600 text-center py-8">Aucune réservation pour le moment</p>
+                <p className="muted" style={{ textAlign: "center", padding: "32px 0" }}>Aucune réservation pour le moment</p>
                   ) : (
                     <div className="grid gap-4">
                       {reservations.filter(r => r && r.id && r.firstName).map((reservation) => (
                         <div
                           key={reservation.id}
-                          className="rounded-2xl border border-stone-200 bg-white p-4 sm:p-5 hover:border-stone-300 transition cursor-pointer"
+                          className="surface-card" style={{ padding: "16px 20px", cursor: "pointer", transition: "border-color 0.2s" }}
                           onClick={() => setSelectedReservation(reservation)}
                         >
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-lg font-semibold text-stone-900">
+                                <h3 className="display" style={{ fontSize: "1.2rem" }}>
                                   {reservation.firstName} {reservation.lastName}
                                 </h3>
                                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${reservation.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
@@ -1876,8 +1764,8 @@ export default function AdminPage() {
                                   </span>
                                 )}
                               </div>
-                              <p className="text-sm text-stone-600">{reservation.email}</p>
-                              <div className="flex flex-wrap gap-4 mt-2 text-sm text-stone-500">
+                              <p className="muted" style={{ fontSize: "0.88rem" }}>{reservation.email}</p>
+                              <div className="muted" style={{ display: "flex", flexWrap: "wrap", gap: 16, marginTop: 8, fontSize: "0.88rem" }}>
                                 <span>📅 {reservation.date}{reservation.startTime ? ` à ${reservation.startTime}` : ''}</span>
                                 <span>🎯 {reservation.prestationType}</span>
                                 <span>📍 {reservation.location}</span>
@@ -1899,7 +1787,7 @@ export default function AdminPage() {
                                   </div>
                                 );
                               })()}
-                              <p className="text-xs text-stone-500 mt-2">
+                              <p className="muted" style={{ fontSize: "0.78rem", marginTop: 8 }}>
                                 Créée le {new Date(reservation.createdAt).toLocaleDateString('fr-FR')}
                               </p>
                             </div>
@@ -1908,7 +1796,7 @@ export default function AdminPage() {
                                 e.stopPropagation();
                                 setSelectedReservation(reservation);
                               }}
-                              className="px-4 py-2 rounded-full bg-stone-100 text-stone-700 text-sm font-semibold transition hover:bg-stone-200"
+                              className="btn btn-ghost" style={{ fontSize: "0.88rem" }}
                             >
                               Voir détails
                             </button>
@@ -1920,7 +1808,7 @@ export default function AdminPage() {
                 </div>
               ) : (
                 /* Détails de la réservation sélectionnée */
-                <div className="space-y-6">
+                <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
                   <button
                     onClick={() => {
                       setSelectedReservation(null);
@@ -1931,19 +1819,19 @@ export default function AdminPage() {
                     ← Retour à la liste
                   </button>
 
-                  <div className="rounded-2xl border border-stone-200 bg-white p-6">
+                  <div className="surface-card" style={{ padding: 24 }}>
                     <h3 className="text-2xl font-semibold mb-4">
                       {selectedReservation.firstName} {selectedReservation.lastName}
                     </h3>
 
                     <div className="grid gap-4 sm:grid-cols-2 mb-6">
                       <div>
-                        <p className="text-sm text-stone-600">Email</p>
-                        <p className="text-stone-900">{selectedReservation.email}</p>
+                        <p className="muted" style={{ fontSize: "0.88rem" }}>Email</p>
+                        <p style={{ color: "var(--fg)" }}>{selectedReservation.email}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-stone-600">Date prévue</p>
-                        <p className="text-stone-900">
+                        <p className="muted" style={{ fontSize: "0.88rem" }}>Date prévue</p>
+                        <p style={{ color: "var(--fg)" }}>
                           {selectedReservation.date}
                           {selectedReservation.startTime && (
                             <span className="text-indigo-300">
@@ -1953,31 +1841,31 @@ export default function AdminPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-stone-600">Type de prestation</p>
-                        <p className="text-stone-900">{selectedReservation.prestationType}</p>
+                        <p className="muted" style={{ fontSize: "0.88rem" }}>Type de prestation</p>
+                        <p style={{ color: "var(--fg)" }}>{selectedReservation.prestationType}</p>
                       </div>
                       {selectedReservation.prestationType === 'Événement' && (
                         <>
                           <div>
-                            <p className="text-sm text-stone-600">Type d’événement</p>
-                            <p className="text-stone-900">{selectedReservation.eventType || 'Non renseigné'}</p>
+                            <p className="muted" style={{ fontSize: "0.88rem" }}>Type d’événement</p>
+                            <p style={{ color: "var(--fg)" }}>{selectedReservation.eventType || 'Non renseigné'}</p>
                           </div>
                           <div>
-                            <p className="text-sm text-stone-600">Contact préféré</p>
-                            <p className="text-stone-900">{selectedReservation.contactPreference || 'Non renseigné'}</p>
+                            <p className="muted" style={{ fontSize: "0.88rem" }}>Contact préféré</p>
+                            <p style={{ color: "var(--fg)" }}>{selectedReservation.contactPreference || 'Non renseigné'}</p>
                           </div>
                         </>
                       )}
                       <div>
-                        <p className="text-sm text-stone-600">Lieu</p>
-                        <p className="text-stone-900">
+                        <p className="muted" style={{ fontSize: "0.88rem" }}>Lieu</p>
+                        <p style={{ color: "var(--fg)" }}>
                           {selectedReservation.location || 'Non renseigné'}
                         </p>
                       </div>
                       {selectedReservation.galleryCode && selectedReservation.galleryCreated && (
                         <div>
-                          <p className="text-sm text-stone-600">Code d'accès galerie</p>
-                          <p className="text-stone-900 font-mono">{selectedReservation.galleryCode}</p>
+                          <p className="muted" style={{ fontSize: "0.88rem" }}>Code d'accès galerie</p>
+                          <p style={{ fontFamily: "monospace" }}>{selectedReservation.galleryCode}</p>
                         </div>
                       )}
                       {selectedReservation.galleryExpiresAt && (() => {
@@ -1985,18 +1873,13 @@ export default function AdminPage() {
                         const expiresDate = new Date(selectedReservation.galleryExpiresAt);
                         return (
                           <div>
-                            <p className="text-sm text-stone-600">Expiration de la galerie</p>
-                            <p className={`text-stone-700 ${daysRemaining !== null && daysRemaining <= 0
-                                ? 'text-red-400'
-                                : daysRemaining !== null && daysRemaining <= 7
-                                  ? 'text-yellow-400'
-                                  : 'text-green-400'
-                              }`}>
+                            <p className="muted" style={{ fontSize: "0.88rem" }}>Expiration de la galerie</p>
+                            <p style={{ color: daysRemaining !== null && daysRemaining <= 0 ? '#e87070' : daysRemaining !== null && daysRemaining <= 7 ? '#d8b46a' : '#7ec893' }}>
                               {daysRemaining !== null && daysRemaining > 0 ? (
                                 <>
                                   <strong>{daysRemaining} jour{daysRemaining > 1 ? 's' : ''} restant{daysRemaining > 1 ? 's' : ''}</strong>
                                   <br />
-                                  <span className="text-sm text-stone-500">
+                                  <span className="muted" style={{ fontSize: "0.85rem" }}>
                                     Jusqu'au {expiresDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                                   </span>
                                 </>
@@ -2004,7 +1887,7 @@ export default function AdminPage() {
                                 <>
                                   <strong>Galerie expirée</strong>
                                   <br />
-                                  <span className="text-sm text-stone-500">
+                                  <span className="muted" style={{ fontSize: "0.85rem" }}>
                                     Depuis le {expiresDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                                   </span>
                                 </>
@@ -2017,21 +1900,21 @@ export default function AdminPage() {
 
                     {selectedReservation.specialRetouches && (
                       <div className="mb-6">
-                        <p className="text-sm text-stone-600 mb-2">Retouches spéciales</p>
-                        <p className="text-stone-900">{selectedReservation.specialRetouches}</p>
+                        <p className="muted" style={{ fontSize: "0.88rem", marginBottom: 8 }}>Retouches spéciales</p>
+                        <p style={{ color: "var(--fg)" }}>{selectedReservation.specialRetouches}</p>
                       </div>
                     )}
 
                     {selectedReservation.prestationType === 'Événement' && selectedReservation.eventDetails && (
                       <div className="mb-6">
-                        <p className="text-sm text-stone-600 mb-2">Description de l’événement</p>
-                        <p className="text-stone-900 whitespace-pre-line">{selectedReservation.eventDetails}</p>
+                        <p className="muted" style={{ fontSize: "0.88rem", marginBottom: 8 }}>Description de l’événement</p>
+                        <p style={{ whiteSpace: "pre-line" }}>{selectedReservation.eventDetails}</p>
                       </div>
                     )}
 
                     {selectedReservation.inspirationPhotos && selectedReservation.inspirationPhotos.length > 0 && (
                       <div className="mb-6">
-                        <p className="text-sm text-stone-600 mb-2">Photos d'inspiration</p>
+                        <p className="muted" style={{ fontSize: "0.88rem", marginBottom: 8 }}>Photos d'inspiration</p>
                         <div className="grid grid-cols-4 gap-2">
                           {selectedReservation.inspirationPhotos.map((photo: string, index: number) => (
                             <img key={index} src={photo} alt={`Inspiration ${index + 1}`} className="rounded-lg" />
@@ -2042,15 +1925,15 @@ export default function AdminPage() {
 
                     {/* Gestion des photos de la galerie */}
                     <div className="mb-6 rounded-xl border border-green-500/30 bg-green-500/10 p-6">
-                      <h4 className="text-lg font-semibold mb-4">📸 Photos de la galerie client</h4>
-                      <p className="text-sm text-stone-600 mb-4">
+                      <h4 className="display" style={{ fontSize: "1.2rem", marginBottom: 18 }}>📸 Photos de la galerie client</h4>
+                      <p className="muted" style={{ fontSize: "0.88rem", marginBottom: 16 }}>
                         Ajoutez les photos finales qui seront visibles dans la galerie personnelle du client.
                       </p>
 
-                      <div className="space-y-4">
+                      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                         {/* Upload de photos */}
                         <label className="block">
-                          <span className="text-sm text-stone-600 mb-2 block">Ajouter des photos</span>
+                          <span className="muted" style={{ fontSize: "0.88rem", marginBottom: 8, display: "block" }}>Ajouter des photos</span>
                           <input
                             type="file"
                             multiple
@@ -2131,7 +2014,7 @@ export default function AdminPage() {
                               }
                             }}
                             disabled={uploadingGalleryPhotos}
-                            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60 disabled:opacity-50"
+                            className="input"
                           />
                           {uploadingGalleryPhotos && (
                             <p className="mt-2 text-sm text-green-400">Upload en cours...</p>
@@ -2141,7 +2024,7 @@ export default function AdminPage() {
                         {/* Affichage des photos existantes */}
                         {selectedReservation.galleryPhotos && selectedReservation.galleryPhotos.length > 0 ? (
                           <div>
-                            <p className="text-sm text-stone-600 mb-3">
+                            <p className="muted" style={{ fontSize: "0.88rem", marginBottom: 12 }}>
                               {selectedReservation.galleryPhotos.length} photo(s) dans la galerie
                             </p>
                             <div className="grid grid-cols-4 gap-2">
@@ -2198,7 +2081,7 @@ export default function AdminPage() {
                             </div>
                           </div>
                         ) : (
-                          <p className="text-sm text-stone-500 italic">
+                          <p className="muted" style={{ fontSize: "0.88rem", fontStyle: "italic" }}>
                             Aucune photo dans la galerie pour le moment. Ajoutez des photos ci-dessus.
                           </p>
                         )}
@@ -2208,19 +2091,19 @@ export default function AdminPage() {
                     {/* Envoyer email avec galerie */}
                     {selectedReservation.status === 'completed' && (
                       <div className="rounded-xl border border-indigo-500/30 bg-indigo-500/10 p-6">
-                        <h4 className="text-lg font-semibold mb-4">📧 Envoyer la galerie photo</h4>
-                        <p className="text-sm text-stone-600 mb-4">
+                        <h4 className="display" style={{ fontSize: "1.2rem", marginBottom: 18 }}>📧 Envoyer la galerie photo</h4>
+                        <p className="muted" style={{ fontSize: "0.88rem", marginBottom: 16 }}>
                           Entrez l'URL de la galerie photo et un email sera automatiquement envoyé au client avec le code d'accès.
                         </p>
-                        <div className="space-y-4">
+                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                           <label className="block">
-                            <span className="text-sm text-stone-600 mb-2 block">URL de la galerie</span>
+                            <span className="muted" style={{ fontSize: "0.88rem", marginBottom: 8, display: "block" }}>URL de la galerie</span>
                             <input
                               type="text"
                               value={galleryUrl}
                               onChange={(e) => setGalleryUrl(e.target.value)}
                               placeholder={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.lueurstudio-photographie.fr'}/gallery/CODE`}
-                              className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                              className="input"
                             />
                           </label>
                           <button
@@ -2263,12 +2146,12 @@ export default function AdminPage() {
                               }
                             }}
                             disabled={sendingEmail || !galleryUrl}
-                            className="w-full rounded-full bg-white px-4 py-3 font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50"
+                            className="btn btn-gold" style={{ width: "100%", justifyContent: "center" }}
                           >
                             {sendingEmail ? 'Envoi en cours...' : 'Envoyer l\'email avec la galerie'}
                           </button>
                           {selectedReservation.galleryCode && (
-                            <p className="text-sm text-stone-600 mt-2">
+                            <p className="muted" style={{ fontSize: "0.88rem", marginTop: 8 }}>
                               Code d'accès actuel: <span className="font-mono font-semibold">{selectedReservation.galleryCode}</span>
                             </p>
                           )}
@@ -2278,7 +2161,7 @@ export default function AdminPage() {
 
                     {/* Changer le statut */}
                     <div className="mt-6 pt-6 border-t border-white/10">
-                      <p className="text-sm text-stone-600 mb-3">Changer le statut</p>
+                      <p className="muted" style={{ fontSize: "0.88rem", marginBottom: 12 }}>Changer le statut</p>
                       <div className="flex gap-2 flex-wrap">
                         {(['pending', 'confirmed', 'completed', 'cancelled'] as const).map((status) => (
                           <button
@@ -2314,10 +2197,7 @@ export default function AdminPage() {
                                 alert('❌ Erreur lors de la mise à jour de la réservation');
                               }
                             }}
-                            className={`px-4 py-2 rounded-full text-xs font-semibold transition ${selectedReservation.status === status
-                                ? 'bg-white text-slate-900'
-                                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-                              }`}
+                            className={"btn " + (selectedReservation.status === status ? "btn-gold" : "btn-outline")} style={{ fontSize: "0.8rem", padding: "5px 14px" }}
                           >
                             {status === 'pending' ? 'En attente' :
                               status === 'confirmed' ? 'Confirmée' :
@@ -2334,34 +2214,34 @@ export default function AdminPage() {
           </div>
         ) : activeMode === 'pricing' ? (
           /* Mode tarifs */
-          <div className="space-y-6">
-            <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <div className="surface-card" style={{ padding: "clamp(20px,3vw,40px)" }}>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
                   <h2 className="text-2xl font-semibold">Gestion des tarifs</h2>
-                  <p className="text-sm text-stone-600 mt-1">
+                  <p className="muted" style={{ fontSize: "0.88rem", marginTop: 6 }}>
                     Modifiez les offres affichées sur la page d'accueil.
                   </p>
                 </div>
                 <button
                   onClick={addPricingOffer}
-                  className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:shadow-lg"
+                  className="btn btn-gold" style={{ fontSize: "0.88rem" }}
                 >
                   + Ajouter une offre
                 </button>
               </div>
 
               {pricingOffers.length === 0 ? (
-                <p className="text-stone-600 text-center py-8">Aucune offre configurée.</p>
+                <p className="muted" style={{ textAlign: "center", padding: "32px 0" }}>Aucune offre configurée.</p>
               ) : (
-                <div className="space-y-4">
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   {pricingOffers.map((offer) => (
                     <div
                       key={offer.id}
-                      className="rounded-2xl border border-stone-200 bg-white p-5"
+                      className="surface-card" style={{ padding: 20 }}
                     >
                       <div className="flex items-center justify-between mb-4">
-                        <p className="text-sm text-stone-600">Offre</p>
+                        <p className="muted" style={{ fontSize: "0.88rem" }}>Offre</p>
                         <button
                           onClick={() => removePricingOffer(offer.id)}
                           className="text-red-400 hover:text-red-300 text-sm"
@@ -2371,32 +2251,32 @@ export default function AdminPage() {
                       </div>
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div>
-                          <label className="block text-sm text-stone-600 mb-2">Nom</label>
+                          <label style={{ display: "block", fontSize: "0.88rem", color: "var(--muted)", marginBottom: 8 }}>Nom</label>
                           <input
                             type="text"
                             value={offer.name}
                             onChange={(e) => updatePricingOffer(offer.id, 'name', e.target.value)}
-                            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                            className="input"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm text-stone-600 mb-2">Prix</label>
+                          <label style={{ display: "block", fontSize: "0.88rem", color: "var(--muted)", marginBottom: 8 }}>Prix</label>
                           <input
                             type="text"
                             value={offer.price}
                             onChange={(e) => updatePricingOffer(offer.id, 'price', e.target.value)}
                             placeholder="Ex: 150€ ou Sur devis"
-                            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                            className="input"
                           />
                         </div>
                       </div>
                       <div className="mt-4">
-                        <label className="block text-sm text-stone-600 mb-2">Description</label>
+                        <label style={{ display: "block", fontSize: "0.88rem", color: "var(--muted)", marginBottom: 8 }}>Description</label>
                         <textarea
                           value={offer.desc}
                           onChange={(e) => updatePricingOffer(offer.id, 'desc', e.target.value)}
                           rows={3}
-                          className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                          className="input"
                         />
                       </div>
                     </div>
@@ -2410,7 +2290,7 @@ export default function AdminPage() {
                 <button
                   onClick={savePricing}
                   disabled={loadingPricing}
-                  className="w-full rounded-full bg-white px-4 py-3 font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50"
+                  className="btn btn-gold" style={{ width: "100%", justifyContent: "center" }}
                 >
                   {loadingPricing ? 'Enregistrement...' : 'Enregistrer les tarifs'}
                 </button>
@@ -2419,34 +2299,34 @@ export default function AdminPage() {
           </div>
         ) : activeMode === 'availability' ? (
           /* Mode disponibilités */
-          <div className="space-y-6">
-            <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <div className="surface-card" style={{ padding: "clamp(20px,3vw,40px)" }}>
               <h2 className="text-2xl font-semibold mb-6">Gestion des disponibilités</h2>
 
               <div className="mb-6 p-4 rounded-xl bg-blue-500/15 border border-blue-500/40">
-                <p className="text-sm text-stone-700">
+                <p style={{ fontSize: "0.88rem", color: "var(--fg-soft)" }}>
                   <strong>Règles par défaut :</strong> Les réservations sont disponibles uniquement les week-ends (samedi et dimanche).
                 </p>
-                <p className="text-sm text-stone-700 mt-2">
+                <p style={{ fontSize: "0.88rem", color: "var(--fg-soft)", marginTop: 8 }}>
                   <strong>Déverrouiller :</strong> Permet de rendre disponible une date en semaine.
                 </p>
-                <p className="text-sm text-stone-700 mt-2">
+                <p style={{ fontSize: "0.88rem", color: "var(--fg-soft)", marginTop: 8 }}>
                   <strong>Bloquer :</strong> Rend une date indisponible (week-end ou semaine).
                 </p>
               </div>
 
               {/* Gestion rapide d'une date */}
-              <div className="mb-8 p-6 rounded-2xl border border-stone-300 bg-stone-50">
-                <h3 className="text-lg font-semibold mb-4">Gérer une date spécifique</h3>
+              <div className="surface-card" style={{ marginBottom: 32, padding: "clamp(20px,3vw,30px)" }}>
+                <h3 className="display" style={{ fontSize: "1.2rem", marginBottom: 18 }}>Gérer une date spécifique</h3>
                 <div className="flex gap-4 items-end flex-wrap">
                   <div className="flex-1 min-w-[200px]">
-                    <label className="block text-sm text-stone-800 mb-2">Date</label>
+                    <label style={{ display: "block", fontSize: "0.88rem", marginBottom: 8 }}>Date</label>
                     <input
                       type="date"
                       value={selectedDate}
                       onChange={(e) => setSelectedDate(e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                      className="input"
                     />
                   </div>
                   <div className="flex gap-2 flex-wrap">
@@ -2552,7 +2432,7 @@ export default function AdminPage() {
 
               {/* Liste des dates déverrouillées */}
               {unlockedDates.length > 0 && (
-                <div className="mb-8 p-6 rounded-2xl border border-stone-300 bg-stone-50">
+                <div className="surface-card" style={{ marginBottom: 32, padding: "clamp(20px,3vw,30px)" }}>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold">📅 Dates déverrouillées (disponibles en semaine)</h3>
                     <span className="px-3 py-1 rounded-full bg-green-600/20 text-green-700 text-sm font-semibold">
@@ -2565,7 +2445,7 @@ export default function AdminPage() {
                         key={date}
                         className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-600/15 border border-green-600/40"
                       >
-                        <span className="text-stone-900">{new Date(date + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                        <span style={{ color: "var(--fg)" }}>{new Date(date + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
                         <button
                           onClick={async () => {
                             if (confirm(`Retirer le déverrouillage pour le ${new Date(date + 'T00:00:00').toLocaleDateString('fr-FR')} ?`)) {
@@ -2600,7 +2480,7 @@ export default function AdminPage() {
 
               {/* Liste des dates bloquées */}
               {blockedDates.length > 0 && (
-                <div className="p-6 rounded-2xl border border-stone-300 bg-stone-50">
+                <div className="surface-card" style={{ padding: "clamp(20px,3vw,30px)" }}>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold">🚫 Dates bloquées (indisponibles)</h3>
                     <span className="px-3 py-1 rounded-full bg-red-600/20 text-red-700 text-sm font-semibold">
@@ -2613,7 +2493,7 @@ export default function AdminPage() {
                         key={date}
                         className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600/15 border border-red-600/40"
                       >
-                        <span className="text-stone-900">{new Date(date + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                        <span style={{ color: "var(--fg)" }}>{new Date(date + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
                         <button
                           onClick={async () => {
                             if (confirm(`Débloquer le ${new Date(date + 'T00:00:00').toLocaleDateString('fr-FR')} ?`)) {
@@ -2655,34 +2535,34 @@ export default function AdminPage() {
           </div>
         ) : activeMode === 'faq' ? (
           /* Mode FAQ */
-          <div className="space-y-6">
-            <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <div className="surface-card" style={{ padding: "clamp(20px,3vw,40px)" }}>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
                   <h2 className="text-2xl font-semibold">Gestion de la FAQ</h2>
-                  <p className="text-sm text-stone-600 mt-1">
+                  <p className="muted" style={{ fontSize: "0.88rem", marginTop: 6 }}>
                     Ajoutez, modifiez ou supprimez les questions affichées sur la page d'accueil.
                   </p>
                 </div>
                 <button
                   onClick={addFaqItem}
-                  className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-stone-900 transition hover:-translate-y-0.5 hover:shadow-lg"
+                  className="btn btn-outline" style={{ fontSize: "0.88rem" }}
                 >
                   + Ajouter une question
                 </button>
               </div>
 
               {faqItems.length === 0 ? (
-                <p className="text-stone-600 text-center py-8">Aucune question configurée.</p>
+                <p className="muted" style={{ textAlign: "center", padding: "32px 0" }}>Aucune question configurée.</p>
               ) : (
-                <div className="space-y-4">
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   {faqItems.map((item) => (
                     <div
                       key={item.id}
-                      className="rounded-2xl border border-stone-200 bg-white p-5"
+                      className="surface-card" style={{ padding: 20 }}
                     >
                       <div className="flex items-center justify-between mb-4">
-                        <p className="text-sm text-stone-600">Question</p>
+                        <p className="muted" style={{ fontSize: "0.88rem" }}>Question</p>
                         <button
                           onClick={() => removeFaqItem(item.id)}
                           className="text-red-600 hover:text-red-500 text-sm"
@@ -2690,24 +2570,24 @@ export default function AdminPage() {
                           Supprimer
                         </button>
                       </div>
-                      <div className="space-y-4">
+                      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                         <div>
-                          <label className="block text-sm text-stone-600 mb-2">Question</label>
+                          <label style={{ display: "block", fontSize: "0.88rem", color: "var(--muted)", marginBottom: 8 }}>Question</label>
                           <input
                             type="text"
                             value={item.question}
                             onChange={(e) => updateFaqItem(item.id, 'question', e.target.value)}
-                            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                            className="input"
                             placeholder="Ex: Quels sont les délais ?"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm text-stone-600 mb-2">Réponse</label>
+                          <label style={{ display: "block", fontSize: "0.88rem", color: "var(--muted)", marginBottom: 8 }}>Réponse</label>
                           <textarea
                             value={item.answer}
                             onChange={(e) => updateFaqItem(item.id, 'answer', e.target.value)}
                             rows={3}
-                            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
+                            className="input"
                             placeholder="Ex: Livraison rapide selon la prestation..."
                           />
                         </div>
@@ -2723,7 +2603,7 @@ export default function AdminPage() {
                 <button
                   onClick={saveFaq}
                   disabled={loadingFaq}
-                  className="w-full rounded-full bg-[#1c1916] px-4 py-3 font-semibold text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50"
+                  className="btn btn-gold" style={{ width: "100%", justifyContent: "center" }}
                 >
                   {loadingFaq ? 'Enregistrement...' : 'Enregistrer la FAQ'}
                 </button>
@@ -2732,11 +2612,11 @@ export default function AdminPage() {
           </div>
         ) : activeMode === 'spots' ? (
           /* Mode spots photo */
-          <div className="space-y-6">
-            <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <div className="surface-card" style={{ padding: "clamp(20px,3vw,40px)" }}>
               <div className="mb-6">
                 <h2 className="text-2xl font-semibold">Spots photo — Île-de-France</h2>
-                <p className="text-sm text-stone-500 mt-1">{photoSpots.length} lieux référencés dans 8 départements</p>
+                <p className="muted" style={{ fontSize: "0.85rem", marginTop: 6 }}>{photoSpots.length} lieux référencés dans 8 départements</p>
               </div>
 
               {/* Recherche */}
@@ -2746,23 +2626,19 @@ export default function AdminPage() {
                   placeholder="Rechercher un lieu, une ville..."
                   value={spotsSearch}
                   onChange={(e) => setSpotsSearch(e.target.value)}
-                  className="w-full rounded-xl border border-stone-300 bg-stone-50 px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-stone-400/40"
+                  className="input"
                 />
               </div>
 
               {/* Filtre par zone */}
               <div className="mb-3">
-                <p className="text-xs uppercase tracking-widest text-stone-400 mb-2">Département</p>
+                <p className="kicker" style={{ marginBottom: 8 }}>Département</p>
                 <div className="flex flex-wrap gap-2">
                   {zones.map((z) => (
                     <button
                       key={z}
                       onClick={() => setSpotsZone(z)}
-                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
-                        spotsZone === z
-                          ? 'bg-[#1c1916] text-[#faf7f2]'
-                          : 'border border-stone-300 text-stone-600 hover:bg-stone-100'
-                      }`}
+                      className={"btn " + (spotsZone === z ? "btn-gold" : "btn-outline")} style={{ padding: "5px 14px", fontSize: "0.85rem" }}
                     >
                       {z}
                     </button>
@@ -2772,17 +2648,13 @@ export default function AdminPage() {
 
               {/* Filtre par tag */}
               <div className="mb-6">
-                <p className="text-xs uppercase tracking-widest text-stone-400 mb-2">Type de photo</p>
+                <p className="kicker" style={{ marginBottom: 8 }}>Type de photo</p>
                 <div className="flex flex-wrap gap-2">
                   {tagsList.map((t) => (
                     <button
                       key={t.id}
                       onClick={() => setSpotsTag(t.id)}
-                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
-                        spotsTag === t.id
-                          ? 'bg-stone-700 text-white'
-                          : 'border border-stone-300 text-stone-600 hover:bg-stone-100'
-                      }`}
+                      className={"btn " + (spotsTag === t.id ? "btn-gold" : "btn-outline")} style={{ padding: "5px 14px", fontSize: "0.85rem" }}
                     >
                       {t.label}
                     </button>
@@ -2802,7 +2674,7 @@ export default function AdminPage() {
 
                 if (filtered.length === 0) {
                   return (
-                    <div className="py-16 text-center text-stone-400">
+                    <div className="muted" style={{ padding: "64px 0", textAlign: "center" }}>
                       Aucun spot correspondant à ta recherche.
                     </div>
                   );
@@ -2813,10 +2685,10 @@ export default function AdminPage() {
                     {filtered.map((spot) => (
                       <div
                         key={spot.id}
-                        className="rounded-2xl border border-stone-200 overflow-hidden bg-white hover:shadow-md transition-shadow"
+                        className="surface-card" style={{ overflow: "hidden", padding: 0, transition: "box-shadow 0.2s" }}
                       >
                         {/* Image */}
-                        <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
+                        <div style={{ position: "relative", aspectRatio: "4/3", overflow: "hidden", background: "var(--surface)" }}>
                           <img
                             src={spot.image}
                             alt={spot.name}
@@ -2829,19 +2701,19 @@ export default function AdminPage() {
                             <p className="text-white font-semibold text-sm leading-tight">{spot.name}</p>
                             <p className="text-white/70 text-xs">{spot.city}</p>
                           </div>
-                          <span className="absolute top-2 right-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-stone-700">
+                          <span style={{ position: "absolute", top: 8, right: 8, borderRadius: 99, background: "var(--surface)", padding: "2px 8px", fontSize: "0.75rem", fontWeight: 600 }}>
                             {spot.zone.split(' ')[0]}
                           </span>
                         </div>
 
                         {/* Contenu */}
-                        <div className="p-4 space-y-3">
+                        <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
                           {/* Tags */}
                           <div className="flex flex-wrap gap-1">
                             {spot.tags.map((tag) => (
                               <span
                                 key={tag}
-                                className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600 capitalize"
+                                style={{ borderRadius: 99, background: "var(--surface)", border: "1px solid var(--line)", padding: "2px 8px", fontSize: "0.75rem", fontWeight: 500, textTransform: "capitalize" }}
                               >
                                 {tag}
                               </span>
@@ -2849,30 +2721,30 @@ export default function AdminPage() {
                           </div>
 
                           {/* Description */}
-                          <p className="text-sm text-stone-600 leading-relaxed line-clamp-3">{spot.description}</p>
+                          <p className="muted" style={{ fontSize: "0.88rem", lineHeight: 1.6, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}>{spot.description}</p>
 
                           {/* Expand button */}
                           <button
                             onClick={() => setExpandedSpot(expandedSpot === spot.id ? null : spot.id)}
-                            className="text-xs font-semibold text-stone-500 hover:text-stone-800 transition"
+                            className="muted" style={{ fontSize: "0.78rem", fontWeight: 600, transition: "color 0.2s" }}
                           >
                             {expandedSpot === spot.id ? '▲ Moins de détails' : '▼ Voir le conseil & accès'}
                           </button>
 
                           {/* Expanded content */}
                           {expandedSpot === spot.id && (
-                            <div className="space-y-2 pt-2 border-t border-stone-100">
+                            <div style={{ paddingTop: 8, borderTop: "1px solid var(--line)", display: "flex", flexDirection: "column", gap: 8 }}>
                               <div className="rounded-xl bg-amber-50 border border-amber-200/60 p-3">
                                 <p className="text-xs font-semibold text-amber-700 mb-1">💡 Conseil pro</p>
-                                <p className="text-xs text-stone-600">{spot.tip}</p>
+                                <p className="muted" style={{ fontSize: "0.78rem" }}>{spot.tip}</p>
                               </div>
-                              <div className="rounded-xl bg-stone-50 border border-stone-200/60 p-3">
-                                <p className="text-xs font-semibold text-stone-500 mb-1">📍 Adresse</p>
-                                <p className="text-xs text-stone-600">{spot.address}</p>
+                              <div className="surface-card" style={{ padding: 12 }}>
+                                <p className="muted" style={{ fontSize: "0.78rem", fontWeight: 600, marginBottom: 6 }}>📍 Adresse</p>
+                                <p className="muted" style={{ fontSize: "0.78rem" }}>{spot.address}</p>
                               </div>
-                              <div className="rounded-xl bg-stone-50 border border-stone-200/60 p-3">
-                                <p className="text-xs font-semibold text-stone-500 mb-1">🚇 Accès</p>
-                                <p className="text-xs text-stone-600">{spot.access}</p>
+                              <div className="surface-card" style={{ padding: 12 }}>
+                                <p className="muted" style={{ fontSize: "0.78rem", fontWeight: 600, marginBottom: 6 }}>🚇 Accès</p>
+                                <p className="muted" style={{ fontSize: "0.78rem" }}>{spot.access}</p>
                               </div>
                             </div>
                           )}
@@ -2883,7 +2755,7 @@ export default function AdminPage() {
                 );
               })()}
 
-              <p className="mt-6 text-center text-xs text-stone-400">
+              <p className="muted" style={{ marginTop: 24, textAlign: "center", fontSize: "0.78rem" }}>
                 {photoSpots.filter((s) => {
                   const matchZone = spotsZone === 'Tous' || s.zone === spotsZone;
                   const matchTag = spotsTag === 'tous' || s.tags.includes(spotsTag);
@@ -2895,10 +2767,10 @@ export default function AdminPage() {
           </div>
         ) : (
           /* Mode édition - Gérer les projets existants */
-          <div className="space-y-6">
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             {!editingProject ? (
               /* Liste des projets pour sélection */
-              <div className="space-y-4">
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 <h2 className="text-2xl font-semibold mb-6">Sélectionner un projet à éditer</h2>
                 {categories.map((category) => {
                   const categoryProjects = existingProjects.filter(p => p.category === category);
@@ -2907,7 +2779,7 @@ export default function AdminPage() {
                   return (
                     <div
                       key={category}
-                      className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm"
+                      className="surface-card" style={{ padding: "clamp(20px,3vw,32px)" }}
                     >
                       <h3 className="text-xl font-semibold mb-4">{category}</h3>
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -2918,18 +2790,18 @@ export default function AdminPage() {
                               setEditingProject(project);
                               setEditedPhotos([...project.photos]);
                             }}
-                            className="group relative overflow-hidden rounded-2xl border border-stone-200 bg-white p-4 text-left transition hover:border-stone-300 hover:bg-stone-50"
+                            className="surface-card" style={{ padding: 16, textAlign: "left", cursor: "pointer", transition: "border-color 0.2s", position: "relative", overflow: "hidden" }}
                           >
                             <div className="aspect-[4/5] bg-cover bg-center rounded-xl mb-3 transition group-hover:scale-105"
                               style={{ backgroundImage: `url('${project.image}')` }}
                             />
-                            <h4 className="font-semibold text-stone-900 mb-1">{project.title}</h4>
+                            <h4 style={{ fontWeight: 600, marginBottom: 6 }}>{project.title}</h4>
                             {project.hidden && (
                               <span className="inline-flex items-center rounded-full bg-red-500/20 px-2 py-1 text-xs font-semibold text-red-200">
                                 Masqué
                               </span>
                             )}
-                            <p className="text-xs text-stone-500">{project.photos.length} photo(s)</p>
+                            <p className="muted" style={{ fontSize: "0.78rem" }}>{project.photos.length} photo(s)</p>
                           </button>
                         ))}
                       </div>
@@ -2939,11 +2811,11 @@ export default function AdminPage() {
               </div>
             ) : (
               /* Interface d'édition du projet */
-              <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
+              <div className="surface-card" style={{ padding: "clamp(20px,3vw,40px)" }}>
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-2xl font-semibold">{editingProject.title}</h2>
-                    <p className="text-sm text-stone-600 mt-1">{editingProject.category}</p>
+                    <p className="muted" style={{ fontSize: "0.88rem", marginTop: 6 }}>{editingProject.category}</p>
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -2975,7 +2847,7 @@ export default function AdminPage() {
                         }
                       }}
                       disabled={loading}
-                      className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-900 transition hover:border-stone-400 hover:bg-stone-100 disabled:opacity-50"
+                      className="btn btn-outline" style={{ fontSize: "0.88rem" }}
                     >
                       {editingProject.hidden ? 'Rendre visible' : 'Masquer'}
                     </button>
@@ -3023,7 +2895,7 @@ export default function AdminPage() {
                         setEditingProject(null);
                         setEditedPhotos([]);
                       }}
-                      className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-900 transition hover:border-stone-400 hover:bg-stone-100"
+                      className="btn btn-outline" style={{ fontSize: "0.88rem" }}
                     >
                       ← Retour
                     </button>
@@ -3031,12 +2903,12 @@ export default function AdminPage() {
                 </div>
 
                 <div className="mb-6">
-                  <p className="text-sm mb-3 text-stone-600">
+                  <p className="muted" style={{ fontSize: "0.88rem", marginBottom: 12 }}>
                     Glissez-déposez les photos pour réorganiser leur ordre. Cliquez sur × pour supprimer une photo.
                   </p>
 
                   {editedPhotos.length === 0 ? (
-                    <p className="text-stone-500 text-center py-8">Aucune photo dans ce projet</p>
+                    <p className="muted" style={{ textAlign: "center", padding: "32px 0" }}>Aucune photo dans ce projet</p>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                       {editedPhotos.map((photo, index) => (
@@ -3065,12 +2937,7 @@ export default function AdminPage() {
                             setDragIndex(null);
                             setDragOverIndex(null);
                           }}
-                          className={`relative group cursor-move rounded-xl border-2 transition ${dragIndex === index
-                              ? 'border-indigo-500 opacity-50'
-                              : dragOverIndex === index
-                                ? 'border-indigo-400 border-dashed'
-                                : 'border-stone-200 hover:border-stone-300'
-                            }`}
+                          className="relative group" style={{ cursor: "move", borderRadius: 10, border: `2px ${dragOverIndex === index ? 'dashed #7b9fe0' : 'solid var(--line)'}`, opacity: dragIndex === index ? 0.5 : 1, transition: "border-color 0.2s" }}
                         >
                           <img
                             src={photo}
@@ -3092,8 +2959,8 @@ export default function AdminPage() {
                           >
                             ×
                           </button>
-                          <div className="absolute inset-0 bg-stone-900/10 opacity-0 group-hover:opacity-100 transition rounded-xl flex items-center justify-center">
-                            <span className="text-xs text-stone-900 font-semibold">Glisser pour réorganiser</span>
+                          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)", opacity: 0, transition: "opacity 0.2s", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }} className="group-hover-overlay">
+                            <span style={{ fontSize: "0.78rem", fontWeight: 600 }}>Glisser pour réorganiser</span>
                           </div>
                         </div>
                       ))}
@@ -3140,7 +3007,7 @@ export default function AdminPage() {
                       }
                     }}
                     disabled={loading}
-                    className="flex-1 rounded-full bg-white px-4 py-3 font-semibold text-slate-900 transition hover:shadow-lg disabled:opacity-50"
+                    className="btn btn-gold" style={{ flex: 1, justifyContent: "center" }}
                   >
                     {loading ? 'Sauvegarde...' : 'Sauvegarder les modifications'}
                   </button>
@@ -3148,7 +3015,7 @@ export default function AdminPage() {
                     onClick={() => {
                       setEditedPhotos([...editingProject.photos]);
                     }}
-                    className="rounded-full border border-stone-300 px-4 py-3 text-sm font-semibold text-stone-900 transition hover:border-stone-400 hover:bg-stone-100"
+                    className="btn btn-outline" style={{ fontSize: "0.88rem" }}
                   >
                     Annuler
                   </button>
