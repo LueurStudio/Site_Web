@@ -7,10 +7,12 @@ import type { PricingOffer } from '@/app/pricing/pricing-data';
 const normalizeOffer = (offer: Partial<PricingOffer>, index: number): PricingOffer => {
   const name = String(offer.name || '').trim();
   const price = String(offer.price || '').trim();
+  const unit = String(offer.unit || 'à partir de').trim();
   const desc = String(offer.desc || '').trim();
+  const features = Array.isArray(offer.features) ? offer.features : [];
   const id = String(offer.id || `offer-${index + 1}`).trim();
 
-  return { id, name, price, desc };
+  return { id, name, price, unit, desc, features };
 };
 
 export async function POST(request: NextRequest) {
