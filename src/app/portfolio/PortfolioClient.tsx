@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useMemo, useState, useEffect } from "react";
-import { CONTACT_EMAIL } from "@/config/contact";
+import { useState, useEffect, useMemo } from "react";
+import { Reveal, IcoArrowUpRight } from "../components/ui";
+import CTABand from "../components/CTABand";
 
 type Project = {
   slug: string;
@@ -13,272 +13,94 @@ type Project = {
   description: string;
   details: string[];
   photos: string[];
-  category: "Portrait" | "Événement" | "Animal" | "Instagram / Réseaux";
+  category: string;
 };
 
-const categories: Project["category"][] = [
-  "Portrait",
-  "Événement",
-  "Animal",
-  "Instagram / Réseaux",
+const CATEGORIES = ["Portrait", "Événement", "Animal", "Instagram / Réseaux"];
+
+const PF_SPANS = [
+  { c: 7, r: "ratio-32" },
+  { c: 5, r: "ratio-45" },
+  { c: 5, r: "ratio-45" },
+  { c: 7, r: "ratio-32" },
+  { c: 6, r: "ratio-45" },
+  { c: 6, r: "ratio-45" },
+  { c: 12, r: "ratio-169" },
 ];
 
 export default function PortfolioClient() {
-  const searchParams = useSearchParams();
-  const categoryParam = searchParams.get('category');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam);
-  const [activeSlug, setActiveSlug] = useState<string | null>(null);
+  const [cat, setCat] = useState("Tout");
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
-    if (categoryParam) {
-      setSelectedCategory(categoryParam);
-    }
-  }, [categoryParam]);
-
-  useEffect(() => {
-    const loadProjects = async () => {
-      try {
-        const res = await fetch('/api/projects/list');
-        const data = await res.json();
-        if (data.projects) {
-          setProjects(data.projects);
-        }
-      } catch (error) {
-        console.error('Erreur lors du chargement des projets:', error);
-      }
-    };
-
-    loadProjects();
+    fetch("/api/projects/list")
+      .then((r) => r.json())
+      .then((d) => { if (d.projects) setProjects(d.projects); })
+      .catch(console.error);
   }, []);
 
-  const filteredProjects = useMemo(() => {
-    if (!selectedCategory) return projects;
-    return projects.filter((project) => project.category === selectedCategory);
-  }, [selectedCategory, projects]);
+  const list = useMemo(
+    () => cat === "Tout" ? projects : projects.filter((p) => p.category === cat),
+    [cat, projects]
+  );
 
-  const activeProject = useMemo(() => {
-    if (!activeSlug) return null;
-    return filteredProjects.find((p) => p.slug === activeSlug) ?? null;
-  }, [activeSlug, filteredProjects]);
+  const cats = ["Tout", ...CATEGORIES];
 
   return (
-    <div className="min-h-screen bg-[#faf7f2] text-[#1c1916]">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "CollectionPage",
-            name: "Portfolio LueurStudio",
-            description:
-              "Portfolio de photographie professionnelle : portraits, événements, photos d'animaux et contenus pour réseaux sociaux",
-            url: "https://www.lueurstudio-photographie.fr/portfolio",
-            mainEntity: {
-              "@type": "ItemList",
-              itemListElement: filteredProjects.map((project, index) => ({
-                "@type": "ListItem",
-                position: index + 1,
-                item: {
-                  "@type": "CreativeWork",
-                  name: project.title,
-                  description: project.description,
-                  url: `https://www.lueurstudio-photographie.fr/portfolio/${project.slug}`,
-                  image: project.image.startsWith("http") ? project.image : `https://www.lueurstudio-photographie.fr${project.image}`,
-                },
-              })),
-            },
-          }),
-        }}
-      />
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_50%,rgba(180,140,96,0.12),transparent_35%),radial-gradient(circle_at_80%_40%,rgba(56,189,248,0.08),transparent_30%)]" />
-
-      <header className="mx-auto w-full max-w-6xl px-4 pb-6 sm:pb-8 md:pb-10 pt-20 sm:px-6 md:px-10 lg:px-14">
-        <Link
-          href="/"
-          className="group inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-4 sm:px-5 py-2.5 sm:py-2 text-sm sm:text-sm text-stone-700 transition-all duration-200 hover:border-stone-400 hover:bg-stone-50 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/10 font-medium mb-4 sm:mb-6"
-        >
-          <svg
-            className="h-4 w-4 sm:h-4 sm:w-4 transition-transform duration-200 group-hover:-translate-x-1"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          <span>Retour à l&apos;accueil</span>
-        </Link>
-        <div className="space-y-4 sm:space-y-6 border-t border-stone-200/70 pt-10">
-
-          <div className="space-y-3 sm:space-y-4">
-            <p className="text-sm uppercase tracking-[0.4em] sm:tracking-[0.6em] text-stone-500">
-              Prestations
-            </p>
-            <h1 className="text-4xl sm:text-4xl md:text-5xl font-semibold leading-tight text-stone-900">
-              Choisis une prestation, vois le rendu.
-            </h1>
-            <p className="text-lg sm:text-lg text-stone-600">
-              Parcours les catégories pour comprendre l’approche, puis réserve un shooting adapté à ton besoin.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/#contact"
-              className="rounded-full bg-[#1c1916] px-5 py-3 text-sm font-semibold text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20"
-            >
-              Réserver une prestation
-            </Link>
-            <Link
-              href="/#services"
-              className="rounded-full border border-stone-300 px-5 py-3 text-sm font-semibold text-stone-700 transition hover:-translate-y-0.5 hover:border-stone-400 hover:bg-white"
-            >
-              Voir les offres
-            </Link>
-          </div>
-          <div className="flex flex-wrap gap-2 overflow-x-auto pb-2 -mx-2 px-2 sm:mx-0 sm:px-0">
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedCategory(null);
-                setActiveSlug(null);
-              }}
-              className={`rounded-full px-4 py-2.5 sm:px-4 sm:py-2 text-sm sm:text-sm font-semibold transition whitespace-nowrap ${selectedCategory === null
-                  ? "bg-[#1c1916] text-[#faf7f2]"
-                  : "border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white"
-                }`}
-            >
-              Tous
-            </button>
-            {categories.map((category) => (
-              <button
-                key={category}
-                type="button"
-                onClick={() => {
-                  setSelectedCategory(category);
-                  setActiveSlug(null);
-                }}
-                className={`rounded-full px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold transition whitespace-nowrap ${selectedCategory === category
-                    ? "bg-[#1c1916] text-[#faf7f2]"
-                    : "border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white"
-                  }`}
-              >
-                {category}
-              </button>
+    <>
+      <section className="page-head">
+        <div className="wrap">
+          <Reveal as="span" className="kicker">Portfolio · {projects.length} projets</Reveal>
+          <Reveal as="h1" className="display" delay={1} style={{ maxWidth: "13ch" }}>
+            Une sélection de <span className="serif-italic gold-text">prestations</span>.
+          </Reveal>
+          <Reveal className="lede" delay={2} style={{ marginTop: 22 }}>
+            Chaque projet illustre un type de prestation, du portrait intimiste au reportage vibrant — avec un rendu final prêt pour la communication.
+          </Reveal>
+          <Reveal className="pf-filters" delay={2}>
+            {cats.map((c) => (
+              <button key={c} className={"pf-chip" + (cat === c ? " active" : "")} onClick={() => setCat(c)}>{c}</button>
             ))}
-          </div>
+          </Reveal>
         </div>
-      </header>
+      </section>
 
-      <main className="mx-auto flex max-w-6xl flex-col gap-8 sm:gap-12 px-4 sm:px-6 md:px-10 lg:px-14 pb-16 sm:pb-20 md:pb-24">
-        <section className="grid gap-6 sm:gap-8 lg:grid-cols-[1.2fr,0.8fr]">
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            {filteredProjects.length > 0 ? (
-              filteredProjects.map((project) => {
-                const isActive = project.slug === activeProject?.slug;
+      <section style={{ paddingBottom: "clamp(60px,9vh,120px)" }}>
+        <div className="wrap">
+          {list.length === 0 ? (
+            <div style={{ border: "1px solid var(--line)", background: "var(--surface)", padding: 48, textAlign: "center" }}>
+              <p className="muted">Aucun projet dans cette catégorie.</p>
+            </div>
+          ) : (
+            <div className="pf-grid">
+              {list.map((p, i) => {
+                const sp = PF_SPANS[i % PF_SPANS.length];
                 return (
-                  <Link
-                    key={project.slug}
-                    href={`/portfolio/${project.slug}`}
-                    onMouseEnter={() => setActiveSlug(project.slug)}
-                    onMouseLeave={() => setActiveSlug(null)}
-                    className={`group relative overflow-hidden rounded-2xl border block transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/60 ${isActive
-                        ? "border-stone-300 shadow-lg shadow-black/10"
-                        : "border-stone-200 hover:border-stone-300"
-                      }`}
-                  >
-                    <div
-                      className="aspect-[4/5] bg-cover bg-center transition duration-500 group-hover:scale-105"
-                      style={{ backgroundImage: `url('${project.image}')` }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
-                    <div className="absolute inset-0 flex flex-col justify-end gap-1 p-4">
-                    <span className="w-fit rounded-full bg-white/85 px-3 py-1.5 text-sm font-semibold uppercase tracking-wide text-stone-700 ring-1 ring-stone-200">
-                        {project.category}
-                      </span>
-                    <p className="text-sm uppercase tracking-[0.4em] text-stone-200">
-                        {project.subtitle}
-                      </p>
-                      <p className="text-xl font-semibold text-white">
-                        {project.title}
-                      </p>
-                    </div>
-                  </Link>
+                  <Reveal key={p.slug} delay={((i % 3) + 1) as 1 | 2 | 3} className="pf-card" style={{ gridColumn: "span " + sp.c }}>
+                    <Link href={`/portfolio/${p.slug}`}>
+                      <div className={"frame " + sp.r}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={p.image} alt={p.title} />
+                        <div className="corner" />
+                        <div className="img-cap">
+                          <span className="pill">{p.category}</span>
+                          <IcoArrowUpRight size={18} />
+                        </div>
+                      </div>
+                      <div className="pf-meta-row">
+                        <h3>{p.title}</h3>
+                      </div>
+                      <p className="pf-sub">{p.subtitle}</p>
+                    </Link>
+                  </Reveal>
                 );
-              })
-            ) : (
-              <div className="col-span-2 rounded-2xl border border-stone-200 bg-white p-8 text-center">
-                <p className="text-stone-500">Aucun projet dans cette catégorie.</p>
-              </div>
-            )}
-          </div>
-
-          {activeProject && (
-            <div className="flex h-full flex-col gap-3 sm:gap-4 rounded-3xl border border-stone-200 bg-white p-4 sm:p-6">
-              <p className="text-sm uppercase tracking-[0.4em] text-stone-500">
-                Description
-              </p>
-              <h2 className="text-3xl sm:text-3xl font-semibold text-stone-900">
-                {activeProject.title}
-              </h2>
-              <p className="text-sm sm:text-sm uppercase tracking-[0.4em] text-stone-500">
-                {activeProject.subtitle}
-              </p>
-              <p className="text-base sm:text-base text-stone-600">{activeProject.description}</p>
-              <ul className="space-y-1 sm:space-y-2 text-sm sm:text-sm text-stone-600">
-                {activeProject.details.map((detail) => (
-                  <li key={detail}>• {detail}</li>
-                ))}
-              </ul>
-              <div className="mt-auto flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 pt-3 sm:pt-4">
-                <Link
-                  href={`/portfolio/${activeProject.slug}`}
-                  className="rounded-full bg-[#1c1916] px-5 py-3 sm:px-5 sm:py-2 text-sm sm:text-sm font-semibold text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20 text-center"
-                >
-                  Voir toutes les photos
-                </Link>
-                <Link
-                  href="/#contact"
-                  className="rounded-full border border-stone-300 px-5 py-3 sm:px-5 sm:py-2 text-sm sm:text-sm font-semibold text-stone-700 transition hover:-translate-y-0.5 hover:border-stone-400 hover:bg-white text-center"
-                >
-                  Créer un projet similaire
-                </Link>
-              </div>
+              })}
             </div>
           )}
-        </section>
+        </div>
+      </section>
 
-        <section className="border-t border-stone-200/70 pt-10 text-center">
-          <p className="text-sm uppercase tracking-[0.4em] text-stone-500">
-            Vous avez un projet ?
-          </p>
-          <h2 className="mt-3 sm:mt-4 text-3xl sm:text-3xl font-semibold text-stone-900">
-            Envie de créer des images qui te ressemblent ?
-          </h2>
-          <p className="mt-2 sm:mt-3 text-lg sm:text-lg text-stone-600">
-            Brief gratuit en visio ou sur place. Je te propose un moodboard personnalisé, un planning détaillé et un devis transparent. Prêt à démarrer ?
-          </p>
-          <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row flex-wrap justify-center gap-2 sm:gap-3">
-            <Link
-              href="/#contact"
-              className="rounded-full bg-[#1c1916] px-5 py-3 sm:px-6 sm:py-3 text-sm sm:text-sm font-semibold text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20"
-            >
-              Réserver mon shooting
-            </Link>
-            <Link
-              href={`mailto:${CONTACT_EMAIL}`}
-              className="rounded-full border border-stone-300 px-5 py-3 sm:px-6 sm:py-3 text-sm sm:text-sm font-semibold text-stone-700 transition hover:-translate-y-0.5 hover:border-stone-400 hover:bg-white break-all sm:break-normal"
-            >
-              {CONTACT_EMAIL}
-            </Link>
-          </div>
-        </section>
-      </main>
-    </div>
+      <CTABand />
+    </>
   );
 }
-

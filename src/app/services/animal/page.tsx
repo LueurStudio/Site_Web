@@ -1,173 +1,127 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Reveal, IcoArrow, IcoArrowUpRight, IcoCheck } from "../../components/ui";
+import CTABand from "../../components/CTABand";
 
 export const metadata: Metadata = {
-  title: "Photographe Animalier Paris — Portrait Animal de Compagnie",
-  description:
-    "Photographe animalier à Paris et Île-de-France : portraits de chiens, chats, chevaux et animaux de compagnie. Séances en studio ou extérieur, retouche naturelle, livraison 48h. LueurStudio.",
-  keywords: [
-    "photographe animalier Paris",
-    "photo animal compagnie Paris",
-    "portrait chien Paris",
-    "portrait chat Paris",
-    "photographe animaux Paris",
-    "shooting animal Paris",
-  ],
+  title: "Photographe Animalier Paris — LueurStudio",
+  description: "Portraits d'animaux de compagnie et sauvages à Paris. Captures émotionnelles révélant leur personnalité unique. Studio mobile ou extérieur. Livraison 48h.",
   openGraph: {
     title: "Photographe Animalier Paris — LueurStudio",
-    description:
-      "Portraits d'animaux de compagnie à Paris : chiens, chats, chevaux. En studio ou extérieur, retouche naturelle.",
+    description: "Portraits d'animaux de compagnie et sauvages. Captures émotionnelles révélant leur personnalité unique.",
     url: "https://www.lueurstudio-photographie.fr/services/animal",
   },
   alternates: { canonical: "/services/animal" },
 };
 
+const FEATURES = [
+  { title: "Approche douce", desc: "Patience et respect du rythme de l'animal. Pas de stress, des poses naturelles et des expressions authentiques." },
+  { title: "Studio / Extérieur", desc: "Séances possibles en studio mobile chez vous, ou en extérieur dans un cadre qui correspond à votre animal." },
+  { title: "Retouche naturelle", desc: "Rendu naturaliste du pelage, des yeux, de la fourrure. Chaque photo valorise l'animal tel qu'il est." },
+];
+
+const TARGETS = [
+  { label: "Chiens & chats", desc: "La majorité des séances — en intérieur ou en parc, selon l'animal." },
+  { label: "Chevaux & équidés", desc: "Séances sur site, en box ou en extérieur avec lumière naturelle." },
+  { label: "NAC (nouveaux animaux)", desc: "Lapins, reptiles, oiseaux, rongeurs — contact pour étudier la faisabilité." },
+  { label: "Animaux sauvages", desc: "Reportage animalier sur demande — faune locale ou en parc animalier." },
+];
+
 export default function AnimalServicePage() {
   return (
-    <div className="min-h-screen bg-[#faf7f2] text-[#1c1916]">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.lueurstudio-photographie.fr" },
-              { "@type": "ListItem", position: 2, name: "Services", item: "https://www.lueurstudio-photographie.fr/#services" },
-              { "@type": "ListItem", position: 3, name: "Animal", item: "https://www.lueurstudio-photographie.fr/services/animal" },
-            ],
-          }),
-        }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Service",
-            name: "Photographie Animalière Paris",
-            description:
-              "Service de portraits d'animaux de compagnie à Paris et Île-de-France. Séances en studio mobile ou en extérieur.",
-            provider: { "@type": "Organization", name: "LueurStudio", url: "https://www.lueurstudio-photographie.fr" },
-            areaServed: [
-              { "@type": "City", name: "Paris" },
-              { "@type": "AdministrativeArea", name: "Île-de-France" },
-            ],
-          }),
-        }}
-      />
-
-      <main className="mx-auto max-w-6xl px-6 pb-24 sm:px-10 md:px-14 space-y-16">
-        <header className="rounded-3xl border border-stone-200/60 bg-gradient-to-br from-stone-100 via-stone-50 to-white p-8 md:p-12 shadow-2xl shadow-stone-300/40 space-y-5">
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <Link href="/" className="text-stone-600 hover:text-white transition">Accueil</Link>
-            <span className="text-slate-500">›</span>
-            <span className="text-stone-500">Animal</span>
-          </div>
-          <p className="text-xs uppercase tracking-[0.4em] text-stone-400">Service — Animal</p>
-          <h1 className="text-4xl font-semibold leading-tight md:text-5xl lg:text-6xl">
-            Photographe animalier à Paris
-          </h1>
-          <p className="max-w-2xl text-lg text-stone-600">
-            Votre animal de compagnie mérite des photos qui révèlent sa personnalité unique. Avec patience et une approche douce, je capture les moments qui vous feront sourire pour des années.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/#contact"
-              className="rounded-full bg-[#1c1916] px-6 py-3 text-sm font-semibold text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/10"
-            >
-              Réserver la séance
-            </Link>
-            <Link
-              href="/portfolio?category=Animal"
-              className="rounded-full border border-stone-300/60 px-6 py-3 text-sm font-semibold text-[#1c1916] transition hover:border-stone-400 hover:bg-stone-100"
-            >
-              Voir les portraits
-            </Link>
-          </div>
-        </header>
-
-        <section className="grid gap-6 lg:grid-cols-3">
-          {[
-            {
-              title: "Approche douce & patiente",
-              desc: "Je comprends le comportement animal. Pas de stress, pas de contrainte — les animaux sont fotografiés dans un état naturel et détendu.",
-            },
-            {
-              title: "Studio mobile ou extérieur",
-              desc: "Séance à domicile, dans un parc ou en studio selon ce qui convient le mieux à votre animal. Je m'adapte à son environnement.",
-            },
-            {
-              title: "Retouche naturelle",
-              desc: "Chaque portrait est retouché pour sublimer la beauté naturelle de votre animal. Couleur du pelage, regard, texture — tout est préservé.",
-            },
-          ].map((item) => (
-            <div key={item.title} className="rounded-2xl border border-stone-200/60 bg-white/80 p-6 space-y-3">
-              <h2 className="text-xl font-semibold">{item.title}</h2>
-              <p className="text-stone-500">{item.desc}</p>
+    <div className="page">
+      <section className="page-head">
+        <div className="wrap">
+          <div className="ab-hero">
+            <div>
+              <Reveal as="span" className="kicker">Animalier · Portrait</Reveal>
+              <Reveal as="h1" className="display" delay={1} style={{ marginTop: 22, maxWidth: "14ch" }}>
+                Leur personnalité, <span className="serif-italic gold-text">révélée</span>.
+              </Reveal>
+              <Reveal className="lede" delay={2} style={{ marginTop: 24 }}>
+                Portraits d&apos;animaux de compagnie et sauvages. Des captures émotionnelles qui révèlent leur personnalité unique, avec patience et douceur.
+              </Reveal>
+              <Reveal className="flex" delay={3} style={{ gap: 12, marginTop: 34, flexWrap: "wrap" }}>
+                <Link className="btn btn-gold" href="/reservation">Réserver une séance <IcoArrow /></Link>
+                <Link className="btn btn-outline" href="/portfolio">Voir les portraits <IcoArrowUpRight size={15} /></Link>
+              </Reveal>
             </div>
-          ))}
-        </section>
-
-        <section className="rounded-3xl border border-stone-200/60 bg-stone-50 p-8 md:p-10 space-y-6">
-          <h2 className="text-2xl font-semibold sm:text-3xl">Pour tous les animaux</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { emoji: "🐕", label: "Chiens", desc: "Toutes races, toutes tailles — de la séance en appartement au shooting en forêt." },
-              { emoji: "🐈", label: "Chats", desc: "Portraits intimistes dans leur environnement naturel ou en studio mobile." },
-              { emoji: "🐴", label: "Chevaux", desc: "En extérieur, en paddock ou en box. Une spécialité qui demande patience et expertise." },
-              { emoji: "🐾", label: "Autres animaux", desc: "Lapins, cochons d'Inde, perroquets, reptiles — n'hésitez pas à me contacter." },
-            ].map((item) => (
-              <div key={item.label} className="rounded-xl border border-stone-200/60 bg-stone-50 p-4 space-y-2 text-center">
-                <div className="text-4xl">{item.emoji}</div>
-                <p className="font-semibold text-[#1c1916]">{item.label}</p>
-                <p className="text-sm text-stone-500">{item.desc}</p>
+            <Reveal delay={2}>
+              <div className="frame ratio-45" style={{ maxWidth: 420 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/animal-1.webp" alt="Portrait animalier Paris" />
+                <div className="corner" />
               </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-tight">
+        <div className="wrap">
+          <Reveal>
+            <span className="kicker">Points forts</span>
+            <h2 className="display" style={{ marginTop: 20, maxWidth: "18ch" }}>Une approche pensée pour eux</h2>
+          </Reveal>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 16, marginTop: 40 }}>
+            {FEATURES.map((f, i) => (
+              <Reveal key={f.title} delay={((i % 3) + 1) as 1 | 2 | 3} className="surface-card" style={{ padding: "clamp(24px,3vw,38px)" }}>
+                <h3 className="display" style={{ fontSize: "1.6rem" }}>{f.title}</h3>
+                <p className="muted" style={{ marginTop: 14, lineHeight: 1.7 }}>{f.desc}</p>
+              </Reveal>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="rounded-3xl border border-stone-200/60 bg-gradient-to-br from-stone-100 via-stone-50 to-white p-8 md:p-10 space-y-4">
-          <h2 className="text-2xl font-semibold">Tarifs portrait animalier</h2>
-          <div className="rounded-2xl border border-stone-200/60 bg-stone-100 p-6 space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <p className="text-xl font-semibold">Séance Animaux</p>
-                <p className="text-2xl font-semibold text-white">90 €</p>
-                <ul className="mt-2 space-y-1 text-sm text-stone-600">
-                  <li>• 1h de séance (domicile ou parc)</li>
-                  <li>• 10 photos retouchées</li>
-                  <li>• Livraison sous 48h</li>
-                  <li>• Exports HD + web</li>
-                </ul>
-              </div>
-              <div>
-                <p className="text-xl font-semibold">Séance + Maître</p>
-                <p className="text-2xl font-semibold text-white">150 €</p>
-                <ul className="mt-2 space-y-1 text-sm text-stone-600">
-                  <li>• 1h30 avec votre animal</li>
-                  <li>• 20 photos retouchées</li>
-                  <li>• Portraits séparés + ensemble</li>
-                  <li>• Livraison sous 72h</li>
-                </ul>
-              </div>
-            </div>
+      <section className="section-tight">
+        <div className="wrap">
+          <Reveal>
+            <span className="kicker">Pour qui ?</span>
+            <h2 className="display" style={{ marginTop: 20 }}>Tous les animaux</h2>
+          </Reveal>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))", gap: 14, marginTop: 40 }}>
+            {TARGETS.map((t, i) => (
+              <Reveal key={t.label} delay={((i % 4) + 1) as 1 | 2 | 3 | 4} className="surface-card" style={{ padding: "clamp(20px,2.5vw,30px)" }}>
+                <h4 className="display" style={{ fontSize: "1.25rem" }}>{t.label}</h4>
+                <p className="muted" style={{ marginTop: 10, fontSize: "0.93rem", lineHeight: 1.65 }}>{t.desc}</p>
+              </Reveal>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="rounded-3xl border border-stone-200/60 bg-white/90 p-8 text-center space-y-4">
-          <h2 className="text-2xl font-semibold">Offrez un souvenir inoubliable à votre animal</h2>
-          <p className="mx-auto max-w-lg text-stone-600">
-            Chaque animal est unique. Je prends le temps nécessaire pour créer une connexion et capturer sa vraie personnalité.
-          </p>
-          <Link
-            href="/#contact"
-            className="inline-block rounded-full bg-[#1c1916] px-6 py-3 text-sm font-semibold text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg"
-          >
-            Réserver une séance
-          </Link>
-        </section>
-      </main>
+      <section className="section-tight">
+        <div className="wrap">
+          <Reveal>
+            <span className="kicker">Tarifs · Animalier</span>
+            <h2 className="display" style={{ marginTop: 20 }}>Des formules simples</h2>
+          </Reveal>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 16, marginTop: 40 }}>
+            {[
+              { name: "Séance Animaux", price: "90€", features: ["1h de shooting", "10 photos retouchées", "Studio mobile ou extérieur", "Livraison 48h", "Exports HD + web"] },
+              { name: "Portrait Signature", price: "150€", features: ["2h de shooting", "20 photos retouchées", "Lieu au choix", "Retouche approfondie", "Tirage offert au format A4", "Livraison 72h"], feat: true },
+            ].map((o) => (
+              <Reveal key={o.name} className={"pr-card" + (o.feat ? " feat" : "")}>
+                {o.feat && <span className="price-badge">Recommandé</span>}
+                <h3 className="display pr-name">{o.name}</h3>
+                <div className="price-big gold-text display">{o.price}</div>
+                <ul className="pr-feats">
+                  {o.features.map((f) => <li key={f}><IcoCheck />{f}</li>)}
+                </ul>
+                <Link className={"btn " + (o.feat ? "btn-gold" : "btn-outline")} href="/reservation" style={{ marginTop: "auto", justifyContent: "center", width: "100%" }}>
+                  Réserver <IcoArrow />
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+          <Reveal style={{ marginTop: 28 }}>
+            <Link className="btn btn-ghost" href="/pricing">Voir toutes les formules <IcoArrow /></Link>
+          </Reveal>
+        </div>
+      </section>
+
+      <CTABand />
     </div>
   );
 }

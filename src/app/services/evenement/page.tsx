@@ -1,167 +1,122 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Reveal, IcoArrow, IcoArrowUpRight, IcoCheck } from "../../components/ui";
+import CTABand from "../../components/CTABand";
 
 export const metadata: Metadata = {
-  title: "Photographe Événement Paris — Mariage, Conférence, Festival",
-  description:
-    "Photographe événementiel à Paris : mariages, conférences, festivals, soirées d'entreprise. Reportage discret et dynamique, galerie privée, livraison rapide. LueurStudio.",
-  keywords: [
-    "photographe événement Paris",
-    "photographe mariage Paris",
-    "photographe soirée entreprise Paris",
-    "reportage photo Paris",
-    "photographe conférence Paris",
-    "photographe festival Paris",
-  ],
+  title: "Photographe Événement Paris — LueurStudio",
+  description: "Reportage photo pour mariages, conférences, festivals et événements d'entreprise à Paris. Narration visuelle discrète et énergique. Livraison rapide.",
   openGraph: {
     title: "Photographe Événementiel Paris — LueurStudio",
-    description:
-      "Reportages événementiels à Paris : mariages, conférences, festivals. Galerie privée et livraison rapide.",
+    description: "Reportages vibrants pour mariages, conférences, festivals. Narration visuelle discrète et énergique.",
     url: "https://www.lueurstudio-photographie.fr/services/evenement",
   },
   alternates: { canonical: "/services/evenement" },
 };
 
+const FEATURES = [
+  { title: "Photojournalisme", desc: "Approche discrète et réactive — chaque moment spontané capturé, sans interruption, sans mise en scène." },
+  { title: "Coordination", desc: "Brief en amont, planning détaillé, repérage du lieu si besoin. Zéro surprise le jour J." },
+  { title: "Livraison soignée", desc: "Tri, sélection et retouche de toutes les images livrées. Galerie partageable sous 5 jours." },
+];
+
+const TARGETS = [
+  { label: "Mariages & unions", desc: "Reportage complet de la cérémonie au dîner, souvenirs impérissables." },
+  { label: "Événements corporate", desc: "Conférences, inaugurations, séminaires, teambuildings." },
+  { label: "Festivals & concerts", desc: "Capturer l'énergie, la foule, les moments forts scène et coulisses." },
+  { label: "Événements privés", desc: "Anniversaires, baptêmes, réunions de famille mémorables." },
+];
+
 export default function EvenementServicePage() {
   return (
-    <div className="min-h-screen bg-[#faf7f2] text-[#1c1916]">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.lueurstudio-photographie.fr" },
-              { "@type": "ListItem", position: 2, name: "Services", item: "https://www.lueurstudio-photographie.fr/#services" },
-              { "@type": "ListItem", position: 3, name: "Événement", item: "https://www.lueurstudio-photographie.fr/services/evenement" },
-            ],
-          }),
-        }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Service",
-            name: "Photographie Événementielle Paris",
-            description:
-              "Service de reportage photo événementiel à Paris : mariages, conférences, festivals, soirées.",
-            provider: { "@type": "Organization", name: "LueurStudio", url: "https://www.lueurstudio-photographie.fr" },
-            areaServed: { "@type": "City", name: "Paris" },
-          }),
-        }}
-      />
-
-      <main className="mx-auto max-w-6xl px-6 pb-24 sm:px-10 md:px-14 space-y-16">
-        <header className="rounded-3xl border border-stone-200/60 bg-gradient-to-br from-stone-100 via-stone-50 to-white p-8 md:p-12 shadow-2xl shadow-stone-300/40 space-y-5">
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <Link href="/" className="text-stone-600 hover:text-white transition">Accueil</Link>
-            <span className="text-slate-500">›</span>
-            <span className="text-stone-500">Événement</span>
-          </div>
-          <p className="text-xs uppercase tracking-[0.4em] text-stone-400">Service — Événement</p>
-          <h1 className="text-4xl font-semibold leading-tight md:text-5xl lg:text-6xl">
-            Photographe événementiel à Paris
-          </h1>
-          <p className="max-w-2xl text-lg text-stone-600">
-            Des reportages vibrants qui capturent l&apos;énergie et les émotions de vos événements. Mariage, conférence, festival, soirée d&apos;entreprise — chaque instant mérite d&apos;être immortalisé.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/#contact"
-              className="rounded-full bg-[#1c1916] px-6 py-3 text-sm font-semibold text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/10"
-            >
-              Demander un devis
-            </Link>
-            <Link
-              href="/portfolio?category=Événement"
-              className="rounded-full border border-stone-300/60 px-6 py-3 text-sm font-semibold text-[#1c1916] transition hover:border-stone-400 hover:bg-stone-100"
-            >
-              Voir les reportages
-            </Link>
-          </div>
-        </header>
-
-        <section className="grid gap-6 lg:grid-cols-3">
-          {[
-            {
-              title: "Approche documentaire",
-              desc: "Je reste discret pour capturer les vraies émotions : rires spontanés, larmes de joie, regards complices. Pas de mise en scène forcée.",
-            },
-            {
-              title: "Couverture complète",
-              desc: "De la préparation aux dernières photos de la soirée. Chaque moment clé est couvert, chaque détail mémorable est capturé.",
-            },
-            {
-              title: "Galerie privée",
-              desc: "Livraison d'une galerie en ligne sécurisée, facilement partageable avec vos proches ou collaborateurs. Exports optimisés pour le web et l'impression.",
-            },
-          ].map((item) => (
-            <div key={item.title} className="rounded-2xl border border-stone-200/60 bg-white/80 p-6 space-y-3">
-              <h2 className="text-xl font-semibold">{item.title}</h2>
-              <p className="text-stone-500">{item.desc}</p>
+    <div className="page">
+      <section className="page-head">
+        <div className="wrap">
+          <div className="ab-hero">
+            <div>
+              <Reveal as="span" className="kicker">Événement · Reportage</Reveal>
+              <Reveal as="h1" className="display" delay={1} style={{ marginTop: 22, maxWidth: "14ch" }}>
+                Chaque moment <span className="serif-italic gold-text">vivant</span>.
+              </Reveal>
+              <Reveal className="lede" delay={2} style={{ marginTop: 24 }}>
+                Reportages vibrants pour mariages, conférences, festivals. Narration visuelle discrète et énergique qui capture l&apos;essentiel.
+              </Reveal>
+              <Reveal className="flex" delay={3} style={{ gap: 12, marginTop: 34, flexWrap: "wrap" }}>
+                <Link className="btn btn-gold" href="/reservation">Demander un devis <IcoArrow /></Link>
+                <Link className="btn btn-outline" href="/portfolio">Voir les reportages <IcoArrowUpRight size={15} /></Link>
+              </Reveal>
             </div>
-          ))}
-        </section>
-
-        <section className="rounded-3xl border border-stone-200/60 bg-stone-50 p-8 md:p-10 space-y-6">
-          <h2 className="text-2xl font-semibold sm:text-3xl">Types d&apos;événements couverts</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              { label: "Mariage", desc: "Cérémonie laïque ou religieuse, vin d'honneur, soirée. Approche mêlant reportage et portraits dirigés." },
-              { label: "Conférence & séminaire", desc: "Keynotes, tables rondes, networking. Couverture discrète et professionnelle." },
-              { label: "Festival & concert", desc: "Ambiance, énergie, backstage. Photos dynamiques qui retranscrivent l'atmosphère." },
-              { label: "Soirée d'entreprise", desc: "Team building, anniversaire, lancement. Photos pour vos réseaux et votre communication interne." },
-              { label: "Cérémonie privée", desc: "Anniversaire, baptême, bar-mitsva, communion. Souvenirs authentiques pour toute la famille." },
-              { label: "Lancement de produit", desc: "Événement commercial, présentation presse. Images pour vos relations presse et réseaux." },
-            ].map((item) => (
-              <div key={item.label} className="rounded-xl border border-stone-200/60 bg-stone-50 p-4 space-y-2">
-                <p className="font-semibold text-[#1c1916]">{item.label}</p>
-                <p className="text-sm text-stone-500">{item.desc}</p>
+            <Reveal delay={2}>
+              <div className="frame ratio-45" style={{ maxWidth: 420 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/extra-1.webp" alt="Photographie événementielle Paris" />
+                <div className="corner" />
               </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-tight">
+        <div className="wrap">
+          <Reveal>
+            <span className="kicker">Points forts</span>
+            <h2 className="display" style={{ marginTop: 20, maxWidth: "18ch" }}>Présent, discret, précis</h2>
+          </Reveal>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 16, marginTop: 40 }}>
+            {FEATURES.map((f, i) => (
+              <Reveal key={f.title} delay={((i % 3) + 1) as 1 | 2 | 3} className="surface-card" style={{ padding: "clamp(24px,3vw,38px)" }}>
+                <h3 className="display" style={{ fontSize: "1.6rem" }}>{f.title}</h3>
+                <p className="muted" style={{ marginTop: 14, lineHeight: 1.7 }}>{f.desc}</p>
+              </Reveal>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="rounded-3xl border border-stone-200/60 bg-gradient-to-br from-stone-100 via-stone-50 to-white p-8 md:p-10 space-y-4">
-          <h2 className="text-2xl font-semibold sm:text-3xl">Tarifs événement</h2>
-          <p className="text-stone-600">
-            Le tarif d&apos;un reportage événementiel dépend de la durée, du type d&apos;événement et des prestations souhaitées (assistant, matériel spécifique, album...).
-          </p>
-          <div className="rounded-2xl border border-stone-200/60 bg-stone-100 p-6 space-y-4">
-            <p className="text-lg font-semibold">Tarif sur devis — à partir de 250 €</p>
-            <ul className="grid gap-2 sm:grid-cols-2 text-sm text-stone-600">
-              <li>• Couverture multi-angles</li>
-              <li>• Colorimétrie cohérente</li>
-              <li>• Galerie privée en ligne</li>
-              <li>• Sélection social media</li>
-              <li>• Exports HD + web</li>
-              <li>• Livraison sous 5 jours ouvrés</li>
-            </ul>
+      <section className="section-tight">
+        <div className="wrap">
+          <Reveal>
+            <span className="kicker">Pour qui ?</span>
+            <h2 className="display" style={{ marginTop: 20 }}>Tous types d&apos;événements</h2>
+          </Reveal>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))", gap: 14, marginTop: 40 }}>
+            {TARGETS.map((t, i) => (
+              <Reveal key={t.label} delay={((i % 4) + 1) as 1 | 2 | 3 | 4} className="surface-card" style={{ padding: "clamp(20px,2.5vw,30px)" }}>
+                <h4 className="display" style={{ fontSize: "1.25rem" }}>{t.label}</h4>
+                <p className="muted" style={{ marginTop: 10, fontSize: "0.93rem", lineHeight: 1.65 }}>{t.desc}</p>
+              </Reveal>
+            ))}
           </div>
-          <Link
-            href="/#contact"
-            className="inline-block rounded-full bg-[#1c1916] px-6 py-3 text-sm font-semibold text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg"
-          >
-            Demander un devis gratuit
-          </Link>
-        </section>
+        </div>
+      </section>
 
-        <section className="rounded-3xl border border-stone-200/60 bg-white/90 p-8 text-center space-y-4">
-          <h2 className="text-2xl font-semibold">Un événement à photographier à Paris ?</h2>
-          <p className="mx-auto max-w-lg text-stone-600">
-            Partagez-moi la date, le lieu et le type d&apos;événement. Je vous réponds sous 24h avec une proposition détaillée.
-          </p>
-          <Link
-            href="/#contact"
-            className="inline-block rounded-full bg-[#1c1916] px-6 py-3 text-sm font-semibold text-[#faf7f2] transition hover:-translate-y-0.5 hover:shadow-lg"
-          >
-            Nous contacter
-          </Link>
-        </section>
-      </main>
+      <section className="section-tight">
+        <div className="wrap">
+          <Reveal>
+            <span className="kicker">Tarifs · Événement</span>
+            <h2 className="display" style={{ marginTop: 20 }}>Sur mesure</h2>
+          </Reveal>
+          <Reveal delay={1} className="surface-card" style={{ padding: "clamp(32px,4vw,52px)", marginTop: 40, display: "flex", flexDirection: "column", gap: 28 }}>
+            <div>
+              <div className="price-big gold-text display">Sur devis</div>
+              <p className="muted" style={{ marginTop: 12, maxWidth: "60ch", lineHeight: 1.7 }}>
+                Chaque événement est unique. Le tarif dépend de la durée, du lieu et des besoins spécifiques. Je vous envoie un devis détaillé sous 24h.
+              </p>
+            </div>
+            <ul className="pr-feats" style={{ maxWidth: "50ch" }}>
+              {["Présence sur l'événement", "Reportage complet", "Sélection + retouche soignée", "Galerie privée partageable", "Exports impression & web", "Option second photographe disponible"].map((f) => (
+                <li key={f}><IcoCheck />{f}</li>
+              ))}
+            </ul>
+            <Link className="btn btn-gold" href="/reservation" style={{ alignSelf: "flex-start" }}>
+              Demander un devis <IcoArrow />
+            </Link>
+          </Reveal>
+        </div>
+      </section>
+
+      <CTABand />
     </div>
   );
 }

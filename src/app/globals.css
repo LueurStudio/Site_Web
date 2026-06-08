@@ -1,55 +1,8 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,500&family=Hanken+Grotesk:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap");
+
 @import "tailwindcss";
 
-:root {
-  --font-size: 16px;
-  --background: #faf7f2;
-  --foreground: #1c1916;
-  --card: #ffffff;
-  --card-foreground: #1c1916;
-  --primary: #1c1916;
-  --primary-foreground: #faf7f2;
-  --secondary: #f3ede4;
-  --secondary-foreground: #1c1916;
-  --muted: #f0e9df;
-  --muted-foreground: #6f6357;
-  --accent: #efe6db;
-  --accent-foreground: #1c1916;
-  --border: rgba(28, 25, 22, 0.12);
-  --input: #f3ede4;
-  --ring: #b08a66;
-  --radius: 14px;
-}
+@import "./styles/lueur.css";
+@import "./styles/lueur-pages.css";
 
-/* Les variables sont déjà définies sur :root ci-dessus ; on évite @theme
-   (non reconnu par certains validateurs) pour prévenir l’avertissement. */
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --background: #faf7f2;
-    --foreground: #1c1916;
-    --card: #ffffff;
-    --card-foreground: #1c1916;
-    --primary: #1c1916;
-    --primary-foreground: #faf7f2;
-    --secondary: #f3ede4;
-    --secondary-foreground: #1c1916;
-    --muted: #f0e9df;
-    --muted-foreground: #6f6357;
-    --accent: #efe6db;
-    --accent-foreground: #1c1916;
-    --border: rgba(28, 25, 22, 0.12);
-    --input: #f3ede4;
-    --ring: #b08a66;
-  }
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans, "Inter", system-ui, -apple-system, sans-serif);
-  -webkit-font-smoothing: antialiased;
-}
+html { scroll-behavior: smooth; }
