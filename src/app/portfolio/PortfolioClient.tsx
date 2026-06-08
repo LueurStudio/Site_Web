@@ -73,7 +73,7 @@ export default function PortfolioClient() {
             name: "Portfolio LueurStudio",
             description:
               "Portfolio de photographie professionnelle : portraits, événements, photos d'animaux et contenus pour réseaux sociaux",
-            url: "https://lueurstudio/portfolio",
+            url: "https://www.lueurstudio-photographie.fr/portfolio",
             mainEntity: {
               "@type": "ItemList",
               itemListElement: filteredProjects.map((project, index) => ({
@@ -83,8 +83,8 @@ export default function PortfolioClient() {
                   "@type": "CreativeWork",
                   name: project.title,
                   description: project.description,
-                  url: `https://lueurstudio/portfolio/${project.slug}`,
-                  image: project.image.startsWith("http") ? project.image : `https://lueurstudio${project.image}`,
+                  url: `https://www.lueurstudio-photographie.fr/portfolio/${project.slug}`,
+                  image: project.image.startsWith("http") ? project.image : `https://www.lueurstudio-photographie.fr${project.image}`,
                 },
               })),
             },

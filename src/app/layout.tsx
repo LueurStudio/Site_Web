@@ -36,18 +36,19 @@ export default function RootLayout({
               name: "LueurStudio",
               description:
                 "Photographe professionnel à Paris spécialisé en portraits, événements, photos d'animaux et contenus Instagram. Services de retouche photo haut de gamme.",
-              url: "https://lueurstudio",
-              logo: "https://lueurstudio/images/og-image.png",
-              image: "https://lueurstudio/images/og-image.png",
+              url: "https://www.lueurstudio-photographie.fr",
+              logo: "https://www.lueurstudio-photographie.fr/images/og-image.png",
+              image: "https://www.lueurstudio-photographie.fr/images/og-image.png",
               address: {
                 "@type": "PostalAddress",
                 addressLocality: "Paris",
+                addressRegion: "Île-de-France",
                 addressCountry: "FR",
               },
-              areaServed: {
-                "@type": "City",
-                name: "Paris",
-              },
+              areaServed: [
+                { "@type": "City", name: "Paris" },
+                { "@type": "AdministrativeArea", name: "Île-de-France" },
+              ],
               serviceType: [
                 "Photographie de portrait",
                 "Photographie d'événement",
@@ -57,6 +58,26 @@ export default function RootLayout({
                 "Direction artistique",
               ],
               priceRange: "€€",
+              hasOfferCatalog: {
+                "@type": "OfferCatalog",
+                name: "Services de photographie",
+                itemListElement: [
+                  {
+                    "@type": "Offer",
+                    itemOffered: { "@type": "Service", name: "Séance Express" },
+                    price: "90",
+                    priceCurrency: "EUR",
+                    description: "45 min, 10 photos retouchées, livraison 48h",
+                  },
+                  {
+                    "@type": "Offer",
+                    itemOffered: { "@type": "Service", name: "Formule Signature" },
+                    price: "180",
+                    priceCurrency: "EUR",
+                    description: "1h30, 25 photos retouchées, moodboard dédié",
+                  },
+                ],
+              },
             }),
           }}
         />

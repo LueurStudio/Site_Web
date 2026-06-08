@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lueurstudio";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.lueurstudio-photographie.fr";
 
 export const defaultMetadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -61,6 +61,10 @@ export const defaultMetadata: Metadata = {
     description:
       "Photographe professionnel à Paris spécialisé en portraits, événements, photos d'animaux et contenus Instagram.",
     images: [`${siteUrl}/images/og-image.png`],
+  },
+  verification: {
+    // Remplace par ton code depuis Google Search Console → Paramètres → Vérification du site
+    // google: "TON_CODE_GOOGLE_SEARCH_CONSOLE",
   },
   robots: {
     index: true,

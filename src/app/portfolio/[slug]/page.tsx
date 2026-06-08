@@ -57,10 +57,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${normalizedProject.title} | LueurStudio`,
       description: normalizedProject.description,
-      url: `https://lueurstudio/portfolio/${slug}`,
+      url: `https://www.lueurstudio-photographie.fr/portfolio/${slug}`,
       images: [
         {
-          url: normalizedProject.image.startsWith("http") ? normalizedProject.image : `https://lueurstudio${normalizedProject.image}`,
+          url: normalizedProject.image.startsWith("http") ? normalizedProject.image : `https://www.lueurstudio-photographie.fr${normalizedProject.image}`,
           alt: `${normalizedProject.title} - ${normalizedProject.category}`,
         },
       ],
@@ -98,16 +98,16 @@ export default async function ProjectPage({ params }: Props) {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "CreativeWork",
-            "@id": `https://lueurstudio/portfolio/${normalizedProject.slug}`,
+            "@id": `https://www.lueurstudio-photographie.fr/portfolio/${normalizedProject.slug}`,
             name: normalizedProject.title,
             description: normalizedProject.description,
             image: normalizedProject.photos.map((photo: string) =>
-              photo.startsWith("http") ? photo : `https://lueurstudio${photo}`
+              photo.startsWith("http") ? photo : `https://www.lueurstudio-photographie.fr${photo}`
             ),
             creator: {
               "@type": "Organization",
               name: "LueurStudio",
-              url: "https://lueurstudio",
+              url: "https://www.lueurstudio-photographie.fr",
             },
             about: {
               "@type": "Thing",

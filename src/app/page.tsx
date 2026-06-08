@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     title: "LueurStudio — Photographe Professionnel & Retouche Photo | Paris",
     description:
       "Photographe professionnel à Paris. Services de shooting photo et retouche pour portraits, événements, animaux et contenus Instagram.",
-    url: "https://lueurstudio",
+    url: "https://www.lueurstudio-photographie.fr",
   },
   alternates: {
     canonical: "/",
@@ -91,10 +91,10 @@ export default async function Home() {
             name: "LueurStudio",
             description:
               "Photographe professionnel à Paris spécialisé en portraits, événements, photos d'animaux et contenus Instagram",
-            url: "https://lueurstudio",
+            url: "https://www.lueurstudio-photographie.fr",
             potentialAction: {
               "@type": "SearchAction",
-              target: "https://lueurstudio/portfolio?category={search_term_string}",
+              target: "https://www.lueurstudio-photographie.fr/portfolio?category={search_term_string}",
               "query-input": "required name=search_term_string",
             },
           }),
@@ -109,8 +109,8 @@ export default async function Home() {
             "@context": "https://schema.org",
             "@type": "Organization",
             name: "LueurStudio",
-            url: "https://lueurstudio",
-            logo: "https://lueurstudio/images/logo.svg",
+            url: "https://www.lueurstudio-photographie.fr",
+            logo: "https://www.lueurstudio-photographie.fr/images/logo.svg",
             contactPoint: {
               "@type": "ContactPoint",
               email: CONTACT_EMAIL,

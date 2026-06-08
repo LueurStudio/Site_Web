@@ -6,6 +6,7 @@ import type { Project } from '@/app/portfolio/projects-data';
 import type { PricingOffer } from '@/app/pricing/pricing-data';
 import type { FaqItem } from '@/app/faq/faq-data';
 import { categories } from '@/app/portfolio/projects-data';
+import { photoSpots, zones, tagsList } from './spots-data';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -28,7 +29,11 @@ export default function AdminPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
-  const [activeMode, setActiveMode] = useState<'rapide' | 'complet' | 'edit' | 'testimonials' | 'reservations' | 'availability' | 'pricing' | 'faq'>('rapide');
+  const [activeMode, setActiveMode] = useState<'rapide' | 'complet' | 'edit' | 'testimonials' | 'reservations' | 'availability' | 'pricing' | 'faq' | 'spots'>('rapide');
+  const [spotsZone, setSpotsZone] = useState('Tous');
+  const [spotsTag, setSpotsTag] = useState('tous');
+  const [spotsSearch, setSpotsSearch] = useState('');
+  const [expandedSpot, setExpandedSpot] = useState<string | null>(null);
 
   // Gestion des avis
   const [testimonials, setTestimonials] = useState<any[]>([]);
@@ -74,7 +79,7 @@ export default function AdminPage() {
   const [selectedReservation, setSelectedReservation] = useState<any | null>(null);
   const [galleryUrl, setGalleryUrl] = useState('');
   const [baseGalleryUrl, setBaseGalleryUrl] = useState(
-    `${process.env.NEXT_PUBLIC_SITE_URL || 'https://lueurstudio'}/gallery`
+    `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.lueurstudio-photographie.fr'}/gallery`
   );
   const [sendingEmail, setSendingEmail] = useState(false);
   const [uploadingGalleryPhotos, setUploadingGalleryPhotos] = useState(false);
@@ -821,6 +826,15 @@ export default function AdminPage() {
               }`}
           >
             FAQ
+          </button>
+          <button
+            onClick={() => setActiveMode('spots')}
+            className={`px-6 py-3 rounded-full font-semibold transition ${activeMode === 'spots'
+                ? 'bg-[#1c1916] text-[#faf7f2]'
+                : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-white'
+              }`}
+          >
+            Spots photo
           </button>
         </div>
 
@@ -2203,7 +2217,7 @@ export default function AdminPage() {
                               type="text"
                               value={galleryUrl}
                               onChange={(e) => setGalleryUrl(e.target.value)}
-                              placeholder={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://lueurstudio'}/gallery/CODE`}
+                              placeholder={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.lueurstudio-photographie.fr'}/gallery/CODE`}
                               className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-amber-300/60"
                             />
                           </label>
@@ -2712,6 +2726,169 @@ export default function AdminPage() {
                   {loadingFaq ? 'Enregistrement...' : 'Enregistrer la FAQ'}
                 </button>
               </div>
+            </div>
+          </div>
+        ) : activeMode === 'spots' ? (
+          /* Mode spots photo */
+          <div className="space-y-6">
+            <div className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
+              <div className="mb-6">
+                <h2 className="text-2xl font-semibold">Spots photo — Île-de-France</h2>
+                <p className="text-sm text-stone-500 mt-1">{photoSpots.length} lieux référencés dans 8 départements</p>
+              </div>
+
+              {/* Recherche */}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="Rechercher un lieu, une ville..."
+                  value={spotsSearch}
+                  onChange={(e) => setSpotsSearch(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 bg-stone-50 px-4 py-3 text-stone-900 outline-none focus:ring-2 focus:ring-stone-400/40"
+                />
+              </div>
+
+              {/* Filtre par zone */}
+              <div className="mb-3">
+                <p className="text-xs uppercase tracking-widest text-stone-400 mb-2">Département</p>
+                <div className="flex flex-wrap gap-2">
+                  {zones.map((z) => (
+                    <button
+                      key={z}
+                      onClick={() => setSpotsZone(z)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
+                        spotsZone === z
+                          ? 'bg-[#1c1916] text-[#faf7f2]'
+                          : 'border border-stone-300 text-stone-600 hover:bg-stone-100'
+                      }`}
+                    >
+                      {z}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Filtre par tag */}
+              <div className="mb-6">
+                <p className="text-xs uppercase tracking-widest text-stone-400 mb-2">Type de photo</p>
+                <div className="flex flex-wrap gap-2">
+                  {tagsList.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setSpotsTag(t.id)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
+                        spotsTag === t.id
+                          ? 'bg-stone-700 text-white'
+                          : 'border border-stone-300 text-stone-600 hover:bg-stone-100'
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Résultats */}
+              {(() => {
+                const filtered = photoSpots.filter((s) => {
+                  const matchZone = spotsZone === 'Tous' || s.zone === spotsZone;
+                  const matchTag = spotsTag === 'tous' || s.tags.includes(spotsTag);
+                  const q = spotsSearch.toLowerCase();
+                  const matchSearch = !q || s.name.toLowerCase().includes(q) || s.city.toLowerCase().includes(q) || s.description.toLowerCase().includes(q);
+                  return matchZone && matchTag && matchSearch;
+                });
+
+                if (filtered.length === 0) {
+                  return (
+                    <div className="py-16 text-center text-stone-400">
+                      Aucun spot correspondant à ta recherche.
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {filtered.map((spot) => (
+                      <div
+                        key={spot.id}
+                        className="rounded-2xl border border-stone-200 overflow-hidden bg-white hover:shadow-md transition-shadow"
+                      >
+                        {/* Image */}
+                        <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
+                          <img
+                            src={spot.image}
+                            alt={spot.name}
+                            className="w-full h-full object-cover transition duration-300 hover:scale-105"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&q=80';
+                            }}
+                          />
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                            <p className="text-white font-semibold text-sm leading-tight">{spot.name}</p>
+                            <p className="text-white/70 text-xs">{spot.city}</p>
+                          </div>
+                          <span className="absolute top-2 right-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-stone-700">
+                            {spot.zone.split(' ')[0]}
+                          </span>
+                        </div>
+
+                        {/* Contenu */}
+                        <div className="p-4 space-y-3">
+                          {/* Tags */}
+                          <div className="flex flex-wrap gap-1">
+                            {spot.tags.map((tag) => (
+                              <span
+                                key={tag}
+                                className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600 capitalize"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+
+                          {/* Description */}
+                          <p className="text-sm text-stone-600 leading-relaxed line-clamp-3">{spot.description}</p>
+
+                          {/* Expand button */}
+                          <button
+                            onClick={() => setExpandedSpot(expandedSpot === spot.id ? null : spot.id)}
+                            className="text-xs font-semibold text-stone-500 hover:text-stone-800 transition"
+                          >
+                            {expandedSpot === spot.id ? '▲ Moins de détails' : '▼ Voir le conseil & accès'}
+                          </button>
+
+                          {/* Expanded content */}
+                          {expandedSpot === spot.id && (
+                            <div className="space-y-2 pt-2 border-t border-stone-100">
+                              <div className="rounded-xl bg-amber-50 border border-amber-200/60 p-3">
+                                <p className="text-xs font-semibold text-amber-700 mb-1">💡 Conseil pro</p>
+                                <p className="text-xs text-stone-600">{spot.tip}</p>
+                              </div>
+                              <div className="rounded-xl bg-stone-50 border border-stone-200/60 p-3">
+                                <p className="text-xs font-semibold text-stone-500 mb-1">📍 Adresse</p>
+                                <p className="text-xs text-stone-600">{spot.address}</p>
+                              </div>
+                              <div className="rounded-xl bg-stone-50 border border-stone-200/60 p-3">
+                                <p className="text-xs font-semibold text-stone-500 mb-1">🚇 Accès</p>
+                                <p className="text-xs text-stone-600">{spot.access}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+
+              <p className="mt-6 text-center text-xs text-stone-400">
+                {photoSpots.filter((s) => {
+                  const matchZone = spotsZone === 'Tous' || s.zone === spotsZone;
+                  const matchTag = spotsTag === 'tous' || s.tags.includes(spotsTag);
+                  const q = spotsSearch.toLowerCase();
+                  return matchZone && matchTag && (!q || s.name.toLowerCase().includes(q) || s.city.toLowerCase().includes(q));
+                }).length} spot(s) affiché(s) sur {photoSpots.length}
+              </p>
             </div>
           </div>
         ) : (

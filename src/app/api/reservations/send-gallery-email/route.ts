@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     const resolvedGalleryUrl =
       galleryUrl && galleryUrl.trim().length > 0
         ? galleryUrl.trim()
-        : `${process.env.NEXT_PUBLIC_SITE_URL || 'https://lueurstudio'}/gallery/`;
+        : `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.lueurstudio-photographie.fr'}/gallery/`;
 
     // Définir la date d'expiration (2 mois à partir de maintenant)
     const expiresAt = new Date();

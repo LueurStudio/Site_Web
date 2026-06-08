@@ -94,12 +94,17 @@ export default function Header() {
                             priority
                         />
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <a
+                        className="flex-1 min-w-0"
+                        href="/"
+                        onClick={handleHomeClick}
+                    >
                         <p
                             className={`uppercase tracking-[0.25em] text-stone-700 transition-all duration-300 ${isScrolled 
                                 ? 'text-xs md:text-sm' 
                                 : 'text-sm sm:text-base md:text-lg font-semibold'
                             }`}
+                            
                         >
                             LUEURSTUDIO
                         </p>
@@ -111,7 +116,7 @@ export default function Header() {
                         >
                             Photographie & retouche haut de gamme
                         </p>
-                    </div>
+                    </a>
                 </div>
                 <nav
                     className={`hidden md:flex flex-wrap items-center gap-2 lg:gap-3 text-stone-600 transition-all duration-300 ${isScrolled ? 'text-xs' : 'text-sm'
@@ -136,6 +141,18 @@ export default function Header() {
                         href="/portfolio"
                     >
                         Portfolio
+                    </a>
+                    <a
+                        className="rounded-full px-4 py-2 hover:bg-stone-100 transition"
+                        href="/blog"
+                    >
+                        Blog
+                    </a>
+                    <a
+                        className="rounded-full px-4 py-2 hover:bg-stone-100 transition"
+                        href="/a-propos"
+                    >
+                        À propos
                     </a>
                     <a
                         className="rounded-full px-4 py-2 hover:bg-stone-100 transition"
@@ -209,6 +226,20 @@ export default function Header() {
                             onClick={() => setIsMobileMenuOpen(false)}
                         >
                             Portfolio
+                        </a>
+                        <a
+                            className="rounded-full px-4 py-2 hover:bg-stone-100 transition text-sm text-stone-600"
+                            href="/blog"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                            Blog
+                        </a>
+                        <a
+                            className="rounded-full px-4 py-2 hover:bg-stone-100 transition text-sm text-stone-600"
+                            href="/a-propos"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                            À propos
                         </a>
                         <a
                             className="rounded-full px-4 py-2 hover:bg-stone-100 transition text-sm text-stone-600"

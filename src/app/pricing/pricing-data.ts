@@ -9,14 +9,14 @@ export const pricingOffers: PricingOffer[] = [
   {
     "id": "seance-express",
     "name": "Séance Express",
-    "price": "80€",
-    "desc": "30 min, 15 photos retouchées"
+    "price": "90€",
+    "desc": "45 min, 10 photos retouchées, livraison 48h"
   },
   {
     "id": "signature",
-    "name": "Signature",
-    "price": "100€",
-    "desc": "1h30, 30 photos retouchées, moodboard dédié"
+    "name": "Formule Signature",
+    "price": "180€",
+    "desc": "1h30, 25 photos retouchées, moodboard dédié"
   },
   {
     "id": "evenement",

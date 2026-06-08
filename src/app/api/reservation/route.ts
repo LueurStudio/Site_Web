@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
               <div class="label">Photos d'inspiration (${savedPhotos.length}) :</div>
               <div class="photos">
                 ${savedPhotos.map((photo, index) => {
-      const photoUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://lueurstudio'}${photo}`;
+      const photoUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.lueurstudio-photographie.fr'}${photo}`;
       return `
                     <div class="photo">
                       <p>Photo ${index + 1}:</p>

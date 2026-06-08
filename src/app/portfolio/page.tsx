@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     title: "Portfolio — LueurStudio | Photographe Professionnel Paris",
     description:
       "Découvrez le portfolio de LueurStudio : portraits professionnels, reportages événementiels, photos d'animaux et contenus pour réseaux sociaux.",
-    url: "https://lueurstudio/portfolio",
+    url: "https://www.lueurstudio-photographie.fr/portfolio",
   },
   alternates: {
     canonical: "/portfolio",
