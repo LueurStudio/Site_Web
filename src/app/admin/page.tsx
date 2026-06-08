@@ -225,7 +225,9 @@ export default function AdminPage() {
       id: `offer-${Date.now()}`,
       name: '',
       price: '',
+      unit: 'à partir de',
       desc: '',
+      features: [],
     };
     setPricingOffers((prev) => [...prev, newOffer]);
   };
