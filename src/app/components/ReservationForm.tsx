@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, FormEvent, useEffect } from 'react';
+import Link from 'next/link';
 import AvailabilityCalendar from './AvailabilityCalendar';
 
 interface ReservationFormData {
@@ -36,6 +37,7 @@ export default function ReservationForm() {
     contactPreference: '',
     specialRetouches: '',
   });
+  const [consentGdpr, setConsentGdpr] = useState(false);
   const [timeError, setTimeError] = useState<string>('');
   const [inspirationPhotos, setInspirationPhotos] = useState<FileList | null>(null);
 
@@ -167,6 +169,12 @@ export default function ReservationForm() {
         return;
       }
 
+      if (!consentGdpr) {
+        setMessage({ type: 'error', text: 'Veuillez accepter la politique de confidentialité pour continuer.' });
+        setLoading(false);
+        return;
+      }
+
       if (isEventPrestation) {
         if (!formData.eventType || !formData.eventDetails || !formData.contactPreference) {
           setMessage({ type: 'error', text: 'Veuillez compléter les informations de l’événement.' });
@@ -271,6 +279,7 @@ export default function ReservationForm() {
           contactPreference: '',
           specialRetouches: '',
         });
+        setConsentGdpr(false);
         setTimeError('');
         setInspirationPhotos(null);
         // Réinitialiser l'input file
@@ -693,6 +702,26 @@ export default function ReservationForm() {
           value={formData.specialRetouches}
           onChange={(e) => setFormData({ ...formData, specialRetouches: e.target.value })}
         />
+      </label>
+
+      {/* Consentement RGPD */}
+      <label style={{ display: "flex", alignItems: "flex-start", gap: 12, cursor: "pointer" }}>
+        <input
+          type="checkbox"
+          checked={consentGdpr}
+          onChange={(e) => setConsentGdpr(e.target.checked)}
+          required
+          style={{ marginTop: 3, width: 16, height: 16, accentColor: "var(--accent, #d8b46a)", flexShrink: 0 }}
+        />
+        <span style={{ fontSize: "0.9rem", lineHeight: 1.6 }} className="text-slate-300">
+          J&apos;accepte que mes données personnelles (nom, email, informations de réservation) soient traitées
+          par LueurStudio afin de gérer ma demande de séance, conformément au RGPD et à la{" "}
+          <Link href="/politique-confidentialite" style={{ color: "var(--accent, #d8b46a)", textDecoration: "underline" }}>
+            politique de confidentialité
+          </Link>
+          .{" "}
+          <span className="text-red-400">*</span>
+        </span>
       </label>
 
       {/* Message de statut */}

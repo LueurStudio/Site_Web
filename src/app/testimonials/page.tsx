@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Stars } from "../components/ui";
 
 export default function TestimonialsPage() {
@@ -13,6 +14,7 @@ export default function TestimonialsPage() {
   const [error, setError] = useState("");
   const [verifiedEmail, setVerifiedEmail] = useState("");
 
+  const [consentPublish, setConsentPublish] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     role: "",
@@ -50,6 +52,7 @@ export default function TestimonialsPage() {
     e.preventDefault();
     if (!formData.name || !formData.quote) { setError("Le nom et le témoignage sont requis"); return; }
     if (!verifiedEmail) { setError("Email de vérification manquant. Merci de recommencer."); return; }
+    if (!consentPublish) { setError("Veuillez accepter la publication de votre témoignage pour continuer."); return; }
     setLoading(true);
     setError("");
     try {
@@ -140,6 +143,25 @@ export default function TestimonialsPage() {
                   <label htmlFor="project">Projet (optionnel)</label>
                   <input id="project" type="text" className="input" value={formData.project} onChange={(e) => setFormData({ ...formData, project: e.target.value })} placeholder="Portrait signature" />
                 </div>
+                {/* Consentement RGPD */}
+                <label style={{ display: "flex", alignItems: "flex-start", gap: 12, cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={consentPublish}
+                    onChange={(e) => setConsentPublish(e.target.checked)}
+                    required
+                    style={{ marginTop: 3, width: 16, height: 16, accentColor: "var(--accent)", flexShrink: 0 }}
+                  />
+                  <span style={{ fontSize: "0.88rem", lineHeight: 1.6, color: "var(--fg-soft)" }}>
+                    J&apos;accepte que mon témoignage (nom, note, texte) soit publié sur le site de LueurStudio, conformément à la{" "}
+                    <Link href="/politique-confidentialite" style={{ color: "var(--accent)", textDecoration: "underline" }}>
+                      politique de confidentialité
+                    </Link>
+                    . Je peux demander sa suppression à tout moment.{" "}
+                    <span style={{ color: "#e87070" }}>*</span>
+                  </span>
+                </label>
+
                 {error && <p style={{ color: "#e87070", fontSize: "0.9rem" }}>{error}</p>}
                 <div className="flex" style={{ gap: 12 }}>
                   <button type="button" className="btn btn-outline" style={{ flex: 1, justifyContent: "center" }} onClick={() => setStep("verify")}>
