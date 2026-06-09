@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Reveal, IcoArrow, IcoArrowUpRight, IcoCheck } from "../../components/ui";
+import { IcoArrow, IcoArrowUpRight, IcoCheck } from "../../components/ui";
+import GalleryGrid from "../../components/GalleryGrid";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { toWebPUrl, toWebPUrls } from "@/lib/imageUrl";
 
@@ -77,15 +78,7 @@ export default async function ProjectPage({ params }: Props) {
 
       <section style={{ paddingBottom: "clamp(40px,7vh,90px)" }}>
         <div className="wrap">
-          <div className="pd-gallery">
-            {p.photos.map((src: string, i: number) => (
-              <Reveal key={i} className="frame" delay={((i % 3) + 1) as 1 | 2 | 3}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src} alt={`${p.title} — photo ${i + 1}`} />
-                <div className="corner" />
-              </Reveal>
-            ))}
-          </div>
+          <GalleryGrid photos={p.photos} title={p.title} />
         </div>
       </section>
 
