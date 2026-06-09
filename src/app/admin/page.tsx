@@ -467,17 +467,26 @@ export default function AdminPage() {
       const file = files[i];
 
       try {
+        // Compression côté client avant envoi (évite les 413 sur les photos brutes)
+        const compressed = await compressImageForUpload(file);
+
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', compressed);
 
         const res = await fetch('/api/upload', {
           method: 'POST',
           body: formData,
         });
 
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          errors.push(`${file.name}: ${errData.error || `Erreur HTTP ${res.status}`}`);
+          continue;
+        }
+
         const data = await res.json();
 
-        if (data.success) {
+        if (data.success && data.url) {
           uploadedUrls.push(data.url);
           if (targetCategory) {
             setQuickUploads(prev => ({
@@ -489,11 +498,15 @@ export default function AdminPage() {
             }));
           }
         } else {
-          errors.push(`${file.name}: ${data.error}`);
+          errors.push(`${file.name}: ${data.error || 'Réponse invalide du serveur'}`);
         }
       } catch (err) {
         errors.push(`${file.name}: Erreur lors de l'upload`);
       }
+    }
+
+    if (errors.length > 0) {
+      alert('⚠️ Certains fichiers n\'ont pas pu être uploadés :\n\n' + errors.join('\n'));
     }
 
     return uploadedUrls;

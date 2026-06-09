@@ -3,6 +3,10 @@ import { checkAuth } from '@/lib/auth';
 import { supabaseServer } from '@/lib/supabaseServer';
 import sharp from 'sharp';
 
+// Augmente la limite de corps pour les uploads de photos
+export const maxDuration = 30;
+export const dynamic = 'force-dynamic';
+
 const WEBP_QUALITY = 82;
 const CONVERT_TO_WEBP_TYPES = ['image/jpeg', 'image/jpg'];
 
