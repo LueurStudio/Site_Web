@@ -55,7 +55,8 @@
 }
 @media (max-width: 560px) {
   .feat-grid { grid-template-columns: 1fr; }
-  .feat-0, .feat-grid .feat-item { grid-column: auto; }
+  .feat-0 { grid-column: auto; grid-row: auto; min-height: 260px; }
+  .feat-grid .feat-item { grid-column: auto; min-height: 260px; }
 }
 
 /* ---------- AVANT / APRÈS ---------- */
