@@ -71,7 +71,7 @@ export default function AdminPage() {
     'Instagram / Réseaux': { photos: [], title: '', subtitle: '', description: '', uploading: false, selectedProject: null },
   });
 
-  type ProjectWithHidden = Project & { hidden?: boolean };
+  type ProjectWithHidden = Project & { hidden?: boolean; homepage_featured?: boolean };
   const [existingProjects, setExistingProjects] = useState<ProjectWithHidden[]>([]);
 
   // Gestion des réservations
@@ -2798,25 +2798,50 @@ export default function AdminPage() {
                       <h3 className="text-xl font-semibold mb-4">{category}</h3>
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         {categoryProjects.map((project) => (
-                          <button
+                          <div
                             key={project.slug}
-                            onClick={() => {
-                              setEditingProject(project);
-                              setEditedPhotos([...project.photos]);
-                            }}
-                            className="surface-card" style={{ padding: 16, textAlign: "left", cursor: "pointer", transition: "border-color 0.2s", position: "relative", overflow: "hidden" }}
+                            className="surface-card" style={{ padding: 16, textAlign: "left", transition: "border-color 0.2s", position: "relative", display: "flex", flexDirection: "column", gap: 8 }}
                           >
-                            <div className="aspect-[4/5] bg-cover bg-center rounded-xl mb-3 transition group-hover:scale-105"
-                              style={{ backgroundImage: `url('${project.image}')` }}
-                            />
-                            <h4 style={{ fontWeight: 600, marginBottom: 6 }}>{project.title}</h4>
-                            {project.hidden && (
-                              <span className="inline-flex items-center rounded-full bg-red-500/20 px-2 py-1 text-xs font-semibold text-red-200">
-                                Masqué
-                              </span>
-                            )}
-                            <p className="muted" style={{ fontSize: "0.78rem" }}>{project.photos.length} photo(s)</p>
-                          </button>
+                            <div
+                              style={{ cursor: "pointer" }}
+                              onClick={() => { setEditingProject(project); setEditedPhotos([...project.photos]); }}
+                            >
+                              <div className="aspect-[4/5] bg-cover bg-center rounded-xl mb-3"
+                                style={{ backgroundImage: `url('${project.image}')` }}
+                              />
+                              <h4 style={{ fontWeight: 600, marginBottom: 6 }}>{project.title}</h4>
+                              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginBottom: 4 }}>
+                                {project.hidden && (
+                                  <span style={{ fontSize: "0.75rem", background: "rgba(239,68,68,0.15)", color: "#fca5a5", padding: "2px 8px", borderRadius: 99, fontWeight: 600 }}>Masqué</span>
+                                )}
+                                {project.homepage_featured && (
+                                  <span style={{ fontSize: "0.75rem", color: "var(--accent)", fontWeight: 700 }}>★ Accueil</span>
+                                )}
+                              </div>
+                              <p className="muted" style={{ fontSize: "0.78rem" }}>{project.photos.length} photo(s)</p>
+                            </div>
+                            <button
+                              className="btn btn-outline"
+                              style={{ fontSize: "0.8rem", padding: "6px 12px", width: "100%", justifyContent: "center", color: project.homepage_featured ? "var(--accent)" : undefined, borderColor: project.homepage_featured ? "var(--accent)" : undefined }}
+                              onClick={async () => {
+                                const newFeatured = !project.homepage_featured;
+                                try {
+                                  const res = await fetch('/api/projects/set-homepage-featured', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ slug: project.slug, featured: newFeatured }),
+                                  });
+                                  const data = await res.json();
+                                  if (data.success) await loadProjects();
+                                  else alert(data.error || 'Erreur lors de la mise à jour');
+                                } catch {
+                                  alert('Erreur lors de la mise à jour');
+                                }
+                              }}
+                            >
+                              {project.homepage_featured ? '★ Retirer de l\'accueil' : '☆ Mettre en couverture'}
+                            </button>
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -2831,7 +2856,32 @@ export default function AdminPage() {
                     <h2 className="text-2xl font-semibold">{editingProject.title}</h2>
                     <p className="muted" style={{ fontSize: "0.88rem", marginTop: 6 }}>{editingProject.category}</p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2" style={{ flexWrap: "wrap" }}>
+                    <button
+                      onClick={async () => {
+                        const newFeatured = !editingProject.homepage_featured;
+                        try {
+                          const res = await fetch('/api/projects/set-homepage-featured', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ slug: editingProject.slug, featured: newFeatured }),
+                          });
+                          const data = await res.json();
+                          if (data.success) {
+                            setEditingProject({ ...editingProject, homepage_featured: newFeatured });
+                            await loadProjects();
+                          } else {
+                            alert(data.error || 'Erreur');
+                          }
+                        } catch {
+                          alert('Erreur lors de la mise à jour');
+                        }
+                      }}
+                      className="btn btn-outline"
+                      style={{ fontSize: "0.88rem", color: editingProject.homepage_featured ? "var(--accent)" : undefined, borderColor: editingProject.homepage_featured ? "var(--accent)" : undefined }}
+                    >
+                      {editingProject.homepage_featured ? '★ En couverture' : '☆ Couverture accueil'}
+                    </button>
                     <button
                       onClick={async () => {
                         setLoading(true);

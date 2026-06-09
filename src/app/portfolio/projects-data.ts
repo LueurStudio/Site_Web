@@ -7,6 +7,7 @@ export type Project = {
   details: string[];
   photos: string[];
   category: "Portrait" | "Événement" | "Animal" | "Instagram / Réseaux";
+  homepage_featured?: boolean;
 };
 
 export const categories = ["Portrait", "Événement", "Animal", "Instagram / Réseaux"] as const;

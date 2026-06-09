@@ -2,6 +2,9 @@ import Link from "next/link";
 import { Reveal, IcoArrow, IcoArrowUpRight, Stars } from "./components/ui";
 import BeforeAfter from "./components/BeforeAfter";
 import CTABand from "./components/CTABand";
+import { supabaseServer } from "@/lib/supabaseServer";
+
+export const revalidate = 60;
 
 const STATS = [
   { value: "20+", label: "Clients accompagnés" },
@@ -133,7 +136,9 @@ function ServicesSection() {
   );
 }
 
-function PortfolioPreview() {
+type PortfolioItem = { title: string; category: string; cover: string; slug: string };
+
+function PortfolioPreview({ items }: { items: PortfolioItem[] }) {
   return (
     <section className="section-tight">
       <div className="wrap">
@@ -145,7 +150,7 @@ function PortfolioPreview() {
           <Link className="btn btn-outline" href="/portfolio">Tout le portfolio <IcoArrow /></Link>
         </Reveal>
         <div className="feat-grid">
-          {PORTFOLIO_PREVIEW.map((p, i) => (
+          {items.map((p, i) => (
             <Reveal key={p.slug} delay={((i % 4) + 1) as 1 | 2 | 3 | 4} className={"feat-item feat-" + i}>
               <Link className="frame" style={{ height: "100%" }} href={`/portfolio/${p.slug}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -272,13 +277,37 @@ function TestimonialsPreview() {
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  let portfolioItems: PortfolioItem[] = PORTFOLIO_PREVIEW;
+
+  try {
+    const { data: featuredRaw } = await supabaseServer
+      .from('projects')
+      .select('slug, title, category, image')
+      .eq('homepage_featured', true)
+      .eq('hidden', false);
+
+    if (featuredRaw && featuredRaw.length > 0) {
+      const byCategory: Record<string, { slug: string; title: string; image: string }> = {};
+      for (const p of featuredRaw) byCategory[p.category] = p;
+
+      portfolioItems = PORTFOLIO_PREVIEW.map((p) => ({
+        ...p,
+        cover: byCategory[p.category]?.image ?? p.cover,
+        slug: byCategory[p.category]?.slug ?? p.slug,
+        title: byCategory[p.category]?.title ?? p.title,
+      }));
+    }
+  } catch {
+    // Fallback aux images statiques en cas d'erreur
+  }
+
   return (
     <div className="page">
       <Hero />
       <Marquee />
       <ServicesSection />
-      <PortfolioPreview />
+      <PortfolioPreview items={portfolioItems} />
       <RetoucheSection />
       <ProcessSection />
       <PricingTeaser />
