@@ -83,6 +83,7 @@ export default function AdminPage() {
   );
   const [sendingEmail, setSendingEmail] = useState(false);
   const [uploadingGalleryPhotos, setUploadingGalleryPhotos] = useState(false);
+  const [uploadingEditPhotos, setUploadingEditPhotos] = useState(false);
 
   // Gestion des disponibilités
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
@@ -2979,6 +2980,52 @@ export default function AdminPage() {
                       ))}
                     </div>
                   )}
+                </div>
+
+                {/* ── Ajout de nouvelles photos ── */}
+                <div className="surface-card" style={{ padding: "clamp(20px,2.5vw,32px)", marginBottom: 16 }}>
+                  <p style={{ fontWeight: 600, marginBottom: 12 }}>Ajouter des photos au projet</p>
+                  <label style={{ display: "block" }}>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      multiple
+                      disabled={uploadingEditPhotos}
+                      onChange={async (e) => {
+                        const files = e.target.files;
+                        if (!files || files.length === 0) return;
+                        setUploadingEditPhotos(true);
+                        try {
+                          const newUrls = await uploadFiles(Array.from(files));
+                          if (newUrls.length > 0) {
+                            setEditedPhotos(prev => [...prev, ...newUrls]);
+                          }
+                        } finally {
+                          setUploadingEditPhotos(false);
+                          e.target.value = '';
+                        }
+                      }}
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        padding: "10px 0",
+                        background: "transparent",
+                        border: "none",
+                        borderBottom: "1px solid var(--line)",
+                        color: "var(--fg-soft)",
+                        cursor: uploadingEditPhotos ? "not-allowed" : "pointer",
+                        opacity: uploadingEditPhotos ? 0.5 : 1,
+                      }}
+                    />
+                  </label>
+                  {uploadingEditPhotos && (
+                    <p style={{ marginTop: 10, fontSize: "0.88rem", color: "var(--accent)" }}>
+                      ⏳ Upload en cours — merci de patienter…
+                    </p>
+                  )}
+                  <p className="muted" style={{ marginTop: 8, fontSize: "0.82rem" }}>
+                    JPG, PNG ou WebP · max 10 MB par photo · les photos sont compressées automatiquement
+                  </p>
                 </div>
 
                 <div className="flex gap-3">
